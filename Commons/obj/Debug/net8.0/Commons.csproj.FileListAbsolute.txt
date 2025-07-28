@@ -1,0 +1,12 @@
+C:\Users\HP\source\Personal\iVoluntia\Commons\bin\Debug\net8.0\Commons.deps.json
+C:\Users\HP\source\Personal\iVoluntia\Commons\bin\Debug\net8.0\Commons.dll
+C:\Users\HP\source\Personal\iVoluntia\Commons\bin\Debug\net8.0\Commons.pdb
+C:\Users\HP\source\Personal\iVoluntia\Commons\obj\Debug\net8.0\Commons.csproj.AssemblyReference.cache
+C:\Users\HP\source\Personal\iVoluntia\Commons\obj\Debug\net8.0\Commons.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\HP\source\Personal\iVoluntia\Commons\obj\Debug\net8.0\Commons.AssemblyInfoInputs.cache
+C:\Users\HP\source\Personal\iVoluntia\Commons\obj\Debug\net8.0\Commons.AssemblyInfo.cs
+C:\Users\HP\source\Personal\iVoluntia\Commons\obj\Debug\net8.0\Commons.csproj.CoreCompileInputs.cache
+C:\Users\HP\source\Personal\iVoluntia\Commons\obj\Debug\net8.0\Commons.dll
+C:\Users\HP\source\Personal\iVoluntia\Commons\obj\Debug\net8.0\refint\Commons.dll
+C:\Users\HP\source\Personal\iVoluntia\Commons\obj\Debug\net8.0\Commons.pdb
+C:\Users\HP\source\Personal\iVoluntia\Commons\obj\Debug\net8.0\ref\Commons.dll

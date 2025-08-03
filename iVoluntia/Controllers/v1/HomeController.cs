@@ -2,7 +2,7 @@
 using Trustesse.Ivoluntia.Commons.DTOs.RSA;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Trustesse.Ivoluntia.API.Controllers
+namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
     [Route("api/[controller]")]
     [ApiController]

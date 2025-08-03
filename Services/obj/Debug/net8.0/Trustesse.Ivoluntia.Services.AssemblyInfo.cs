@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Trustesse.Ivoluntia.Services")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fd61f0d9d44283fd08a67543234c3413d733f3c7")]
 [assembly: System.Reflection.AssemblyProductAttribute("Trustesse.Ivoluntia.Services")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Trustesse.Ivoluntia.Services")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

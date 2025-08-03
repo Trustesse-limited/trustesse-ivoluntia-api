@@ -12,7 +12,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.7" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Trustesse.Ivoluntia.Domain.csproj" />
+    <ProjectReference Include="..\Services\Trustesse.Ivoluntia.Services.csproj" />
   </ItemGroup>
 
 </Project>

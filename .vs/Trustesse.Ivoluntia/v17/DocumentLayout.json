@@ -3,20 +3,36 @@
   "WorkspaceRootPath": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Data\\Migrations\\20250803225928_initialSetup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Data\\Migrations\\20250803225928_initialSetup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E3BC9A1-6BE2-469A-A0B3-AFA86EC41283}|Data\\Trustesse.Ivoluntia.Data.csproj|c:\\users\\hp\\source\\personal\\trustesse.ivoluntia\\data\\datacontext\\ivoluntiadatacontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8E3BC9A1-6BE2-469A-A0B3-AFA86EC41283}|Data\\Trustesse.Ivoluntia.Data.csproj|solutionrelative:data\\datacontext\\ivoluntiadatacontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8E3BC9A1-6BE2-469A-A0B3-AFA86EC41283}|Data\\Trustesse.Ivoluntia.Data.csproj|c:\\users\\hp\\source\\personal\\trustesse.ivoluntia\\data\\trustesse.ivoluntia.data.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{8E3BC9A1-6BE2-469A-A0B3-AFA86EC41283}|Data\\Trustesse.Ivoluntia.Data.csproj|solutionrelative:data\\trustesse.ivoluntia.data.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FB63F585-1F5B-483D-AB70-B6776E5E5806}|iVoluntia\\Trustesse.Ivoluntia.API.csproj|c:\\users\\hp\\source\\personal\\trustesse.ivoluntia\\ivoluntia\\trustesse.ivoluntia.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{FB63F585-1F5B-483D-AB70-B6776E5E5806}|iVoluntia\\Trustesse.Ivoluntia.API.csproj|solutionrelative:ivoluntia\\trustesse.ivoluntia.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{FB63F585-1F5B-483D-AB70-B6776E5E5806}|iVoluntia\\Trustesse.Ivoluntia.API.csproj|c:\\users\\hp\\source\\personal\\trustesse.ivoluntia\\ivoluntia\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{FB63F585-1F5B-483D-AB70-B6776E5E5806}|iVoluntia\\Trustesse.Ivoluntia.API.csproj|solutionrelative:ivoluntia\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8E3BC9A1-6BE2-469A-A0B3-AFA86EC41283}|Data\\Trustesse.Ivoluntia.Data.csproj|c:\\users\\hp\\source\\personal\\trustesse.ivoluntia\\data\\datacontext\\samplecontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8E3BC9A1-6BE2-469A-A0B3-AFA86EC41283}|Data\\Trustesse.Ivoluntia.Data.csproj|solutionrelative:data\\datacontext\\samplecontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{FB63F585-1F5B-483D-AB70-B6776E5E5806}|iVoluntia\\Trustesse.Ivoluntia.API.csproj|c:\\users\\hp\\source\\personal\\trustesse.ivoluntia\\ivoluntia\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{FB63F585-1F5B-483D-AB70-B6776E5E5806}|iVoluntia\\Trustesse.Ivoluntia.API.csproj|solutionrelative:ivoluntia\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FB63F585-1F5B-483D-AB70-B6776E5E5806}|iVoluntia\\Trustesse.Ivoluntia.API.csproj|c:\\users\\hp\\source\\personal\\trustesse.ivoluntia\\ivoluntia\\controllers\\v1\\userscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FB63F585-1F5B-483D-AB70-B6776E5E5806}|iVoluntia\\Trustesse.Ivoluntia.API.csproj|solutionrelative:ivoluntia\\controllers\\v1\\userscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6A565EB0-FC1E-4DF3-9DA4-F2FD013186F2}|Commons\\Trustesse.Ivoluntia.Commons.csproj|c:\\users\\hp\\source\\personal\\trustesse.ivoluntia\\commons\\extensions\\helpers\\networkfilter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6A565EB0-FC1E-4DF3-9DA4-F2FD013186F2}|Commons\\Trustesse.Ivoluntia.Commons.csproj|solutionrelative:commons\\extensions\\helpers\\networkfilter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{4C9E40F0-D436-4EBF-9371-226F613021C2}|Domain\\Trustesse.Ivoluntia.Domain.csproj|c:\\users\\hp\\source\\personal\\trustesse.ivoluntia\\domain\\entities\\clients.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4C9E40F0-D436-4EBF-9371-226F613021C2}|Domain\\Trustesse.Ivoluntia.Domain.csproj|solutionrelative:domain\\entities\\clients.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6A565EB0-FC1E-4DF3-9DA4-F2FD013186F2}|Commons\\Trustesse.Ivoluntia.Commons.csproj|c:\\users\\hp\\source\\personal\\trustesse.ivoluntia\\commons\\cryptography\\rsacryptographyhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -45,10 +61,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{FB63F585-1F5B-483D-AB70-B6776E5E5806}|iVoluntia\\Trustesse.Ivoluntia.API.csproj|c:\\users\\hp\\source\\personal\\trustesse.ivoluntia\\ivoluntia\\middlewares\\exceptionmiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{FB63F585-1F5B-483D-AB70-B6776E5E5806}|iVoluntia\\Trustesse.Ivoluntia.API.csproj|solutionrelative:ivoluntia\\middlewares\\exceptionmiddleware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{FB63F585-1F5B-483D-AB70-B6776E5E5806}|iVoluntia\\Trustesse.Ivoluntia.API.csproj|c:\\users\\hp\\source\\personal\\trustesse.ivoluntia\\ivoluntia\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{FB63F585-1F5B-483D-AB70-B6776E5E5806}|iVoluntia\\Trustesse.Ivoluntia.API.csproj|solutionrelative:ivoluntia\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{4C9E40F0-D436-4EBF-9371-226F613021C2}|Domain\\Trustesse.Ivoluntia.Domain.csproj|c:\\users\\hp\\source\\personal\\trustesse.ivoluntia\\domain\\trustesse.ivoluntia.domain.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
@@ -82,7 +94,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 7,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -102,49 +114,78 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "SampleContext.cs",
-              "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Data\\DataContext\\SampleContext.cs",
-              "RelativeDocumentMoniker": "Data\\DataContext\\SampleContext.cs",
-              "ToolTip": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Data\\DataContext\\SampleContext.cs",
-              "RelativeToolTip": "Data\\DataContext\\SampleContext.cs",
-              "ViewState": "AgIAAAUAAAAAAAAAAAAQwAoAAAAeAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "20250803225928_initialSetup.cs",
+              "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Data\\Migrations\\20250803225928_initialSetup.cs",
+              "RelativeDocumentMoniker": "Data\\Migrations\\20250803225928_initialSetup.cs",
+              "ToolTip": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Data\\Migrations\\20250803225928_initialSetup.cs",
+              "RelativeToolTip": "Data\\Migrations\\20250803225928_initialSetup.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-30T19:54:56.933Z"
+              "WhenOpened": "2025-08-03T22:59:28.389Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "iVoluntiaDataContext.cs",
+              "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Data\\DataContext\\iVoluntiaDataContext.cs",
+              "RelativeDocumentMoniker": "Data\\DataContext\\iVoluntiaDataContext.cs",
+              "ToolTip": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Data\\DataContext\\iVoluntiaDataContext.cs",
+              "RelativeToolTip": "Data\\DataContext\\iVoluntiaDataContext.cs",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-03T22:59:01.118Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Trustesse.Ivoluntia.Data",
+              "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Data\\Trustesse.Ivoluntia.Data.csproj",
+              "RelativeDocumentMoniker": "Data\\Trustesse.Ivoluntia.Data.csproj",
+              "ToolTip": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Data\\Trustesse.Ivoluntia.Data.csproj",
+              "RelativeToolTip": "Data\\Trustesse.Ivoluntia.Data.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAABTAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-08-03T22:49:26.095Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "Clients.cs",
-              "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Domain\\Entities\\Clients.cs",
-              "RelativeDocumentMoniker": "Domain\\Entities\\Clients.cs",
-              "ToolTip": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Domain\\Entities\\Clients.cs",
-              "RelativeToolTip": "Domain\\Entities\\Clients.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAWAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-30T19:53:27.348Z"
+              "Title": "Trustesse.Ivoluntia.API",
+              "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\iVoluntia\\Trustesse.Ivoluntia.API.csproj",
+              "RelativeDocumentMoniker": "iVoluntia\\Trustesse.Ivoluntia.API.csproj",
+              "ToolTip": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\iVoluntia\\Trustesse.Ivoluntia.API.csproj",
+              "RelativeToolTip": "iVoluntia\\Trustesse.Ivoluntia.API.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-08-03T22:41:43.731Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
-              "Title": "PasswordHasher.cs",
-              "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Commons\\Cryptography\\PasswordHasher.cs",
-              "RelativeDocumentMoniker": "Commons\\Cryptography\\PasswordHasher.cs",
-              "ToolTip": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Commons\\Cryptography\\PasswordHasher.cs",
-              "RelativeToolTip": "Commons\\Cryptography\\PasswordHasher.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-27T05:30:49.784Z"
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\iVoluntia\\appsettings.json",
+              "RelativeDocumentMoniker": "iVoluntia\\appsettings.json",
+              "ToolTip": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\iVoluntia\\appsettings.json",
+              "RelativeToolTip": "iVoluntia\\appsettings.json",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAAAAIAAACeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-07-27T04:24:06.465Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 4,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\iVoluntia\\Program.cs",
               "RelativeDocumentMoniker": "iVoluntia\\Program.cs",
               "ToolTip": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\iVoluntia\\Program.cs",
               "RelativeToolTip": "iVoluntia\\Program.cs",
-              "ViewState": "AgIAAEEAAAAAAAAAAAAcwFEAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAE4AAAAAAAAAAAAAAA8AAAADAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-07-27T04:16:36.731Z",
               "EditorCaption": ""
@@ -152,6 +193,32 @@
             {
               "$type": "Document",
               "DocumentIndex": 6,
+              "Title": "UsersController.cs",
+              "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\iVoluntia\\Controllers\\v1\\UsersController.cs",
+              "RelativeDocumentMoniker": "iVoluntia\\Controllers\\v1\\UsersController.cs",
+              "ToolTip": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\iVoluntia\\Controllers\\v1\\UsersController.cs",
+              "RelativeToolTip": "iVoluntia\\Controllers\\v1\\UsersController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-03T21:56:41.306Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "PasswordHasher.cs",
+              "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Commons\\Cryptography\\PasswordHasher.cs",
+              "RelativeDocumentMoniker": "Commons\\Cryptography\\PasswordHasher.cs",
+              "ToolTip": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Commons\\Cryptography\\PasswordHasher.cs",
+              "RelativeToolTip": "Commons\\Cryptography\\PasswordHasher.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-27T05:30:49.784Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
               "Title": "Encodings.cs",
               "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Commons\\Cryptography\\Encodings.cs",
               "RelativeDocumentMoniker": "Commons\\Cryptography\\Encodings.cs",
@@ -159,11 +226,12 @@
               "RelativeToolTip": "Commons\\Cryptography\\Encodings.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-27T05:30:29.549Z"
+              "WhenOpened": "2025-07-27T05:30:29.549Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 7,
               "Title": "NetworkFilter.cs",
               "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Commons\\Extensions\\Helpers\\NetworkFilter.cs",
               "RelativeDocumentMoniker": "Commons\\Extensions\\Helpers\\NetworkFilter.cs",
@@ -171,23 +239,25 @@
               "RelativeToolTip": "Commons\\Extensions\\Helpers\\NetworkFilter.cs",
               "ViewState": "AgIAAAsAAAAAAAAAAAAAwBkAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-28T06:12:28.867Z"
+              "WhenOpened": "2025-07-28T06:12:28.867Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 11,
               "Title": "AES.cs",
               "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Commons\\Cryptography\\AES.cs",
               "RelativeDocumentMoniker": "Commons\\Cryptography\\AES.cs",
               "ToolTip": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Commons\\Cryptography\\AES.cs",
               "RelativeToolTip": "Commons\\Cryptography\\AES.cs",
-              "ViewState": "AgIAAB8AAAAAAAAAAAAQwAMAAAAfAAAAAAAAAA==",
+              "ViewState": "AgIAAB8AAAAAAAAAAAAzwAMAAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-27T05:30:11.083Z"
+              "WhenOpened": "2025-07-27T05:30:11.083Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 12,
               "Title": "LogHandler.cs",
               "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Commons\\Extensions\\Logging\\LogHandler.cs",
               "RelativeDocumentMoniker": "Commons\\Extensions\\Logging\\LogHandler.cs",
@@ -195,11 +265,12 @@
               "RelativeToolTip": "Commons\\Extensions\\Logging\\LogHandler.cs",
               "ViewState": "AgIAABAAAAAAAAAAAAAQwBcAAAAgAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-28T06:19:42.023Z"
+              "WhenOpened": "2025-07-28T06:19:42.023Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 8,
               "Title": "RSACryptographyHandler.cs",
               "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Commons\\Cryptography\\RSACryptographyHandler.cs",
               "RelativeDocumentMoniker": "Commons\\Cryptography\\RSACryptographyHandler.cs",
@@ -207,47 +278,38 @@
               "RelativeToolTip": "Commons\\Cryptography\\RSACryptographyHandler.cs",
               "ViewState": "AgIAAMcAAAAAAAAAAAAowMwAAAAdAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-27T05:42:29.921Z"
+              "WhenOpened": "2025-07-27T05:42:29.921Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 13,
               "Title": "HomeController.cs",
               "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\iVoluntia\\Controllers\\v1\\HomeController.cs",
               "RelativeDocumentMoniker": "iVoluntia\\Controllers\\v1\\HomeController.cs",
               "ToolTip": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\iVoluntia\\Controllers\\v1\\HomeController.cs",
               "RelativeToolTip": "iVoluntia\\Controllers\\v1\\HomeController.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAAAcAAAATAAAAAAAAAA==",
+              "ViewState": "AgIAAAMAAAAAAAAAAIBJwAcAAAATAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-27T04:20:16.232Z"
+              "WhenOpened": "2025-07-27T04:20:16.232Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 15,
               "Title": "Trustesse.Ivoluntia.Domain.csproj",
               "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Domain\\Trustesse.Ivoluntia.Domain.csproj",
               "RelativeDocumentMoniker": "Domain\\Trustesse.Ivoluntia.Domain.csproj",
               "ToolTip": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Domain\\Trustesse.Ivoluntia.Domain.csproj",
               "RelativeToolTip": "Domain\\Trustesse.Ivoluntia.Domain.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-07-27T17:29:42.939Z"
+              "WhenOpened": "2025-07-27T17:29:42.939Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\iVoluntia\\appsettings.json",
-              "RelativeDocumentMoniker": "iVoluntia\\appsettings.json",
-              "ToolTip": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\iVoluntia\\appsettings.json",
-              "RelativeToolTip": "iVoluntia\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-07-27T04:24:06.465Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 14,
               "Title": "ExceptionMiddleware.cs",
               "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\iVoluntia\\Middlewares\\ExceptionMiddleware.cs",
               "RelativeDocumentMoniker": "iVoluntia\\Middlewares\\ExceptionMiddleware.cs",
@@ -255,11 +317,12 @@
               "RelativeToolTip": "iVoluntia\\Middlewares\\ExceptionMiddleware.cs",
               "ViewState": "AgIAAA8AAAAAAAAAAAAgwC8AAAAOAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-28T05:58:52.178Z"
+              "WhenOpened": "2025-07-28T05:58:52.178Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 17,
               "Title": "EncryptRequest.cs",
               "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Commons\\DTOs\\RSA\\EncryptRequest.cs",
               "RelativeDocumentMoniker": "Commons\\DTOs\\RSA\\EncryptRequest.cs",
@@ -267,11 +330,12 @@
               "RelativeToolTip": "Commons\\DTOs\\RSA\\EncryptRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-27T05:43:40.854Z"
+              "WhenOpened": "2025-07-27T05:43:40.854Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 18,
               "Title": "DecryptRequest.cs",
               "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Commons\\DTOs\\RSA\\DecryptRequest.cs",
               "RelativeDocumentMoniker": "Commons\\DTOs\\RSA\\DecryptRequest.cs",
@@ -279,11 +343,12 @@
               "RelativeToolTip": "Commons\\DTOs\\RSA\\DecryptRequest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-27T06:33:48.515Z"
+              "WhenOpened": "2025-07-27T06:33:48.515Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 16,
               "Title": "Response.cs",
               "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Commons\\DTOs\\RSA\\Response.cs",
               "RelativeDocumentMoniker": "Commons\\DTOs\\RSA\\Response.cs",
@@ -291,11 +356,12 @@
               "RelativeToolTip": "Commons\\DTOs\\RSA\\Response.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAuwAwAAAApAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-27T05:44:58.247Z"
+              "WhenOpened": "2025-07-27T05:44:58.247Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 19,
               "Title": "RsaParameterResponse.cs",
               "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Commons\\DTOs\\RSA\\RsaParameterResponse.cs",
               "RelativeDocumentMoniker": "Commons\\DTOs\\RSA\\RsaParameterResponse.cs",
@@ -303,11 +369,12 @@
               "RelativeToolTip": "Commons\\DTOs\\RSA\\RsaParameterResponse.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-27T05:46:47.564Z"
+              "WhenOpened": "2025-07-27T05:46:47.564Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 20,
               "Title": "BaseResponse.cs",
               "DocumentMoniker": "C:\\Users\\HP\\source\\Personal\\Trustesse.Ivoluntia\\Commons\\DTOs\\RSA\\BaseResponse.cs",
               "RelativeDocumentMoniker": "Commons\\DTOs\\RSA\\BaseResponse.cs",
@@ -315,7 +382,8 @@
               "RelativeToolTip": "Commons\\DTOs\\RSA\\BaseResponse.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-27T05:47:28.282Z"
+              "WhenOpened": "2025-07-27T05:47:28.282Z",
+              "EditorCaption": ""
             }
           ]
         }

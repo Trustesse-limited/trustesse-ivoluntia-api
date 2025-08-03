@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Trustesse.Ivoluntia.API.Middlewares;
 using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
 using Trustesse.Ivoluntia.Data.DataContext;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -73,7 +75,18 @@ builder.Services.AddControllers();
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddDbContext<SampleContext>(e => e.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<iVoluntiaDataContext>(options =>
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("DefaultConnection")!,
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection")!),
+        mySqlOptions => mySqlOptions.MigrationsAssembly("Trustesse.Ivoluntia.Data")
+    )
+);
+// configure User Manager and Role Manager 
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+       .AddEntityFrameworkStores<iVoluntiaDataContext>()
+       .AddDefaultTokenProviders();
+
 
 builder.Services.AddScoped<NetworkFilter>();
 var app = builder.Build();
@@ -94,6 +107,7 @@ app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

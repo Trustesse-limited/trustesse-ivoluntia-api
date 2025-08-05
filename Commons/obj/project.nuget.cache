@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "dgSpecHash": "9RaYGEsuH4A=",
+  "success": true,
+  "projectFilePath": "/Users/manny/Documents/projects/trustesse-ivoluntia-api/Commons/Trustesse.Ivoluntia.Commons.csproj",
+  "expectedPackageFiles": [
+    "/Users/manny/.nuget/packages/fluentvalidation/12.0.0/fluentvalidation.12.0.0.nupkg.sha512",
+    "/Users/manny/.nuget/packages/microsoft.aspnetcore.http.abstractions/2.3.0/microsoft.aspnetcore.http.abstractions.2.3.0.nupkg.sha512",
+    "/Users/manny/.nuget/packages/microsoft.aspnetcore.http.features/2.3.0/microsoft.aspnetcore.http.features.2.3.0.nupkg.sha512",
+    "/Users/manny/.nuget/packages/microsoft.extensions.primitives/8.0.0/microsoft.extensions.primitives.8.0.0.nupkg.sha512",
+    "/Users/manny/.nuget/packages/serilog/4.3.0/serilog.4.3.0.nupkg.sha512",
+    "/Users/manny/.nuget/packages/serilog.sinks.file/7.0.0/serilog.sinks.file.7.0.0.nupkg.sha512",
+    "/Users/manny/.nuget/packages/system.text.encodings.web/8.0.0/system.text.encodings.web.8.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -1,0 +1,9 @@
+# Build and IDE folders
+bin/
+obj/
+.vs/
+.idea/
+
+# System files
+Thumbs.db
+*.log

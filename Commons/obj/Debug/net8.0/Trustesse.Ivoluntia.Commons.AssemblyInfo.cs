@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Trustesse.Ivoluntia.Commons")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4591f7adcffe864f666db91686459c7c1f355bbf")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+91a1742ccdff43e842a8943a7c21f47b4b422c17")]
 [assembly: System.Reflection.AssemblyProductAttribute("Trustesse.Ivoluntia.Commons")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Trustesse.Ivoluntia.Commons")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

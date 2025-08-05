@@ -1,0 +1,20 @@
+﻿<Properties StartupConfiguration="{C6F5012E-D23E-4A75-A9DC-E46A6BE7A55E}|https">
+  <MonoDevelop.Ide.ItemProperties.Trustesse.Ivoluntia.API PreferredExecutionTarget="/Applications/Google Chrome.app" />
+  <MonoDevelop.Ide.Workbench>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="Trustesse.Ivoluntia.API">
+            <Node name="Trustesse.Ivoluntia.API" selected="True" />
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
+</Properties>

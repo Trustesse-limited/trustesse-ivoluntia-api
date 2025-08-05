@@ -1,0 +1,12 @@
+/Users/thankucashtech03/Desktop/trustee/trustesse-ivoluntia-api/Domain/bin/Debug/net8.0/Trustesse.Ivoluntia.Domain.deps.json
+/Users/thankucashtech03/Desktop/trustee/trustesse-ivoluntia-api/Domain/bin/Debug/net8.0/Trustesse.Ivoluntia.Domain.dll
+/Users/thankucashtech03/Desktop/trustee/trustesse-ivoluntia-api/Domain/bin/Debug/net8.0/Trustesse.Ivoluntia.Domain.pdb
+/Users/thankucashtech03/Desktop/trustee/trustesse-ivoluntia-api/Domain/obj/Debug/net8.0/Trustesse.Ivoluntia.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/Users/thankucashtech03/Desktop/trustee/trustesse-ivoluntia-api/Domain/obj/Debug/net8.0/Trustesse.Ivoluntia.Domain.AssemblyInfoInputs.cache
+/Users/thankucashtech03/Desktop/trustee/trustesse-ivoluntia-api/Domain/obj/Debug/net8.0/Trustesse.Ivoluntia.Domain.AssemblyInfo.cs
+/Users/thankucashtech03/Desktop/trustee/trustesse-ivoluntia-api/Domain/obj/Debug/net8.0/Trustesse.Ivoluntia.Domain.csproj.CoreCompileInputs.cache
+/Users/thankucashtech03/Desktop/trustee/trustesse-ivoluntia-api/Domain/obj/Debug/net8.0/Trustesse.Ivoluntia.Domain.sourcelink.json
+/Users/thankucashtech03/Desktop/trustee/trustesse-ivoluntia-api/Domain/obj/Debug/net8.0/Trustesse.Ivoluntia.Domain.dll
+/Users/thankucashtech03/Desktop/trustee/trustesse-ivoluntia-api/Domain/obj/Debug/net8.0/refint/Trustesse.Ivoluntia.Domain.dll
+/Users/thankucashtech03/Desktop/trustee/trustesse-ivoluntia-api/Domain/obj/Debug/net8.0/Trustesse.Ivoluntia.Domain.pdb
+/Users/thankucashtech03/Desktop/trustee/trustesse-ivoluntia-api/Domain/obj/Debug/net8.0/ref/Trustesse.Ivoluntia.Domain.dll

@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Entities\" />
     <Folder Include="Enumerators\" />
     <Folder Include="IRepositories\" />
   </ItemGroup>

@@ -3,6 +3,7 @@ bin/
 obj/
 .vs/
 .idea/
+.vscode/
 
 # System files
 Thumbs.db

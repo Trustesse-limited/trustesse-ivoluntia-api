@@ -4,9 +4,11 @@ using Microsoft.OpenApi.Models;
 using Trustesse.Ivoluntia.API.Middlewares;
 using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
 using Trustesse.Ivoluntia.Data.DataContext;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Trustesse.Ivoluntia.Domain.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
 
 builder.Services.AddHsts(options =>
 {
@@ -16,7 +18,8 @@ builder.Services.AddHsts(options =>
 });
 
 
-builder.Services.AddSwaggerGen(options => {
+builder.Services.AddSwaggerGen(options =>
+{
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "iVoluntia API",
@@ -82,14 +85,29 @@ builder.Services.AddDbContext<iVoluntiaDataContext>(options =>
         mySqlOptions => mySqlOptions.MigrationsAssembly("Trustesse.Ivoluntia.Data")
     )
 );
+
 // configure User Manager and Role Manager 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+builder.Services.AddIdentity<User, Role>()
        .AddEntityFrameworkStores<iVoluntiaDataContext>()
        .AddDefaultTokenProviders();
 
 
 builder.Services.AddScoped<NetworkFilter>();
 var app = builder.Build();
+
+//roles and superadmin user seeding
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var roleManager = services.GetRequiredService<RoleManager<Role>>();
+    var userManager = services.GetRequiredService<UserManager<User>>();
+
+    await RoleSeeder.SeedRolesAsync(roleManager);
+    await RoleSeeder.SeedSuperAdminUserAsync(userManager, roleManager);
+}
+
+
 
 if (app.Environment.IsDevelopment())
 {

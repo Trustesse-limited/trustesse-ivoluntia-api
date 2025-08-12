@@ -1,6 +1,6 @@
 ﻿namespace Trustesse.Ivoluntia.Domain.Entities
 {
-    public class Skill
+    public class Skill : BaseEntity
     {
         public string Name { get; set; }
         public string? Description { get; set; }

@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Commons\Trustesse.Ivoluntia.Commons.csproj" />
-    <ProjectReference Include="..\Data\Trustesse.Ivoluntia.Data.csproj" />
+    <ProjectReference Include="..\Services\Trustesse.Ivoluntia.Services.csproj" />
   </ItemGroup>
 
 </Project>

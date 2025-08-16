@@ -6,9 +6,6 @@ namespace Trustesse.Ivoluntia.Domain.Entities;
 
 public class Volunteer : IdentityUser
 {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long VoluntialId { get; set; }
         [Required]
         public string FirstName { get; set; }
         public string? MiddleName { get; set; }

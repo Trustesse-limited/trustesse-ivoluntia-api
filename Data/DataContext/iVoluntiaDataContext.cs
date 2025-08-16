@@ -13,8 +13,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
     public class iVoluntiaDataContext : IdentityDbContext<User, Role, string>
     {
 
-        public DbSet<Country> Countries { get; set; }
-        public DbSet<State> States { get; set; }
+      
         public iVoluntiaDataContext(DbContextOptions<iVoluntiaDataContext> options) : base(options)
         {
         }
@@ -27,6 +26,9 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<FoundationCategory> FoundationCategories { get; set; }
         public DbSet<Cause> Causes { get; set; }
         public DbSet<ContactInfo> ContactInfos { get; set; }
+        public DbSet<Country> Countries { get; set; }
+        public DbSet<State> States { get; set; }
+        public DbSet<Volunteer> Volunteers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

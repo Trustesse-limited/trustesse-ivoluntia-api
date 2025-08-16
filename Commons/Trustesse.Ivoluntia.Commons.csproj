@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Folder Include="Extensions\Validations\" />
-    <Folder Include="Models\" />
     <Folder Include="RSAKeys\" />
   </ItemGroup>
 

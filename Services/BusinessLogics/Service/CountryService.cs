@@ -56,6 +56,21 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             return country;
         }
 
+        public async Task<IReadOnlyList<Country>> GetCountries()
+        {
+            IReadOnlyList<Country> countries = new List<Country>();
+            try
+            {
+                countries = await _uow.countryRepo.GetAllAsync();
+            }
+            catch (Exception ex)
+            {
+
+                
+            }
+            return countries;
+        }
+
         public async Task<CustomResponse> CreateStateAsync(CreateStateModel model)
         {
             CustomResponse result = null;

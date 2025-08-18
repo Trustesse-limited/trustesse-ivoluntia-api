@@ -6,9 +6,6 @@ namespace Trustesse.Ivoluntia.Domain.Entities;
 
 public class Volunteer : IdentityUser
 {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long VoluntialId { get; set; }
         [Required]
         public string FirstName { get; set; }
         public string? MiddleName { get; set; }
@@ -22,9 +19,9 @@ public class Volunteer : IdentityUser
         public override string UserName { get; set; }
         public string City { get; set; }
         [Required]
-        public int StateId { get; set; }
+        public Guid StateId { get; set; }
         [Required]
-        public int CountryId { get; set; }
+        public Guid CountryId { get; set; }
         public string AccountType { get; set; }
         [Required]
         public bool IsActive { get; set; } = false;

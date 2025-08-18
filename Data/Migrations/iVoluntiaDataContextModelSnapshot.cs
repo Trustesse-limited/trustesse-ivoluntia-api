@@ -198,7 +198,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Causes");
+                    b.ToTable("Causes", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.ContactInfo", b =>
@@ -229,7 +229,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ContactInfos");
+                    b.ToTable("ContactInfos", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Foundation", b =>
@@ -282,7 +282,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Foundations");
+                    b.ToTable("Foundations", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.FoundationCategory", b =>
@@ -310,7 +310,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FoundationCategories");
+                    b.ToTable("FoundationCategories", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Interest", b =>
@@ -340,7 +340,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Interests");
+                    b.ToTable("Interests", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Location", b =>
@@ -390,7 +390,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Locations");
+                    b.ToTable("Locations", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.OnboardingProgress", b =>
@@ -426,7 +426,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("OnboardingProgress");
+                    b.ToTable("OnboardingProgress", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Role", b =>
@@ -497,7 +497,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Skills");
+                    b.ToTable("Skills", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.User", b =>

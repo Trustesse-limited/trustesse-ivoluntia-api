@@ -2,7 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Trustesse.Ivoluntia.Data.DataContext;
+using Trustesse.Ivoluntia.Data.Services;
 using Trustesse.Ivoluntia.Domain.Entities;
+using Trustesse.Ivoluntia.Services.Abstractions;
 
 namespace Trustesse.Ivoluntia.API.Extensions
 {
@@ -10,6 +12,9 @@ namespace Trustesse.Ivoluntia.API.Extensions
     {
         public static IServiceCollection AddCustomSwagger(this IServiceCollection services)
         {
+            services.AddScoped<INotificationService, NotificationService>();
+
+
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo
@@ -45,6 +50,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
                     }
                 });
             });
+
 
             return services;
         }

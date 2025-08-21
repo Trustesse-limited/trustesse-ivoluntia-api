@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Folder Include="Migrations\" />
-    <Folder Include="Services\" />
     <Folder Include="Repositories\" />
   </ItemGroup>
 
@@ -28,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Commons\Trustesse.Ivoluntia.Commons.csproj" />
     <ProjectReference Include="..\Domain\Trustesse.Ivoluntia.Domain.csproj" />
     <ProjectReference Include="..\Services\Trustesse.Ivoluntia.Services.csproj" />
   </ItemGroup>

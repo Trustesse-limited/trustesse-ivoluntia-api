@@ -1,5 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Trustesse.Ivoluntia.Domain.Entities;
 
 
@@ -7,6 +12,8 @@ namespace Trustesse.Ivoluntia.Data.DataContext
 {
     public class iVoluntiaDataContext : IdentityDbContext<User, Role, string>
     {
+
+      
         public iVoluntiaDataContext(DbContextOptions<iVoluntiaDataContext> options) : base(options)
         {
         }
@@ -26,6 +33,9 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<NotificationTemplate> NotificationTemplates { get; set; }
         public DbSet<NotificationType> NotificationTypes { get; set; }
         public DbSet<NotificationTypePriority> NotificationTypePriorities { get; set; }
+        public DbSet<Country> Countries { get; set; }
+        public DbSet<State> States { get; set; }
+        public DbSet<Volunteer> Volunteers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

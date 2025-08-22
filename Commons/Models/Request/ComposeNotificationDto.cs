@@ -1,4 +1,4 @@
-﻿namespace Trustesse.Ivoluntia.Commons.DTOs.DataTransferObjects
+﻿namespace Trustesse.Ivoluntia.Commons.Models.Request
 {
     public class ComposeNotificationDto
     {

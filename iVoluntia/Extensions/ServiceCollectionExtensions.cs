@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Trustesse.Ivoluntia.Data.DataContext;
-using Trustesse.Ivoluntia.Data.Services;
 using Trustesse.Ivoluntia.Domain.Entities;
-using Trustesse.Ivoluntia.Services.Abstractions;
+using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
+using Trustesse.Ivoluntia.Services.BusinessLogics.Service;
 
 namespace Trustesse.Ivoluntia.API.Extensions
 {

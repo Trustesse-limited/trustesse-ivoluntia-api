@@ -1,6 +1,6 @@
 ﻿using Trustesse.Ivoluntia.Commons.DTOs;
 
-namespace Trustesse.Ivoluntia.Services.Abstractions
+namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService
 {
     public interface INotificationService
     {

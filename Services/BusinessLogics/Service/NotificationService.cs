@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Data.DataContext;
-using Trustesse.Ivoluntia.Services.Abstractions;
+using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
-namespace Trustesse.Ivoluntia.Data.Services
+namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 {
     public class NotificationService : INotificationService
     {

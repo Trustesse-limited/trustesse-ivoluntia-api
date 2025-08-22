@@ -9,13 +9,10 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
     public class NotificationService : INotificationService
     {
         private readonly iVoluntiaDataContext _context;
-
         public NotificationService(iVoluntiaDataContext context)
         {
             _context = context;
         }
-
-
         public async Task<ApiResponse<string>> ComposeNotificationAsync(string notificationType, string channel, Dictionary<string, string> placeholders)
         {
             try
@@ -45,12 +42,5 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 return ApiResponse<string>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
             }
         }
-
     }
-
-
-
-
-
-
 }

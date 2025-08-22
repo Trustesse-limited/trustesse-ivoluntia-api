@@ -4,8 +4,5 @@
     {
         public string NotificationType { get; set; }
         public int NotificationPriority { get; set; }
-
-
     }
-
 }

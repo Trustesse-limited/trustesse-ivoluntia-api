@@ -12,5 +12,4 @@
         public string FoundationId { get; set; }
         public Foundation Foundation { get; set; }
     }
-
 }

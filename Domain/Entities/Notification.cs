@@ -14,8 +14,5 @@
         public string MailType { get; set; }
         public int RetryCount { get; set; }
         public string Channel { get; set; }
-
-
     }
-
 }

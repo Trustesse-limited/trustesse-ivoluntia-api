@@ -5,7 +5,5 @@
         public string NotificationChannelId { get; set; }
         public NotificationChannel NotificationChannel { get; set; }
         public string Settings { get; set; }
-
     }
-
 }

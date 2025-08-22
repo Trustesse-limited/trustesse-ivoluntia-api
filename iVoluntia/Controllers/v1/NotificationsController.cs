@@ -32,11 +32,5 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 
             return Ok(response);
         }
-
-
-
-
-
-
     }
 }

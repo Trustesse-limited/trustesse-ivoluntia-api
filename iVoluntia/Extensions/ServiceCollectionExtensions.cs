@@ -14,7 +14,6 @@ namespace Trustesse.Ivoluntia.API.Extensions
         {
             services.AddScoped<INotificationService, NotificationService>();
 
-
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo
@@ -51,10 +50,8 @@ namespace Trustesse.Ivoluntia.API.Extensions
                 });
             });
 
-
             return services;
         }
-
         public static IServiceCollection AddCustomCors(this IServiceCollection services, IConfiguration config)
         {
             services.AddCors(options =>
@@ -76,7 +73,6 @@ namespace Trustesse.Ivoluntia.API.Extensions
 
             return services;
         }
-
         public static IServiceCollection AddCustomDatabase(this IServiceCollection services, IConfiguration config)
         {
             services.AddDbContext<iVoluntiaDataContext>(options =>
@@ -89,7 +85,6 @@ namespace Trustesse.Ivoluntia.API.Extensions
 
             return services;
         }
-
         public static IServiceCollection AddCustomIdentity(this IServiceCollection services)
         {
             services.AddIdentity<User, Role>()

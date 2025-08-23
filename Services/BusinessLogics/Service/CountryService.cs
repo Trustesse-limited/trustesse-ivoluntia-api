@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Trustesse.Ivoluntia.Commons.DTOs;
@@ -40,7 +41,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             }
         }
 
-        public async Task<Country> GetCountryById(Guid countryId)
+        public async Task<Country> GetCountryById(string countryId)
         {
             Country country = null;
             try
@@ -51,7 +52,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             catch (Exception ex)
             {
 
-                throw;
+              
             }
             return country;
         }
@@ -118,6 +119,57 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
            
             }
             return result;
+        }
+        
+        public async Task<State> GetStateByIdAsync(string stateId)
+        {
+            State result = null;
+            try
+            {
+                result = await _uow.stateRepo.GetByIdAsync(stateId);
+            }
+            catch (Exception ex)
+            {
+               
+            }
+            return result;
+        }
+
+        public async Task<CustomResponse> GetStatesByCountryIdAsync(string countryId)
+        {
+            CustomResponse result = null;
+            IEnumerable<State> states = null;
+            var stateResponse = new List<GetStateResponse>();
+            try
+            {
+                states = await _uow.stateRepo.GetStateByCountryId(countryId);
+                if (states is not null)
+                {
+                    foreach (var state in states)
+                    {
+                        stateResponse.Add(new GetStateResponse
+                        {
+                            StateId = state.Id,
+                            StateName = state.StateName,
+                            CountryId = state.Country.Id,
+                            CountryName = state.Country.CountryName
+                        });
+                    }
+
+                    return new CustomResponse (200, "States fetched successfully.", stateResponse.OrderBy(x => x.StateName) );
+                }
+                else
+                {
+                    return new CustomResponse ((int)HttpStatusCode.BadRequest,  $"No states found for Id={countryId}", stateResponse );
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return new CustomResponse((int)HttpStatusCode.InternalServerError, "Internal Server Error!", stateResponse );
+            }
+
         }
     }
 }

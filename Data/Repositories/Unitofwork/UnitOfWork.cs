@@ -13,12 +13,15 @@ public class UnitOfWork : IUnitOfWork
     
     public ICountryRepository countryRepo { get; set; }
     public IStateRepository stateRepo { get; set; }
+    public IUserRepository userRepo { get; set; }
+    public IOnboardingProgressRepository  onboardingProgressRepo { get; set; }
 
     public UnitOfWork(iVoluntiaDataContext dbContext)
     {
         _dbContext = dbContext;
         countryRepo = new CountryRepository(dbContext);
         stateRepo = new StateRepository(dbContext);
+        userRepo = new UserRepository(dbContext);
     }
     public IGenericRepository<TEntity> repository<TEntity>() where TEntity : class
     {

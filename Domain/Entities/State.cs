@@ -5,10 +5,10 @@ namespace Trustesse.Ivoluntia.Domain.Entities;
 
 public class State
 {
-    public Guid Id { get; set; }
+    public string Id { get; set; } = Guid.NewGuid().ToString();
     [Required, StringLength(100)]
     public string StateName { get; set; }
-    public Guid CountryId { get; set; }
+    public string CountryId { get; set; }
     [ForeignKey("CountryId")]
     public virtual Country Country { get; set; }
 }

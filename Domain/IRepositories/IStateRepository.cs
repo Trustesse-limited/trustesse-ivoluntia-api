@@ -4,5 +4,5 @@ namespace Trustesse.Ivoluntia.Domain.IRepositories;
 
 public interface IStateRepository : IGenericRepository<State>
 {
-    
+    Task<IEnumerable<State>> GetStateByCountryId(string countryId);
 }

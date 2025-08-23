@@ -8,4 +8,6 @@ public interface IUnitOfWork
     Task<int> CompleteAsync();
     ICountryRepository countryRepo { get; }
     IStateRepository stateRepo { get; }
+    IUserRepository userRepo { get; }
+    IOnboardingProgressRepository  onboardingProgressRepo { get; }
 }

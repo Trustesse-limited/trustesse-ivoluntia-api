@@ -16,5 +16,4 @@
         public ICollection<User> Admins { get; set; } = new List<User>();
         public ICollection<Cause> Causes { get; set; } = new List<Cause>();
     }
-
 }

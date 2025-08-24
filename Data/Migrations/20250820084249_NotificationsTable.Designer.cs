@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Trustesse.Ivoluntia.Data.DataContext;
 
@@ -11,9 +12,11 @@ using Trustesse.Ivoluntia.Data.DataContext;
 namespace Trustesse.Ivoluntia.Data.Migrations
 {
     [DbContext(typeof(iVoluntiaDataContext))]
-    partial class iVoluntiaDataContextModelSnapshot : ModelSnapshot
+    [Migration("20250820084249_NotificationsTable")]
+    partial class NotificationsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -198,7 +201,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Causes", (string)null);
+                    b.ToTable("Causes");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.ContactInfo", b =>
@@ -229,7 +232,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ContactInfos", (string)null);
+                    b.ToTable("ContactInfos");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Foundation", b =>
@@ -282,7 +285,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Foundations", (string)null);
+                    b.ToTable("Foundations");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.FoundationCategory", b =>
@@ -310,7 +313,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FoundationCategories", (string)null);
+                    b.ToTable("FoundationCategories");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Interest", b =>
@@ -340,7 +343,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Interests", (string)null);
+                    b.ToTable("Interests");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Location", b =>
@@ -390,7 +393,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Locations", (string)null);
+                    b.ToTable("Locations");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Notification", b =>
@@ -650,7 +653,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("OnboardingProgress", (string)null);
+                    b.ToTable("OnboardingProgress");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Role", b =>
@@ -721,7 +724,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Skills", (string)null);
+                    b.ToTable("Skills");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.User", b =>

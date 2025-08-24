@@ -29,7 +29,8 @@ namespace Trustesse.Ivoluntia.Data.DataContext
             public DbSet<Country> Countries { get; set; }
             public DbSet<State> States { get; set; }
             public DbSet<Volunteer> Volunteers { get; set; }
-
+            public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
+            
             protected override void OnModelCreating(ModelBuilder modelBuilder)
             {
                   base.OnModelCreating(modelBuilder);
@@ -116,6 +117,19 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                         .HasMaxLength(500);
                   });
 
+                  modelBuilder.Entity<Notification>(entity =>
+                  {
+                        entity.HasOne(n => n.User)
+                        .WithMany(u => u.Notifications)
+                        .HasForeignKey(n => n.UserId);
+                  });
+
+                  modelBuilder.Entity<NotificationChannelSettings>(entity =>
+                  {
+                        entity.HasOne(s => s.NotificationChannel)
+                        .WithMany(c => c.ChannelSettings)
+                        .HasForeignKey(s => s.NotificationChannelId);
+                  });
 
 
 

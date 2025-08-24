@@ -8,6 +8,8 @@ using Trustesse.Ivoluntia.Commons.Configurations;
 using Trustesse.Ivoluntia.Commons.Contants;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Domain.Entities;
+using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
+using Trustesse.Ivoluntia.Services.BusinessLogics.Service;
 
 namespace Trustesse.Ivoluntia.API.Extensions
 {
@@ -15,6 +17,8 @@ namespace Trustesse.Ivoluntia.API.Extensions
     {
         public static IServiceCollection AddCustomSwagger(this IServiceCollection services)
         {
+            services.AddScoped<INotificationService, NotificationService>();
+
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo
@@ -53,7 +57,6 @@ namespace Trustesse.Ivoluntia.API.Extensions
 
             return services;
         }
-
         public static IServiceCollection AddCustomCors(this IServiceCollection services, IConfiguration config)
         {
             services.AddCors(options =>
@@ -75,7 +78,6 @@ namespace Trustesse.Ivoluntia.API.Extensions
 
             return services;
         }
-
         public static IServiceCollection AddCustomDatabase(this IServiceCollection services, IConfiguration config)
         {
             services.AddDbContext<iVoluntiaDataContext>(options =>

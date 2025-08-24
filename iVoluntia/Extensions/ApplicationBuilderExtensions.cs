@@ -15,7 +15,6 @@ namespace Trustesse.Ivoluntia.API.Extensions
             await RoleSeeder.SeedRolesAsync(roleManager);
             await RoleSeeder.SeedSuperAdminUserAsync(userManager, roleManager);
         }
-
         public static void ConfigureHsts(this WebApplicationBuilder builder)
         {
             builder.Services.AddHsts(options =>

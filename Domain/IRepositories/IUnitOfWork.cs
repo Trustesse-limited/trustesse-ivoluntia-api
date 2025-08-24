@@ -1,6 +1,4 @@
-using Trustesse.Ivoluntia.Domain.IRepositories;
-
-namespace Trustesse.Ivoluntia.Data.Repositories;
+namespace Trustesse.Ivoluntia.Domain.IRepositories;
 
 public interface IUnitOfWork
 {

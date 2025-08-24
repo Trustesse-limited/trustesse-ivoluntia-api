@@ -20,6 +20,7 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public bool IsDeprecated { get; set; }
         public string? FoundationId { get; set; }
         public virtual Foundation? Foundation { get; set; }
+        public virtual OnboardingProgress OnboardingProgress { get; set; }
         public ICollection<Skill?> Skills { get; set; } = new List<Skill>();
         public ICollection<Interest?> Interests { get; set; } = new List<Interest>();
     }

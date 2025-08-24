@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.Models.Request;
 using Trustesse.Ivoluntia.Commons.Models.Response;
-using Trustesse.Ivoluntia.Data.Repositories;
 using Trustesse.Ivoluntia.Domain.Entities;
+using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
@@ -26,7 +26,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             try
             {
                 var countryExist = await _uow.countryRepo.GetByExpressionAsync(x => x.CountryName.ToLower() == country.CountryName.ToLower());
-                if(countryExist == null)
+                if (countryExist == null)
                 {
                     _uow.countryRepo.Add(country);
                     await _uow.CompleteAsync();
@@ -36,7 +36,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             catch (Exception ex)
             {
 
-               
+
             }
         }
 
@@ -66,7 +66,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             catch (Exception ex)
             {
 
-                
+
             }
             return countries;
         }
@@ -115,7 +115,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             catch (Exception ex)
             {
 
-           
+
             }
             return result;
         }

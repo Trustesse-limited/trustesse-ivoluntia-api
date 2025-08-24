@@ -1,6 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Trustesse.Ivoluntia.Commons.Configurations;
+using Trustesse.Ivoluntia.Commons.Contants;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Domain.Entities;
 
@@ -84,11 +89,61 @@ namespace Trustesse.Ivoluntia.API.Extensions
             return services;
         }
 
-        public static IServiceCollection AddCustomIdentity(this IServiceCollection services)
+        public static IServiceCollection AddCustomIdentity(this IServiceCollection services, IConfiguration configuration)
         {
+            var identityConfig = new IdentityConfiguration();
+            configuration.GetSection("IdentityOptions").Bind(identityConfig);
             services.AddIdentity<User, Role>()
                     .AddEntityFrameworkStores<iVoluntiaDataContext>()
                     .AddDefaultTokenProviders();
+
+            services.Configure<Microsoft.AspNetCore.Identity.IdentityOptions>(options =>
+             {
+                 // Lockout settings
+                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(identityConfig.Lockout.DefaultLockoutTimeSpanMinutes);
+                 options.Lockout.MaxFailedAccessAttempts = identityConfig.Lockout.MaxFailedAccessAttempts;
+                 options.Lockout.AllowedForNewUsers = identityConfig.Lockout.AllowedForNewUsers;
+
+                 // Password settings
+                 options.Password.RequireDigit = identityConfig.Password.RequireDigit;
+                 options.Password.RequiredLength = identityConfig.Password.RequiredLength;
+                 options.Password.RequireNonAlphanumeric = identityConfig.Password.RequireNonAlphanumeric;
+                 options.Password.RequireUppercase = identityConfig.Password.RequireUppercase;
+                 options.Password.RequireLowercase = identityConfig.Password.RequireLowercase;
+
+                 // Sign-in settings
+                 options.SignIn.RequireConfirmedEmail = identityConfig.SignIn.RequireConfirmedEmail;
+                 options.SignIn.RequireConfirmedPhoneNumber = identityConfig.SignIn.RequireConfirmedPhoneNumber;
+
+                 // User settings
+                 options.User.RequireUniqueEmail = identityConfig.User.RequireUniqueEmail;
+             });
+
+            return services;
+        }
+
+        public static IServiceCollection RegisterJwtServices(this IServiceCollection services, IConfiguration configuration)
+        {
+            var jwtOptions = configuration.GetSection(nameof(JwtOptions));
+            services.Configure<JwtOptions>(jwtOptions);
+            var jwtIssuer = jwtOptions[nameof(JwtOptions.Issuer)];
+            var jwtAudience = jwtOptions[nameof(JwtOptions.Audience)];
+            var jwtSecretKey = jwtOptions[nameof(JwtOptions.Key)];
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = jwtIssuer,
+                        ValidAudience = jwtAudience,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey))
+                    };
+                });
 
             return services;
         }

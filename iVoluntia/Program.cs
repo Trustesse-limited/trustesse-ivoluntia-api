@@ -10,7 +10,8 @@ builder.Services.AddCustomSwagger();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCustomCors(builder.Configuration);
 builder.Services.AddCustomDatabase(builder.Configuration);
-builder.Services.AddCustomIdentity();
+builder.Services.AddCustomIdentity(builder.Configuration);
+builder.Services.RegisterJwtServices(builder.Configuration);
 builder.Services.AddScoped<NetworkFilter>();
 builder.ConfigureHsts();
 

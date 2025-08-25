@@ -19,5 +19,4 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         [ForeignKey("StateId")]
         public virtual State State { get; set; }
     }
-
 }

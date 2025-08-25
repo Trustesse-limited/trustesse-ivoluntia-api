@@ -26,6 +26,13 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<FoundationCategory> FoundationCategories { get; set; }
         public DbSet<Cause> Causes { get; set; }
         public DbSet<ContactInfo> ContactInfos { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<NotificationChannel> NotificationChannels { get; set; }
+        public DbSet<NotificationChannelSettings> NotificationChannelSettings { get; set; }
+        public DbSet<NotificationPriority> NotificationPriorities { get; set; }
+        public DbSet<NotificationTemplate> NotificationTemplates { get; set; }
+        public DbSet<NotificationType> NotificationTypes { get; set; }
+        public DbSet<NotificationTypePriority> NotificationTypePriorities { get; set; }
         public DbSet<Country> Countries { get; set; }
         public DbSet<State> States { get; set; }
         public DbSet<Volunteer> Volunteers { get; set; }
@@ -54,6 +61,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                 entity.HasMany(u => u.Interests)
                       .WithMany(i => i.Users)
                       .UsingEntity(j => j.ToTable("UserInterests"));
+
 
                 entity.Property(u => u.FirstName)
                       .HasMaxLength(50);
@@ -115,6 +123,24 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                 entity.Property(u => u.Address)
                       .HasMaxLength(500);
             });
+
+            modelBuilder.Entity<Notification>(entity =>
+            {
+                entity.HasOne(n => n.User)
+                      .WithMany(u => u.Notifications)
+                      .HasForeignKey(n => n.UserId);
+            });
+
+            modelBuilder.Entity<NotificationChannelSettings>(entity =>
+            {
+                entity.HasOne(s => s.NotificationChannel)
+                      .WithMany(c => c.ChannelSettings)
+                      .HasForeignKey(s => s.NotificationChannelId);
+            });
+
+
+
+
 
 
 

@@ -14,13 +14,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Abstractions\" />
+    <ProjectReference Include="..\Commons\Trustesse.Ivoluntia.Commons.csproj" />
+    <ProjectReference Include="..\Data\Trustesse.Ivoluntia.Data.csproj" />
+    <ProjectReference Include="..\Domain\Trustesse.Ivoluntia.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Commons\Trustesse.Ivoluntia.Commons.csproj" />
-    <ProjectReference Include="..\Data\Trustesse.Ivoluntia.Data.csproj" />
-    <ProjectReference Include="..\Domain\Trustesse.Ivoluntia.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Abstractions\" />
   </ItemGroup>
 
 </Project>

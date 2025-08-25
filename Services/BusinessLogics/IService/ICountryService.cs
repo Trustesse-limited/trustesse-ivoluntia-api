@@ -11,9 +11,11 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService
 {
     public interface ICountryService
     {
-        Task AddCountry(Country country);
+        Task<CustomResponse> AddCountry(Country country);
         Task<Country> GetCountryById(string countryId);
         Task<IReadOnlyList<Country>> GetCountries();
         Task<CustomResponse> CreateStateAsync(CreateStateModel model);
+        Task<State> GetStateByIdAsync(string stateId);
+        Task<CustomResponse> GetStatesByCountryIdAsync(string countryId);
     }
 }

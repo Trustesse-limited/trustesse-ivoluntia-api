@@ -10,4 +10,5 @@ public interface IUnitOfWork
     IStateRepository stateRepo { get; }
     IUserRepository userRepo { get; }
     IOnboardingProgressRepository  onboardingProgressRepo { get; }
+    ILocationRepository locationRepo { get; }
 }

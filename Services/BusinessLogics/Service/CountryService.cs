@@ -22,8 +22,9 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             _uow = uow;
         }
 
-        public async Task AddCountry(Country country)
+        public async Task<CustomResponse> AddCountry(Country country)
         {
+            CustomResponse response = null;
             try
             {
                 var countryExist = await _uow.countryRepo.GetByExpressionAsync(x => x.CountryName.ToLower() == country.CountryName.ToLower());
@@ -32,6 +33,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                     _uow.countryRepo.Add(country);
                     await _uow.CompleteAsync();
                 }
+                response = new CustomResponse(200, "Country added successfully");
 
             }
             catch (Exception ex)
@@ -39,6 +41,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 
                
             }
+            return response;
         }
 
         public async Task<Country> GetCountryById(string countryId)

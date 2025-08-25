@@ -4,7 +4,7 @@ using Trustesse.Ivoluntia.Commons.Models.Response;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
-public interface IVolunteerService
+public interface IAuthService
 {
-    Task<CustomResponse> CreateVolunteer(AuthInfo model);
+    Task<CustomResponse> CreateVolunteer(VolunteerSignUpDto model);
 }

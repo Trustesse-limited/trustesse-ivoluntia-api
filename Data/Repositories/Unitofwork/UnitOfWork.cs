@@ -15,6 +15,7 @@ public class UnitOfWork : IUnitOfWork
     public IStateRepository stateRepo { get; set; }
     public IUserRepository userRepo { get; set; }
     public IOnboardingProgressRepository  onboardingProgressRepo { get; set; }
+    public ILocationRepository locationRepo { get; set; }
 
     public UnitOfWork(iVoluntiaDataContext dbContext)
     {
@@ -22,6 +23,7 @@ public class UnitOfWork : IUnitOfWork
         countryRepo = new CountryRepository(dbContext);
         stateRepo = new StateRepository(dbContext);
         userRepo = new UserRepository(dbContext);
+        locationRepo = new LocationRepository(dbContext);
     }
     public IGenericRepository<TEntity> repository<TEntity>() where TEntity : class
     {

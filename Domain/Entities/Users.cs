@@ -11,6 +11,7 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public string? Bio { get; set; }
         public DateTime? LastLogin { get; set; }
         public byte? Gender { get; set; }
+        public DateTime? DateOfBirth { get; set; }
         public bool IsActive { get; set; }
         public bool HasAgreedToTermsAndCondition { get; set; }
         public bool HasChangedDefaultPassword { get; set; }

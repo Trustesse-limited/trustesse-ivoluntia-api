@@ -30,7 +30,13 @@ namespace Trustesse.Ivoluntia.Data.DataContext
             public DbSet<State> States { get; set; }
             public DbSet<Volunteer> Volunteers { get; set; }
             public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
-            
+            public DbSet<Notification> Notifications { get; set; }
+            public DbSet<NotificationChannel> NotificationChannels { get; set; }
+            public DbSet<NotificationChannelSettings> NotificationChannelSettings { get; set; }
+            public DbSet<NotificationTemplate> NotificationTemplates { get; set; }
+            public DbSet<NotificationPriority> NotificationPriorities { get; set; }
+            public DbSet<NotificationType> NotificationTypes { get; set; }
+
             protected override void OnModelCreating(ModelBuilder modelBuilder)
             {
                   base.OnModelCreating(modelBuilder);

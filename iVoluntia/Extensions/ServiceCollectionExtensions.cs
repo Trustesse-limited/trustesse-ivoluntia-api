@@ -7,9 +7,13 @@ using Microsoft.OpenApi.Models;
 using Trustesse.Ivoluntia.Commons.Configurations;
 using Trustesse.Ivoluntia.Commons.Contants;
 using Trustesse.Ivoluntia.Data.DataContext;
+using Trustesse.Ivoluntia.Data.Repositories;
 using Trustesse.Ivoluntia.Domain.Entities;
+using Trustesse.Ivoluntia.Domain.IRepositories;
+using Trustesse.Ivoluntia.Services.Abstractions;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Service;
+using Trustesse.Ivoluntia.Services.Implementation;
 
 namespace Trustesse.Ivoluntia.API.Extensions
 {
@@ -149,5 +153,14 @@ namespace Trustesse.Ivoluntia.API.Extensions
 
             return services;
         }
+
+        public static IServiceCollection AddCustomServices(this IServiceCollection services)
+        {
+            services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+            return services;
+        }
+
     }
 }

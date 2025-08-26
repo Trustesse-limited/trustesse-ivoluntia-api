@@ -13,6 +13,7 @@ builder.Services.AddCustomDatabase(builder.Configuration);
 builder.Services.AddCustomIdentity(builder.Configuration);
 builder.Services.RegisterJwtServices(builder.Configuration);
 builder.Services.AddScoped<NetworkFilter>();
+builder.Services.AddCustomServices();
 builder.ConfigureHsts();
 
 var app = builder.Build();

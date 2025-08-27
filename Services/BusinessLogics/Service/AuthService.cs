@@ -9,6 +9,7 @@ using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 using Location = Trustesse.Ivoluntia.Commons.DTOs.LocationDto;
+using Skill = Trustesse.Ivoluntia.Commons.DTOs.Skill;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service;
 
@@ -58,8 +59,8 @@ public class AuthService : IAuthService
                     {
                         response = new CustomResponse(500, "Unable to update user account with OTP details.");
                     }
-                    // response = new CustomResponse((int)HttpStatusCode.OK, "Volunteer account creation successful and OTP sent to your mail", null);
-                    await UpdateOnBoardingProgress(model.MetaData.UserId, 1, false);
+                    // emailServices
+                    await UpdateOnBoardingProgress(volunteer.Id, 1, false);
                 }
             }
             else if(model.MetaData.AccountType.ToLower() == AccountType.Volunteer.ToString().ToLower() &&
@@ -71,7 +72,7 @@ public class AuthService : IAuthService
                volunteer.DateOfBirth = model.BioData.DateOfBirth;
                var bioUpdate = await _userManager.UpdateAsync(volunteer);
                if (bioUpdate.Succeeded)
-                   await UpdateOnBoardingProgress(model.MetaData.UserId, 2, false);
+                   await UpdateOnBoardingProgress(volunteer.Id, 2, false);
             }
             else if (model.MetaData.AccountType.ToLower() == AccountType.Volunteer.ToString().ToLower() &&
                      model.MetaData.CurrentPage == (int)OnBoardingPages.Location)
@@ -94,13 +95,103 @@ public class AuthService : IAuthService
                 var rowchange = await _uow.CompleteAsync();
                 if (rowchange > 0)
                 {
-                    UpdateOnBoardingProgress(model.MetaData.UserId, 3, false);
+                    UpdateOnBoardingProgress(volunteer.Id, 3, false);
                 }
             }
             else if (model.MetaData.AccountType.ToLower() == AccountType.Volunteer.ToString().ToLower() &&
                      model.MetaData.CurrentPage == (int)OnBoardingPages.Interest)
             {
-                if(model.Interest.)
+                if (model.Interest.Names.Any())
+                {
+                    foreach (var name in model.Interest.Names)
+                    {
+                        var interestExist  = await _uow.interestRepo.GetByExpressionAsync(x => x.Name.ToLower() == name.ToLower());
+                        if (interestExist == null)
+                        {
+                            var createInterest = new Interest()
+                            {
+                                Name = name
+                            };
+                            await _uow.interestRepo.AddAsync(createInterest);
+                            if (await _uow.CompleteAsync() > 0)
+                            {
+                                var saveUserInterest = new UserInterestLink()
+                                {
+                                    UserId = volunteer.Id,
+                                    InterestId = createInterest.Id
+                                };
+                                await _uow.userInterestLinkRepo.AddAsync(saveUserInterest);
+                                await _uow.CompleteAsync();
+                            }
+                        }
+                        else
+                        {
+                            var saveUserInterest = new UserInterestLink()
+                            {
+                                UserId = volunteer.Id,
+                                InterestId = interestExist.Id
+                            };
+                            await _uow.userInterestLinkRepo.AddAsync(saveUserInterest);
+                            await _uow.CompleteAsync();
+                        }
+                    }
+                }
+                UpdateOnBoardingProgress(volunteer.Id, 4, false);
+            }
+            
+            else if (model.MetaData.AccountType.ToLower() == AccountType.Volunteer.ToString().ToLower() &&
+                     model.MetaData.CurrentPage == (int)OnBoardingPages.Skill)
+            {
+                if (model.Skill.Names.Any())
+                {
+                    foreach (var name in model.Skill.Names)
+                    {
+                        var skillExist  = await _uow.skillRepo.GetByExpressionAsync(x => x.Name.ToLower() == name.ToLower());
+                        if (skillExist == null)
+                        {
+                            var createSkill = new Trustesse.Ivoluntia.Domain.Entities.Skill()
+                            {
+                                Name = name
+                            };
+                            await _uow.skillRepo.AddAsync(createSkill);
+                            if (await _uow.CompleteAsync() > 0)
+                            {
+                                var saveUserSkill = new UserSkillLink()
+                                {
+                                    UserId = volunteer.Id,
+                                    SkillId = createSkill.Id
+                                };
+                                await _uow.userSkillLinkRepo.AddAsync(saveUserSkill);
+                                await _uow.CompleteAsync();
+                            }
+                        }
+                        else
+                        {
+                            var saveUserInterest = new UserInterestLink()
+                            {
+                                UserId = volunteer.Id,
+                                InterestId = skillExist.Id
+                            };
+                            await _uow.userInterestLinkRepo.AddAsync(saveUserInterest);
+                            await _uow.CompleteAsync();
+                        }
+                    }
+                }
+                UpdateOnBoardingProgress(volunteer.Id, 5, false);
+            }
+            
+            else if (model.MetaData.AccountType.ToLower() == AccountType.Volunteer.ToString().ToLower() &&
+                     model.MetaData.CurrentPage == (int)OnBoardingPages.ProfileImageAndBio)
+            {
+                volunteer.UserImage = model.ProfileAndBioData.ProfileImageurl;
+                volunteer.Bio = model.ProfileAndBioData.Bio;
+                var profile = await _userManager.UpdateAsync(volunteer);
+                if (profile.Succeeded)
+                {
+                    UpdateOnBoardingProgress(volunteer.Id, 6, true);
+                }
+
+
             }
                 
         }

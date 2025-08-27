@@ -16,7 +16,6 @@ public class VolunteerSignUpDto
 
 public class OnboardingMetaData
 {
-    public string UserId { get; set; }
     public string  AccountType { get; set; }
     public int CurrentPage { get; set; }
 }
@@ -51,26 +50,26 @@ public class LocationDto
 
 public class InterestDto
 {
-    public List<string> InterestId { get; set; }
+    public List<string> Names { get; set; }
 
     public InterestDto()
     {
-        InterestId = new List<string>();
+        Names = new List<string>();
     }
 }
 
 public class Skill
 {
-    public List<string> SkillId { get; set; }
+    public List<string> Names { get; set; }
 
     public Skill()
     {
-        SkillId = new List<string>();
+        Names = new List<string>();
     }
 }
 
 public class ProfileImageAndBioData
 {
     public string Bio { get; set; }
-    public IFormFile ProfileImage { get; set; }
+    public string ProfileImageurl { get; set; }
 }

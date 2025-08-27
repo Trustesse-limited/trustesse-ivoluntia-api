@@ -16,6 +16,10 @@ public class UnitOfWork : IUnitOfWork
     public IUserRepository userRepo { get; set; }
     public IOnboardingProgressRepository  onboardingProgressRepo { get; set; }
     public ILocationRepository locationRepo { get; set; }
+    public IUserInterestLinkRepository userInterestLinkRepo { get; set; }
+    public IUserSkillLinkRepository userSkillLinkRepo { get; set; }
+    public IInterestRepository  interestRepo { get; set; }
+    public ISkillRepository  skillRepo { get; set; }
 
     public UnitOfWork(iVoluntiaDataContext dbContext)
     {
@@ -24,6 +28,10 @@ public class UnitOfWork : IUnitOfWork
         stateRepo = new StateRepository(dbContext);
         userRepo = new UserRepository(dbContext);
         locationRepo = new LocationRepository(dbContext);
+        userInterestLinkRepo = new UserInterestLinkRepository(dbContext);
+        userSkillLinkRepo = new UserSkillLinkRepository(dbContext);
+        interestRepo = new InterestRepository(dbContext);
+        skillRepo = new SkillRepository(dbContext);
     }
     public IGenericRepository<TEntity> repository<TEntity>() where TEntity : class
     {

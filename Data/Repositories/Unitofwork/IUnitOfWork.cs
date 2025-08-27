@@ -11,4 +11,8 @@ public interface IUnitOfWork
     IUserRepository userRepo { get; }
     IOnboardingProgressRepository  onboardingProgressRepo { get; }
     ILocationRepository locationRepo { get; }
+    IUserInterestLinkRepository userInterestLinkRepo { get; }
+    IUserSkillLinkRepository userSkillLinkRepo { get; }
+    IInterestRepository interestRepo { get; }
+    ISkillRepository skillRepo { get; }
 }

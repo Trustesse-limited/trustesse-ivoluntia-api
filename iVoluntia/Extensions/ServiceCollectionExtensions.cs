@@ -92,6 +92,11 @@ namespace Trustesse.Ivoluntia.API.Extensions
                 )
             );
 
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped(typeof(IRepositoryBase<>), typeof(RepositoryBase<>));
+            services.AddScoped<IUserRepository, UserRepository>();
+
             return services;
         }
 

@@ -6,5 +6,5 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
 public interface IAuthService
 {
-    Task<CustomResponse> CreateVolunteer(VolunteerSignUpDto model);
+    Task<ApiResponse<string>> CreateVolunteer(VolunteerSignUpDto model);
 }

@@ -8,5 +8,4 @@ public enum OnBoardingPages
     Interest,
     Skill,
     ProfileImageAndBio
-    
 }

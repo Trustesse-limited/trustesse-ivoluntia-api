@@ -16,7 +16,7 @@ public class CountryController : ControllerBase
         _countryService = countryService;
     }
     
-    [HttpPost("CreateCountry")]
+    [HttpPost("country")]
     public async Task<IActionResult> CreateCountry([FromBody] Country request)
     {
         if (request == null)
@@ -24,7 +24,7 @@ public class CountryController : ControllerBase
 
         var result = await _countryService.AddCountry(request);
 
-        if (result.ResponseCode != 200)
+        if (result.StatusCode != 200)
         {
             return BadRequest(new { ResponseCode = 500, ResponseMessage = "Internal server error." });
         }
@@ -32,7 +32,7 @@ public class CountryController : ControllerBase
         return Ok(result);
     }
     
-    [HttpPost("CreateState")]
+    [HttpPost("state")]
     public async Task<IActionResult> CreateState([FromBody] CreateStateModel request)
     {
         if (request == null)
@@ -40,7 +40,7 @@ public class CountryController : ControllerBase
 
         var result = await _countryService.CreateStateAsync(request);
 
-        if (result.ResponseCode != 200)
+        if (result.StatusCode != 200)
         {
             return BadRequest(new { ResponseCode = 500, ResponseMessage = "Internal server error." });
         }
@@ -48,7 +48,7 @@ public class CountryController : ControllerBase
         return Ok(result);
     }
     
-     [HttpGet("GetCountry")]
+     [HttpGet("country")]
         public async Task<IActionResult> GetCountry(string countryId)
         {
             var result = await _countryService.GetCountryById(countryId);
@@ -64,7 +64,7 @@ public class CountryController : ControllerBase
 
         }
 
-        [HttpGet("GetCountries")]
+        [HttpGet("countries")]
         public async Task<IActionResult> GetCountries()
         {
             var result = await _countryService.GetCountries();
@@ -79,28 +79,25 @@ public class CountryController : ControllerBase
             }
 
         }
-        [HttpGet("GetState")]
+        [HttpGet("state")]
         public async Task<IActionResult> GetState(string stateId)
         {
             var result = await _countryService.GetStateByIdAsync(stateId);
             if (result is null)
             {
-
-                //return BadRequest(new { ResponseCode = (int)HttpStatusCode.BadRequest, ResponseMessage = "record not found" });
                 return BadRequest(result);
             }
             else
             {
-               // return Ok(new { ResponseCode = (int)HttpStatusCode.OK, ResponseMessage ="data returned successfully", Data = result });
                 return Ok(result);
             }
 
         }
-        [HttpGet("GetStates")]
+        [HttpGet("states")]
         public async Task<IActionResult> GetStates(string countryId)
         {
             var result = await _countryService.GetStatesByCountryIdAsync(countryId);
-            if (result.ResponseCode != 200)
+            if (result.StatusCode != 200)
             {
                 return BadRequest(new { ResponseCode = 500, ResponseMessage = "Internal server error." });
             }

@@ -103,7 +103,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 
             var result = await _authService.CreateVolunteer(request);
 
-            if (result.ResponseCode != 200)
+            if (result.StatusCode != 200)
             {
                 return BadRequest(new { ResponseCode = 500, ResponseMessage = "Internal server error." });
             }

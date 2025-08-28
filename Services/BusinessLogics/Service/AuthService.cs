@@ -9,7 +9,7 @@ using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 using Location = Trustesse.Ivoluntia.Commons.DTOs.LocationDto;
-using Skill = Trustesse.Ivoluntia.Commons.DTOs.Skill;
+using Skill = Trustesse.Ivoluntia.Commons.DTOs.SkillDto;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service;
 
@@ -24,28 +24,23 @@ public class AuthService : IAuthService
             _mapper = mapper;   
             _userManager = userManager; 
     }
-
-    public async Task<CustomResponse> CreateVolunteer(VolunteerSignUpDto model)
+    public async Task<ApiResponse<string>> CreateVolunteer(VolunteerSignUpDto model)
     {
-        CustomResponse response = null;
-        User volunteer = null;
-        try
-        {
+            User volunteer = null;
             //Check if the Volunteer already exist
             var VolunteerExists = await _uow.userRepo.GetByExpressionAsync(x => 
                 x.Email == model.AuthInfo.Email);
             if (VolunteerExists != null)
-                return new CustomResponse((int)HttpStatusCode.Conflict, $"Volunteer with Email -> {model.AuthInfo.Email}  already exist.", null);
+                return  ApiResponse<string>.Failure(409, $"Volunteer with Email -> {model.AuthInfo.Email}  already exist.");
             if (model.MetaData.AccountType.ToLower() == AccountType.Volunteer.ToString().ToLower() &&
                 model.MetaData.CurrentPage == (int)OnBoardingPages.AuthInfoPage)
             {
                 volunteer = _mapper.Map<User>(model);
                 volunteer.UserName = model.AuthInfo.Email;
-                volunteer.Email = !string.IsNullOrWhiteSpace(model.AuthInfo.Email.Trim()) ? model.AuthInfo.Email.Trim() : default;
+                volunteer.Email = model.AuthInfo.Email.Trim();
                 volunteer.DateCreated = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
                 volunteer.IsActive = false;
                 volunteer.HasAgreedToTermsAndCondition = model.AuthInfo.HasAcceptedTOC;
-                
                 var result = await _userManager.CreateAsync(volunteer, model.AuthInfo.Password.Trim());
                 if (result.Succeeded)
                 {
@@ -54,10 +49,9 @@ public class AuthService : IAuthService
                     volunteer.OtpSubmittedTime = Convert.ToDateTime(DateTime.Now.ToShortTimeString());
                     volunteer.Id = volunteer.Id;
                     result = await _userManager.UpdateAsync(volunteer).ConfigureAwait(false);
-
                     if (!result.Succeeded)
                     {
-                        response = new CustomResponse(500, "Unable to update user account with OTP details.");
+                        return ApiResponse<string>.Failure(500, "Unable to update user account with OTP details.");
                     }
                     // emailServices
                     await UpdateOnBoardingProgress(volunteer.Id, 1, false);
@@ -66,147 +60,186 @@ public class AuthService : IAuthService
             else if(model.MetaData.AccountType.ToLower() == AccountType.Volunteer.ToString().ToLower() &&
                     model.MetaData.CurrentPage == (int)OnBoardingPages.BioDataPage)
             {
-               volunteer.FirstName = model.BioData.FirstName;
-               volunteer.LastName = model.BioData.LastName;
-               volunteer.Gender = model.BioData.Gender;
-               volunteer.DateOfBirth = model.BioData.DateOfBirth;
-               var bioUpdate = await _userManager.UpdateAsync(volunteer);
-               if (bioUpdate.Succeeded)
-                   await UpdateOnBoardingProgress(volunteer.Id, 2, false);
+                await UpdateBioData(model.BioData);
             }
             else if (model.MetaData.AccountType.ToLower() == AccountType.Volunteer.ToString().ToLower() &&
                      model.MetaData.CurrentPage == (int)OnBoardingPages.Location)
             {
-                var country = await _uow.countryRepo.GetByIdAsync(model.LocationDto.CountryId);
-                if (country == null)
-                    return new CustomResponse((int)HttpStatusCode.NotFound, $"Country doesn't exist.", null);
-                var state = await _uow.stateRepo.GetByIdAsync(model.LocationDto.StateId);
-                if (state == null)
-                    return new CustomResponse((int)HttpStatusCode.NotFound, $"State doesn't exist.", null);
-                var location = new Trustesse.Ivoluntia.Domain.Entities.Location
-                {
-                    CountryId = model.LocationDto.CountryId,
-                    StateId = model.LocationDto.StateId,
-                    City = model.LocationDto.City,
-                    Zipcode = model.LocationDto.ZipCode,
-                    Address = model.LocationDto.Address,
-                };
-                await _uow.locationRepo.AddAsync(location);
-                var rowchange = await _uow.CompleteAsync();
-                if (rowchange > 0)
-                {
-                    UpdateOnBoardingProgress(volunteer.Id, 3, false);
-                }
+            await UpdateLocation(model.LocationDto);
             }
             else if (model.MetaData.AccountType.ToLower() == AccountType.Volunteer.ToString().ToLower() &&
                      model.MetaData.CurrentPage == (int)OnBoardingPages.Interest)
             {
-                if (model.Interest.Names.Any())
-                {
-                    foreach (var name in model.Interest.Names)
-                    {
-                        var interestExist  = await _uow.interestRepo.GetByExpressionAsync(x => x.Name.ToLower() == name.ToLower());
-                        if (interestExist == null)
-                        {
-                            var createInterest = new Interest()
-                            {
-                                Name = name
-                            };
-                            await _uow.interestRepo.AddAsync(createInterest);
-                            if (await _uow.CompleteAsync() > 0)
-                            {
-                                var saveUserInterest = new UserInterestLink()
-                                {
-                                    UserId = volunteer.Id,
-                                    InterestId = createInterest.Id
-                                };
-                                await _uow.userInterestLinkRepo.AddAsync(saveUserInterest);
-                                await _uow.CompleteAsync();
-                            }
-                        }
-                        else
-                        {
-                            var saveUserInterest = new UserInterestLink()
-                            {
-                                UserId = volunteer.Id,
-                                InterestId = interestExist.Id
-                            };
-                            await _uow.userInterestLinkRepo.AddAsync(saveUserInterest);
-                            await _uow.CompleteAsync();
-                        }
-                    }
-                }
-                UpdateOnBoardingProgress(volunteer.Id, 4, false);
+                await UpdateUserInterest(model.Interest);
             }
             
             else if (model.MetaData.AccountType.ToLower() == AccountType.Volunteer.ToString().ToLower() &&
                      model.MetaData.CurrentPage == (int)OnBoardingPages.Skill)
             {
-                if (model.Skill.Names.Any())
-                {
-                    foreach (var name in model.Skill.Names)
-                    {
-                        var skillExist  = await _uow.skillRepo.GetByExpressionAsync(x => x.Name.ToLower() == name.ToLower());
-                        if (skillExist == null)
-                        {
-                            var createSkill = new Trustesse.Ivoluntia.Domain.Entities.Skill()
-                            {
-                                Name = name
-                            };
-                            await _uow.skillRepo.AddAsync(createSkill);
-                            if (await _uow.CompleteAsync() > 0)
-                            {
-                                var saveUserSkill = new UserSkillLink()
-                                {
-                                    UserId = volunteer.Id,
-                                    SkillId = createSkill.Id
-                                };
-                                await _uow.userSkillLinkRepo.AddAsync(saveUserSkill);
-                                await _uow.CompleteAsync();
-                            }
-                        }
-                        else
-                        {
-                            var saveUserInterest = new UserInterestLink()
-                            {
-                                UserId = volunteer.Id,
-                                InterestId = skillExist.Id
-                            };
-                            await _uow.userInterestLinkRepo.AddAsync(saveUserInterest);
-                            await _uow.CompleteAsync();
-                        }
-                    }
-                }
-                UpdateOnBoardingProgress(volunteer.Id, 5, false);
+                await UpdateUserSkill(model.Skill);
             }
             
             else if (model.MetaData.AccountType.ToLower() == AccountType.Volunteer.ToString().ToLower() &&
                      model.MetaData.CurrentPage == (int)OnBoardingPages.ProfileImageAndBio)
             {
-                volunteer.UserImage = model.ProfileAndBioData.ProfileImageurl;
-                volunteer.Bio = model.ProfileAndBioData.Bio;
-                var profile = await _userManager.UpdateAsync(volunteer);
-                if (profile.Succeeded)
-                {
-                    UpdateOnBoardingProgress(volunteer.Id, 6, true);
-                }
-
-
+                await UpdateProfileImageAndBio(model.ProfileAndBioData);
             }
-                
-        }
-        catch (Exception ex)
+            return ApiResponse<string>.Success("Volunteer successfully SignUp.", null);
+    }
+    public async Task<ApiResponse<string>> UpdateBioData(BioData model)
+    {
+        var volunteer = await _uow.userRepo.GetByIdAsync(model.UserId);
+        if (volunteer != null)
         {
-          
+            volunteer.FirstName = model.FirstName;
+            volunteer.LastName = model.LastName;
+            volunteer.Gender = model.Gender;
+            volunteer.DateOfBirth = model.DateOfBirth;
+            var bioUpdate = await _userManager.UpdateAsync(volunteer);
+            if (bioUpdate.Succeeded)
+                await UpdateOnBoardingProgress(volunteer.Id, 2, false);   
         }
-        return response;
+        return ApiResponse<string>.Failure(404, "Volunteer not found.");
+    }
+    public async Task<ApiResponse<string>> UpdateLocation(LocationDto model)
+    {
+        var volunteer = await _uow.userRepo.GetByIdAsync(model.UserId);
+        if (volunteer != null)
+        {
+            var country = await _uow.countryRepo.GetByIdAsync(model.CountryId);
+            if (country == null)
+                return ApiResponse<string>.Failure(404, $"Country doesn't exist.");
+            var state = await _uow.stateRepo.GetByIdAsync(model.StateId);
+            if (state == null)
+                return ApiResponse<string>.Failure(404, $"State doesn't exist.");
+            var location = new Trustesse.Ivoluntia.Domain.Entities.Location
+            {
+                CountryId = model.CountryId,
+                StateId = model.StateId,
+                City = model.City,
+                Zipcode = model.ZipCode,
+                Address = model.Address,
+            };
+            await _uow.locationRepo.AddAsync(location);
+            var rowchange = await _uow.CompleteAsync();
+            if (rowchange > 0)
+            {
+                await UpdateOnBoardingProgress(volunteer.Id, 3, false);
+            }
+        }
+        return ApiResponse<string>.Failure(404, "Volunteer not found.");
+    }
+    
+    public async Task<ApiResponse<string>> UpdateUserInterest(InterestDto model)
+    {
+        var volunteer = await _uow.userRepo.GetByIdAsync(model.UserId);
+        if (volunteer != null)
+        {
+            if (model.Names.Any())
+            {
+                foreach (var name in model.Names)
+                {
+                    var interestExist  = await _uow.interestRepo.GetByExpressionAsync(x => x.Name.ToLower() == name.ToLower());
+                    if (interestExist == null)
+                    {
+                        var createInterest = new Interest()
+                        {
+                            Name = name
+                        };
+                        await _uow.interestRepo.AddAsync(createInterest);
+                        if (await _uow.CompleteAsync() > 0)
+                        {
+                            var saveUserInterest = new UserInterestLink()
+                            {
+                                UserId = volunteer.Id,
+                                InterestId = createInterest.Id
+                            };
+                            await _uow.userInterestLinkRepo.AddAsync(saveUserInterest);
+                            await _uow.CompleteAsync();
+                        }
+                    }
+                    else
+                    {
+                        var saveUserInterest = new UserInterestLink()
+                        {
+                            UserId = volunteer.Id,
+                            InterestId = interestExist.Id
+                        };
+                        await _uow.userInterestLinkRepo.AddAsync(saveUserInterest);
+                        await _uow.CompleteAsync();
+                    }
+                }
+            }
+            await UpdateOnBoardingProgress(volunteer.Id, 4, false);
+        }
+        return ApiResponse<string>.Failure(404, "Volunteer not found.");
+    }
+    
+    public async Task<ApiResponse<string>> UpdateUserSkill(SkillDto model)
+    {
+        var volunteer = await _uow.userRepo.GetByIdAsync(model.UserId);
+        if (volunteer != null)
+        {
+            if (model.Names.Any())
+            {
+                foreach (var name in model.Names)
+                {
+                    var skillExist  = await _uow.skillRepo.GetByExpressionAsync(x => x.Name.ToLower() == name.ToLower());
+                    if (skillExist == null)
+                    {
+                        var createSkill = new Trustesse.Ivoluntia.Domain.Entities.Skill()
+                        {
+                            Name = name
+                        };
+                        await _uow.skillRepo.AddAsync(createSkill);
+                        if (await _uow.CompleteAsync() > 0)
+                        {
+                            var saveUserSkill = new UserSkillLink()
+                            {
+                                UserId = volunteer.Id,
+                                SkillId = createSkill.Id
+                            };
+                            await _uow.userSkillLinkRepo.AddAsync(saveUserSkill);
+                            await _uow.CompleteAsync();
+                        }
+                    }
+                    else
+                    {
+                        var saveUserSkill = new UserSkillLink()
+                        {
+                            UserId = volunteer.Id,
+                            SkillId = skillExist.Id
+                        };
+                        await _uow.userSkillLinkRepo.AddAsync(saveUserSkill);
+                        await _uow.CompleteAsync();
+                    }
+                }
+            }
+            await UpdateOnBoardingProgress(volunteer.Id, 5, false);
+        }
+        return ApiResponse<string>.Failure(404, "Volunteer not found.");
+    }
+    
+    public async Task<ApiResponse<string>> UpdateProfileImageAndBio(ProfileImageAndBio model)
+    {
+        var volunteer = await _uow.userRepo.GetByIdAsync(model.UserId);
+        if (volunteer != null)
+        {
+            volunteer.UserImage = model.ProfileImageurl;
+            volunteer.Bio = model.Bio;
+            var profile = await _userManager.UpdateAsync(volunteer);
+            if (profile.Succeeded)
+            {
+                await UpdateOnBoardingProgress(volunteer.Id, 6, true);
+            }
+        }
+        return ApiResponse<string>.Failure(404, "Volunteer not found.");
     }
 
-    public async Task<CustomResponse> UpdateOnBoardingProgress(string userId, int lastCompletedPage, bool hasCompletedOnboarding)
+    public async Task<ApiResponse<string>> UpdateOnBoardingProgress(string userId, int lastCompletedPage, bool hasCompletedOnboarding)
     {
         CustomResponse response = null;
-        try
-        {
+      
             var updateProgressTable = await _uow.onboardingProgressRepo.GetByIdAsync(userId);
             if (updateProgressTable != null)
             {
@@ -218,18 +251,11 @@ public class AuthService : IAuthService
                 await _uow.onboardingProgressRepo.UpdateAsync(obj);
                 if (await _uow.CompleteAsync() > 0)
                 {
-                    response = new CustomResponse(200, "OnboardingProgress has been updated successfully.");
+                    return ApiResponse<string>.Success("OnboardingProgress has been updated successfully.", null);
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            
-        }
-        return response;
-        
+            return ApiResponse<string>.Success("OnboardingProgress has been updated successfully.", null);
     }
-    
     private string GenerateOTP()
     {
         try

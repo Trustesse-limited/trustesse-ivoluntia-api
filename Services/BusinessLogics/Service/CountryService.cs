@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.Models.Request;
 using Trustesse.Ivoluntia.Commons.Models.Response;
@@ -21,10 +22,8 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
         {
             _uow = uow;
         }
-
-        public async Task<CustomResponse> AddCountry(Country country)
+        public async Task<ApiResponse<string>> AddCountry(Country country)
         {
-            CustomResponse response = null;
             try
             {
                 var countryExist = await _uow.countryRepo.GetByExpressionAsync(x => x.CountryName.ToLower() == country.CountryName.ToLower());
@@ -33,17 +32,15 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                     _uow.countryRepo.Add(country);
                     await _uow.CompleteAsync();
                 }
-                response = new CustomResponse(200, "Country added successfully");
+                return ApiResponse<string>.Success("Country Added successfully.", null);
 
             }
             catch (Exception ex)
             {
-
+                return ApiResponse<string>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
                
             }
-            return response;
         }
-
         public async Task<Country> GetCountryById(string countryId)
         {
             Country country = null;
@@ -59,7 +56,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             }
             return country;
         }
-
         public async Task<IReadOnlyList<Country>> GetCountries()
         {
             IReadOnlyList<Country> countries = new List<Country>();
@@ -69,15 +65,12 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             }
             catch (Exception ex)
             {
-
                 
             }
             return countries;
         }
-
-        public async Task<CustomResponse> CreateStateAsync(CreateStateModel model)
+        public async Task<ApiResponse<string>> CreateStateAsync(CreateStateModel model)
         {
-            CustomResponse result = null;
             try
             {
                 if (model != null)
@@ -89,7 +82,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                             var state = await _uow.stateRepo.GetByExpressionAsync(x => x.StateName.ToLower() == model.StateName.ToLower());
                             if (state != null)
                             {
-                                return new CustomResponse(400, "State already exist");
+                                return ApiResponse<string>.Failure(StatusCodes.Status409Conflict, $"The state with the name {model.StateName} already exists.");
                             }
                             state = new State
                             {
@@ -97,31 +90,24 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                                 StateName = model.StateName
                             };
                             _uow.stateRepo.Add(state);
-                            if (await _uow.CompleteAsync() > 0)
-                            {
-                                result = new CustomResponse(200, "State save successfully");
-                            }
+                            await _uow.CompleteAsync();
                         }
                         else
                         {
-                            result = new CustomResponse(404, $"country with{model.CountryId} deos not exist");
+                            return ApiResponse<string>.Success($"country with{model.CountryId} deos not exist", null);
                         }
                     }
-
-
                 }
                 else
                 {
-                    result = new CustomResponse(400, "Ivalid request object");
+                    return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid request");
                 }
-
             }
             catch (Exception ex)
             {
-
-           
+                return ApiResponse<string>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
             }
-            return result;
+            return ApiResponse<string>.Success("State Save successfully.", null);
         }
         
         public async Task<State> GetStateByIdAsync(string stateId)
@@ -137,10 +123,8 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             }
             return result;
         }
-
-        public async Task<CustomResponse> GetStatesByCountryIdAsync(string countryId)
+        public async Task<ApiResponse<List<GetStateResponse>>> GetStatesByCountryIdAsync(string countryId)
         {
-            CustomResponse result = null;
             IEnumerable<State> states = null;
             var stateResponse = new List<GetStateResponse>();
             try
@@ -148,31 +132,25 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 states = await _uow.stateRepo.GetStateByCountryId(countryId);
                 if (states is not null)
                 {
-                    foreach (var state in states)
+                    stateResponse = states.Select(x => new GetStateResponse
                     {
-                        stateResponse.Add(new GetStateResponse
-                        {
-                            StateId = state.Id,
-                            StateName = state.StateName,
-                            CountryId = state.Country.Id,
-                            CountryName = state.Country.CountryName
-                        });
-                    }
-
-                    return new CustomResponse (200, "States fetched successfully.", stateResponse.OrderBy(x => x.StateName) );
+                        StateId = x.Id,
+                        StateName = x.StateName,
+                        CountryId = x.Country.Id,
+                        CountryName = x.Country.CountryName
+                    }).OrderBy(x => x.StateName).ToList();
+                  
+                    return ApiResponse<List<GetStateResponse>>.Success("State Successfully retreive", stateResponse); 
                 }
                 else
                 {
-                    return new CustomResponse ((int)HttpStatusCode.BadRequest,  $"No states found for Id={countryId}", stateResponse );
-
+                    return ApiResponse<List<GetStateResponse>>.Success("No State Found", stateResponse);
                 }
-
             }
             catch (Exception ex)
             {
-                return new CustomResponse((int)HttpStatusCode.InternalServerError, "Internal Server Error!", stateResponse );
+                return ApiResponse<List<GetStateResponse>>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
             }
-
         }
     }
 }

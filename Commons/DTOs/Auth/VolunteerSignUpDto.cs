@@ -10,8 +10,8 @@ public class VolunteerSignUpDto
    public BioData? BioData { get; set; }
    public LocationDto? LocationDto { get; set; }
    public InterestDto? Interest { get; set; }
-   public Skill? Skill { get; set; }
-   public ProfileImageAndBioData ? ProfileAndBioData { get; set; }
+   public SkillDto? Skill { get; set; }
+   public ProfileImageAndBio? ProfileAndBioData { get; set; }
 }
 
 public class OnboardingMetaData
@@ -33,6 +33,7 @@ public class AuthInfo
 
 public class BioData
 {
+    public string UserId { get; set; }
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public byte Gender { get; set; } 
@@ -41,6 +42,7 @@ public class BioData
 
 public class LocationDto
 {
+    public string UserId { get; set; }
     public string Address { get; set; }
     public string City { get; set; }
     public string ZipCode { get; set; }
@@ -50,6 +52,7 @@ public class LocationDto
 
 public class InterestDto
 {
+    public string UserId { get; set; }
     public List<string> Names { get; set; }
 
     public InterestDto()
@@ -58,18 +61,20 @@ public class InterestDto
     }
 }
 
-public class Skill
+public class SkillDto
 {
+    public string UserId { get; set; }
     public List<string> Names { get; set; }
 
-    public Skill()
+    public SkillDto()
     {
         Names = new List<string>();
     }
 }
 
-public class ProfileImageAndBioData
+public class ProfileImageAndBio
 {
+    public string UserId { get; set; }
     public string Bio { get; set; }
     public string ProfileImageurl { get; set; }
 }

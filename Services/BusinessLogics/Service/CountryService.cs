@@ -22,14 +22,18 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
         {
             _uow = uow;
         }
-        public async Task<ApiResponse<string>> AddCountry(Country country)
+        public async Task<ApiResponse<string>> AddCountry(CreateCountryModel country)
         {
             try
             {
-                var countryExist = await _uow.countryRepo.GetByExpressionAsync(x => x.CountryName.ToLower() == country.CountryName.ToLower());
+                var countryExist = await _uow.countryRepo.GetByExpressionAsync(x => x.CountryName.ToLower() == country.Name.ToLower());
                 if(countryExist == null)
                 {
-                    _uow.countryRepo.Add(country);
+                    var saveCountry = new Country
+                    {
+                        CountryName = country.Name,
+                    };
+                    _uow.countryRepo.Add(saveCountry);
                     await _uow.CompleteAsync();
                 }
                 return ApiResponse<string>.Success("Country Added successfully.", null);
@@ -41,7 +45,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                
             }
         }
-        public async Task<Country> GetCountryById(string countryId)
+        public async Task<Country> GetCountryById(Guid countryId)
         {
             Country country = null;
             try
@@ -56,7 +60,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             }
             return country;
         }
-        public async Task<IReadOnlyList<Country>> GetCountries()
+      /*  public async Task<IReadOnlyList<Country>> GetCountries()
         {
             IReadOnlyList<Country> countries = new List<Country>();
             try
@@ -68,6 +72,33 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 
             }
             return countries;
+        }*/
+        public async Task<ApiResponse<List<GetCountryResponse>>> GetCountries()
+        {
+            IEnumerable<Country> country = null;
+            var countryResponse = new List<GetCountryResponse>();
+            try
+            {
+                country = await _uow.countryRepo.GetAllAsync();
+                if (country is not null)
+                {
+                    countryResponse = country.Select(x => new GetCountryResponse
+                    {
+                        CountryId = x.Id,
+                        CountryName = x.CountryName,
+                    }).OrderBy(x => x.CountryName).ToList();
+
+                    return ApiResponse<List<GetCountryResponse>>.Success("State Successfully retreive", countryResponse);
+                }
+                else
+                {
+                    return ApiResponse<List<GetCountryResponse>>.Success("No State Found", countryResponse);
+                }
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<List<GetCountryResponse>>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+            }
         }
         public async Task<ApiResponse<string>> CreateStateAsync(CreateStateModel model)
         {
@@ -75,7 +106,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             {
                 if (model != null)
                 {
-                    var country = await GetCountryById(model.CountryId);
+                    var country = await GetCountryById(Guid.Parse(model.CountryId));
                     {
                         if (country != null)
                         {
@@ -110,7 +141,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             return ApiResponse<string>.Success("State Save successfully.", null);
         }
         
-        public async Task<State> GetStateByIdAsync(string stateId)
+        public async Task<State> GetStateByIdAsync(Guid stateId)
         {
             State result = null;
             try
@@ -123,7 +154,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             }
             return result;
         }
-        public async Task<ApiResponse<List<GetStateResponse>>> GetStatesByCountryIdAsync(string countryId)
+        public async Task<ApiResponse<List<GetStateResponse>>> GetStatesByCountryIdAsync(Guid countryId)
         {
             IEnumerable<State> states = null;
             var stateResponse = new List<GetStateResponse>();

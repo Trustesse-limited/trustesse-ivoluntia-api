@@ -17,7 +17,7 @@ public class CountryController : ControllerBase
     }
     
     [HttpPost("country")]
-    public async Task<IActionResult> CreateCountry([FromBody] Country request)
+    public async Task<IActionResult> CreateCountry([FromBody] CreateCountryModel request)
     {
         if (request == null)
             return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid request."));
@@ -49,7 +49,7 @@ public class CountryController : ControllerBase
     }
     
      [HttpGet("country")]
-        public async Task<IActionResult> GetCountry(string countryId)
+        public async Task<IActionResult> GetCountry(Guid countryId)
         {
             var result = await _countryService.GetCountryById(countryId);
             if (result is null)
@@ -68,7 +68,7 @@ public class CountryController : ControllerBase
         public async Task<IActionResult> GetCountries()
         {
             var result = await _countryService.GetCountries();
-            if (result.Any())
+            if (result != null)
             {
                     return Ok(new { ResponseCode = (int)HttpStatusCode.OK, ResponseMessage = "data returned", Data = result});
                 
@@ -80,7 +80,7 @@ public class CountryController : ControllerBase
 
         }
         [HttpGet("state")]
-        public async Task<IActionResult> GetState(string stateId)
+        public async Task<IActionResult> GetState(Guid stateId)
         {
             var result = await _countryService.GetStateByIdAsync(stateId);
             if (result is null)
@@ -94,7 +94,7 @@ public class CountryController : ControllerBase
 
         }
         [HttpGet("states")]
-        public async Task<IActionResult> GetStates(string countryId)
+        public async Task<IActionResult> GetStates(Guid countryId)
         {
             var result = await _countryService.GetStatesByCountryIdAsync(countryId);
             if (result.StatusCode != 200)
@@ -107,4 +107,6 @@ public class CountryController : ControllerBase
             }
 
         }
+
+   
 }

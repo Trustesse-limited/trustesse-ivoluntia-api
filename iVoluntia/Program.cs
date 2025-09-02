@@ -1,3 +1,4 @@
+using MapsterMapper;
 using Trustesse.Ivoluntia.API.Extensions;
 using Trustesse.Ivoluntia.API.Middlewares;
 using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
@@ -17,10 +18,12 @@ builder.Services.AddCustomDatabase(builder.Configuration);
 builder.Services.AddCustomIdentity();
 builder.Services.AddScoped<NetworkFilter>();
 builder.ConfigureHsts();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IMapper, Mapper > ();
 
 #region Services
-builder.Services.AddScoped<ICountryService, CountryService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
+//builder.Services.AddScoped<ICountryService, CountryService>();
+//builder.Services.AddScoped<IAuthService, AuthService>();
 #endregion
 
 #region Repository

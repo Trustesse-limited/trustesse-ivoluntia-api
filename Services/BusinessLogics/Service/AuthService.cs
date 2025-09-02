@@ -27,15 +27,16 @@ public class AuthService : IAuthService
     public async Task<ApiResponse<string>> CreateVolunteer(VolunteerSignUpDto model)
     {
             User volunteer = null;
-            //Check if the Volunteer already exist
-            var VolunteerExists = await _uow.userRepo.GetByExpressionAsync(x => 
-                x.Email == model.AuthInfo.Email);
-            if (VolunteerExists != null)
-                return  ApiResponse<string>.Failure(409, $"Volunteer with Email -> {model.AuthInfo.Email}  already exist.");
+            
             if (model.MetaData.AccountType.ToLower() == AccountType.Volunteer.ToString().ToLower() &&
                 model.MetaData.CurrentPage == (int)OnBoardingPages.AuthInfoPage)
             {
-                volunteer = _mapper.Map<User>(model);
+            //Check if the Volunteer already exist
+            var VolunteerExists = await _uow.userRepo.GetByExpressionAsync(x =>
+                x.Email == model.AuthInfo.Email);
+            if (VolunteerExists != null)
+                return ApiResponse<string>.Failure(409, $"Volunteer with Email -> {model.AuthInfo.Email}  already exist.");
+            volunteer = _mapper.Map<User>(model);
                 volunteer.UserName = model.AuthInfo.Email;
                 volunteer.Email = model.AuthInfo.Email.Trim();
                 volunteer.DateCreated = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
@@ -53,9 +54,18 @@ public class AuthService : IAuthService
                     {
                         return ApiResponse<string>.Failure(500, "Unable to update user account with OTP details.");
                     }
-                    // emailServices
-                    await UpdateOnBoardingProgress(volunteer.Id, 1, false);
+                // emailServices
+                //await UpdateOnBoardingProgress(Guid.Parse(volunteer.Id), 1, false);
+                var obj = new OnboardingProgress();
+                {
+                    obj.UserId = volunteer.Id;
+                    obj.TotalPages = 6;
+                    obj.LastCompletedPage = model.MetaData.CurrentPage;
+                    obj.HasCompletedOnboarding = false;
                 }
+                await _uow.onboardingProgressRepo.AddAsync(obj);
+                await _uow.CompleteAsync();
+            }
             }
             else if(model.MetaData.AccountType.ToLower() == AccountType.Volunteer.ToString().ToLower() &&
                     model.MetaData.CurrentPage == (int)OnBoardingPages.BioDataPage)
@@ -88,7 +98,7 @@ public class AuthService : IAuthService
     }
     public async Task<ApiResponse<string>> UpdateBioData(BioData model)
     {
-        var volunteer = await _uow.userRepo.GetByIdAsync(model.UserId);
+        var volunteer = await _uow.userRepo.GetByExpressionAsync(x => x.Id == model.UserId);
         if (volunteer != null)
         {
             volunteer.FirstName = model.FirstName;
@@ -103,22 +113,23 @@ public class AuthService : IAuthService
     }
     public async Task<ApiResponse<string>> UpdateLocation(LocationDto model)
     {
-        var volunteer = await _uow.userRepo.GetByIdAsync(model.UserId);
+        var volunteer = await _uow.userRepo.GetByExpressionAsync(x => x.Id == model.UserId);
         if (volunteer != null)
         {
-            var country = await _uow.countryRepo.GetByIdAsync(model.CountryId);
+            var country = await _uow.countryRepo.GetByIdAsync(Guid.Parse(model.CountryId));
             if (country == null)
                 return ApiResponse<string>.Failure(404, $"Country doesn't exist.");
-            var state = await _uow.stateRepo.GetByIdAsync(model.StateId);
+            var state = await _uow.stateRepo.GetByIdAsync(Guid.Parse(model.StateId));
             if (state == null)
                 return ApiResponse<string>.Failure(404, $"State doesn't exist.");
             var location = new Trustesse.Ivoluntia.Domain.Entities.Location
             {
-                CountryId = model.CountryId,
-                StateId = model.StateId,
+                CountryId = Guid.Parse(model.CountryId),
+                StateId = Guid.Parse(model.StateId),
                 City = model.City,
                 Zipcode = model.ZipCode,
                 Address = model.Address,
+                UserId = volunteer.Id
             };
             await _uow.locationRepo.AddAsync(location);
             var rowchange = await _uow.CompleteAsync();
@@ -132,7 +143,7 @@ public class AuthService : IAuthService
     
     public async Task<ApiResponse<string>> UpdateUserInterest(InterestDto model)
     {
-        var volunteer = await _uow.userRepo.GetByIdAsync(model.UserId);
+        var volunteer = await _uow.userRepo.GetByExpressionAsync(x => x.Id == model.UserId);
         if (volunteer != null)
         {
             if (model.Names.Any())
@@ -177,7 +188,7 @@ public class AuthService : IAuthService
     
     public async Task<ApiResponse<string>> UpdateUserSkill(SkillDto model)
     {
-        var volunteer = await _uow.userRepo.GetByIdAsync(model.UserId);
+        var volunteer = await _uow.userRepo.GetByExpressionAsync(x => x.Id == model.UserId);
         if (volunteer != null)
         {
             if (model.Names.Any())
@@ -222,7 +233,7 @@ public class AuthService : IAuthService
     
     public async Task<ApiResponse<string>> UpdateProfileImageAndBio(ProfileImageAndBio model)
     {
-        var volunteer = await _uow.userRepo.GetByIdAsync(model.UserId);
+        var volunteer = await _uow.userRepo.GetByExpressionAsync(x => x.Id == model.UserId);
         if (volunteer != null)
         {
             volunteer.UserImage = model.ProfileImageurl;
@@ -237,18 +248,15 @@ public class AuthService : IAuthService
     }
 
     public async Task<ApiResponse<string>> UpdateOnBoardingProgress(string userId, int lastCompletedPage, bool hasCompletedOnboarding)
-    {
-        CustomResponse response = null;
-      
-            var updateProgressTable = await _uow.onboardingProgressRepo.GetByIdAsync(userId);
+    { 
+            var updateProgressTable = await _uow.onboardingProgressRepo.GetByExpressionAsync(x => x.UserId == userId);
             if (updateProgressTable != null)
             {
-                var obj = new OnboardingProgress();
-                {
-                    obj.LastCompletedPage = lastCompletedPage;
-                    obj.HasCompletedOnboarding = hasCompletedOnboarding;
-                }
-                await _uow.onboardingProgressRepo.UpdateAsync(obj);
+            updateProgressTable.UserId = userId.ToString();
+            updateProgressTable.LastCompletedPage = lastCompletedPage;
+            updateProgressTable.HasCompletedOnboarding = hasCompletedOnboarding;
+                
+                await _uow.onboardingProgressRepo.UpdateAsync(updateProgressTable);
                 if (await _uow.CompleteAsync() > 0)
                 {
                     return ApiResponse<string>.Success("OnboardingProgress has been updated successfully.", null);
@@ -262,7 +270,7 @@ public class AuthService : IAuthService
         {
             byte[] seed = Guid.NewGuid().ToByteArray();
             Random _random = new Random(BitConverter.ToInt32(seed, 0));
-            int _rand = _random.Next(1000, 10000);
+            int _rand = _random.Next(100000, 1000000);
 
             return _rand.ToString();
         }

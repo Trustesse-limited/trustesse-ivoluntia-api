@@ -95,7 +95,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             return NoContent();
         }
         
-        [HttpPost("CreateVolunteer")]
+       /* [HttpPost("CreateVolunteer")]
         public async Task<IActionResult> CreateVolunteer([FromBody] VolunteerSignUpDto request)
         {
             if (request == null)
@@ -109,7 +109,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             }
 
             return Ok(result);
-        }
+        }*/
 
 
     }

@@ -447,7 +447,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.NotificationChannel", b =>
@@ -472,7 +472,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationChannels");
+                    b.ToTable("NotificationChannels", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.NotificationChannelSettings", b =>
@@ -502,7 +502,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("NotificationChannelId");
 
-                    b.ToTable("NotificationChannelSettings");
+                    b.ToTable("NotificationChannelSettings", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.NotificationPriority", b =>
@@ -530,7 +530,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationPriorities");
+                    b.ToTable("NotificationPriorities", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.NotificationTemplate", b =>
@@ -561,7 +561,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationTemplates");
+                    b.ToTable("NotificationTemplates", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.NotificationType", b =>
@@ -586,7 +586,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationTypes");
+                    b.ToTable("NotificationTypes", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.NotificationTypePriority", b =>
@@ -614,7 +614,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationTypePriorities");
+                    b.ToTable("NotificationTypePriorities", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.OnboardingProgress", b =>

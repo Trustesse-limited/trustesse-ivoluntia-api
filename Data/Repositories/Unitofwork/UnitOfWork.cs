@@ -32,6 +32,7 @@ public class UnitOfWork : IUnitOfWork
         userSkillLinkRepo = new UserSkillLinkRepository(dbContext);
         interestRepo = new InterestRepository(dbContext);
         skillRepo = new SkillRepository(dbContext);
+        onboardingProgressRepo = new OnboardingProgressRepository(dbContext);
     }
     public IGenericRepository<TEntity> repository<TEntity>() where TEntity : class
     {

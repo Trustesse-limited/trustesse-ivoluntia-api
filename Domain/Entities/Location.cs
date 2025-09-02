@@ -4,8 +4,8 @@ namespace Trustesse.Ivoluntia.Domain.Entities
 {
     public class Location : BaseEntity
     {
-        public string CountryId { get; set; }
-        public string StateId { get; set; }
+        public Guid CountryId { get; set; }
+        public Guid StateId { get; set; }
         public string City { get; set; }
         public string Zipcode { get; set; }
         public string Address { get; set; }

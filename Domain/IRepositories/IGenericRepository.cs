@@ -15,7 +15,7 @@ public interface IGenericRepository<T> where T : class
 {
     Task<IReadOnlyList<T>> GetAllAsync();
 
-    Task<T> GetByIdAsync(string id);
+    Task<T> GetByIdAsync(Guid id);
 
     Task<T> GetByExpressionAsync(Expression<Func<T, bool>> expression);
 

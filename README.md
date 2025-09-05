@@ -1,59 +1,50 @@
-# Volunteer App (iVoluntai)
+# Trustesse Notification Service
 
-A smart and inclusive platform that connects passionate **volunteers** with impactful **Organisations** and **community initiatives**. Designed with scalability, accessibility, and meaningful engagement in mind.
-
----
-
-## 🚀 Features
-
--  Volunteer & NGO Onboarding
--  Program mamangent
--  User management
--  Reporting tools 
--  Opportunity listings by cause, location, or skill
--  Smart matching algorithm (skills + availability)
--  Notifications and updates
--  Admin dashboard for NGO management
-
+A centralized service for sending and managing **emails**, **SMS**, and other **notifications** across Trustesse applications. Built for reliability, scalability, and flexibility, it supports both **direct sending** and **Hangfire background jobs** for queued delivery.
 
 ---
 
-## 📦 Tech Stack
+## Features
+
+- Unified service for sending emails, SMS, and notifications
+- Direct (synchronous) sending or queued background jobs
+- Built on Hangfire for reliable scheduling, retries, and monitoring
+- Easy integration with other Trustesse services
+
+---
+
+## Tech Stack
 
 | Layer         | Technology                        |
 |---------------|-----------------------------------|
-| Backend       | ASP.NET Core 6 (Web API)          |
-| Database      | MySQL / EF Core / Dapper          |
-| Authentication| JWT                               |
-| Hosting       | Azure (App Services) AWS (DB Instance)|
+| Backend       | ASP.NET Core 8 (Web API)          |
+| Background    | Hangfire                         |
+| Messaging     | Email (SMTP) / SMS Gateway        |
+| Hosting       | Azure App Service / Azure SQL     |
 
 ---
 
-## 🧱 Architecture
+## Architecture
 
-- **Clean Architecture** (Domain, Application, Infrastructure, Web)
-- **Entity-Value Object-Event** driven domain
-
-
+- **API Layer** to receive notification requests
+- **Background Jobs** with Hangfire to process and deliver messages
+- **Provider Abstraction** for pluggable email and SMS providers
 ---
 
-## ⚙️ Getting Started
+## Getting Started
 
 ### Prerequisites
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) if not already installed
-- SQL Server WorkBench (local or remote) or Beaver 
-- Visual Studio 2019+ or VS Code
-- Command Line (cmder, cmd)
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) installed
+- mySql instance (local or remote)
+- Command Line (cmd, PowerShell, etc.)
 
 ---
 
-## 🛠️ Setup Instructions
+### Setup Instructions
 
-### 1. Clone the repository
+1. Clone the repository:
 
 ```bash
-git clone [https://github.com/Trustesse-limited/trustesse-ivoluntia-api.git]
-
-
-
+git clone https://github.com/Trustesse-limited/trustesse-notification-service.git
+cd trustesse-notification-service

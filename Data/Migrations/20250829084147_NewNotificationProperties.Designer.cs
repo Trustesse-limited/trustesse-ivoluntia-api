@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Trustesse.Ivoluntia.Data.DataContext;
 
@@ -11,9 +12,11 @@ using Trustesse.Ivoluntia.Data.DataContext;
 namespace Trustesse.Ivoluntia.Data.Migrations
 {
     [DbContext(typeof(iVoluntiaDataContext))]
-    partial class iVoluntiaDataContextModelSnapshot : ModelSnapshot
+    [Migration("20250829084147_NewNotificationProperties")]
+    partial class NewNotificationProperties
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -507,9 +510,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.Property<DateTime?>("DateUpdated")
                         .HasColumnType("datetime(6)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("IsDeprecated")
                         .HasColumnType("tinyint(1)");

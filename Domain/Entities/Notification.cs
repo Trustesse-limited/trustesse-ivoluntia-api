@@ -10,6 +10,7 @@
         public bool IsPickedUp { get; set; }
         public bool HasAttachment { get; set; }
         public string AttachmentUrl { get; set; }
+        public string Email { get; set; }
         public int Priority { get; set; }
         public string MailType { get; set; }
         public int RetryCount { get; set; }

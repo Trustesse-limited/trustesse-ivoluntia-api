@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace Trustesse.Ivoluntia.Commons.Models.Request
 {
-    public class CreateStateModel
+    public class CreateCountryModel
     {
-        public string StateName { get; set; }
-        public string CountryId { get; set; }
+        public string Name { get; set; }
     }
 }

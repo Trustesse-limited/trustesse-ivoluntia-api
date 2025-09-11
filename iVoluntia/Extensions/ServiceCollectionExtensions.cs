@@ -13,6 +13,8 @@ namespace Trustesse.Ivoluntia.API.Extensions
         public static IServiceCollection AddCustomSwagger(this IServiceCollection services)
         {
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<ICountryService, CountryService>();
+            services.AddScoped<IAuthService, AuthService>();
 
             services.AddSwaggerGen(options =>
             {

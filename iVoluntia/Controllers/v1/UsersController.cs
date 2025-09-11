@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Trustesse.Ivoluntia.Commons.DTOs;
+using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
 namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
@@ -9,9 +11,11 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
     public class UsersController : ControllerBase
     {
         private readonly UserManager<IdentityUser> _userManager;
-        public UsersController(UserManager<IdentityUser> userManager)
+        private readonly IAuthService _authService;
+        public UsersController(UserManager<IdentityUser> userManager, IAuthService  authService)
         {
             _userManager = userManager;
+            _authService = authService;
         }
         // This code defines a UsersController for managing sample user accounts in an ASP.NET Core application.
         [HttpGet("GetUser")]
@@ -90,6 +94,22 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             }
             return NoContent();
         }
+        
+       /* [HttpPost("CreateVolunteer")]
+        public async Task<IActionResult> CreateVolunteer([FromBody] VolunteerSignUpDto request)
+        {
+            if (request == null)
+                return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid request."));
+
+            var result = await _authService.CreateVolunteer(request);
+
+            if (result.StatusCode != 200)
+            {
+                return BadRequest(new { ResponseCode = 500, ResponseMessage = "Internal server error." });
+            }
+
+            return Ok(result);
+        }*/
 
 
     }

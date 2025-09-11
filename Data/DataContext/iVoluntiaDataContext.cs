@@ -35,7 +35,9 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<NotificationTypePriority> NotificationTypePriorities { get; set; }
         public DbSet<Country> Countries { get; set; }
         public DbSet<State> States { get; set; }
-        public DbSet<Volunteer> Volunteers { get; set; }
+        public DbSet<UserInterestLink> UserInterestLinks { get; set; }
+        public DbSet<UserSkillLink> UserSkillLinks { get; set; }
+      
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -137,14 +139,33 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                       .WithMany(c => c.ChannelSettings)
                       .HasForeignKey(s => s.NotificationChannelId);
             });
+            
+            modelBuilder.Entity<UserSkillLink>()
+                  .HasKey(us => new { us.UserId, us.SkillId });
 
+            modelBuilder.Entity<UserSkillLink>()
+                  .HasOne(us => us.User)
+                  .WithMany(u => u.UserSkillLinks)
+                  .HasForeignKey(us => us.UserId);
 
+            modelBuilder.Entity<UserSkillLink>()
+                  .HasOne(us => us.Skill)
+                  .WithMany(s => s.UserSkillLinks)
+                  .HasForeignKey(us => us.SkillId);
+            
+            modelBuilder.Entity<UserInterestLink>()
+                  .HasKey(us => new { us.UserId, us.InterestId });
 
+            modelBuilder.Entity<UserInterestLink>()
+                  .HasOne(us => us.User)
+                  .WithMany(u => u.UserInterestLinks)
+                  .HasForeignKey(us => us.UserId);
 
-
-
-
-
+            modelBuilder.Entity<UserInterestLink>()
+                  .HasOne(us => us.Interest)
+                  .WithMany(s => s.UserInterestLinks)
+                  .HasForeignKey(us => us.InterestId);
+            
         }
     }
 

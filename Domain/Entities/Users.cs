@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace Trustesse.Ivoluntia.Domain.Entities
 {
@@ -11,7 +12,11 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public string? Bio { get; set; }
         public DateTime? LastLogin { get; set; }
         public byte? Gender { get; set; }
+        public DateTime? DateOfBirth { get; set; }
         public bool IsActive { get; set; }
+        [StringLength(6)]
+        public string? OTP { get; set; }
+        public DateTime? OtpSubmittedTime { get; set; }
         public bool HasAgreedToTermsAndCondition { get; set; }
         public bool HasChangedDefaultPassword { get; set; }
         public string? CreatedBy { get; set; }
@@ -23,5 +28,7 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public ICollection<Skill?> Skills { get; set; } = new List<Skill>();
         public ICollection<Interest?> Interests { get; set; } = new List<Interest>();
         public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+        public ICollection<UserSkillLink?> UserSkillLinks { get; set; } = new List<UserSkillLink>();
+        public ICollection<UserInterestLink?> UserInterestLinks { get; set; } = new List<UserInterestLink>();
     }
 }

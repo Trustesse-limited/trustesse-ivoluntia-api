@@ -28,7 +28,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             var code = await _otpService.GenerateOtpAsync(request.UserId, purposeEnum);
 
 
-            return Ok(new { OtpCode = code });
+            return Ok(new { Message = "OTP generated successfully and sent.", OtpCode = code });
         }
 
         [HttpPost("confirm-otp")]
@@ -40,7 +40,9 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             var isValid = await _otpService.ConfirmOtpAsync(request.UserId, request.OtpCode, request.Purpose);
 
             if (!isValid)
-                return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid purpose."));
+            {
+                return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid or expired OTP."));
+            }
 
             return Ok(ApiResponse<string>.Success("OTP confirmed.", null));
         }

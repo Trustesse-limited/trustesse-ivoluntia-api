@@ -36,6 +36,7 @@ builder.Services.AddScoped<IInterestRepository, InterestRepository>();
 builder.Services.AddScoped<ISkillRepository, SkillRepository>();
 builder.Services.AddScoped<IUserInterestLinkRepository, UserInterestLinkRepository>();
 builder.Services.AddScoped<IUserSkillLinkRepository, UserSkillLinkRepository>();
+builder.Services.AddScoped<IOtpRepository, OtpRepository>();
 #endregion
 
 var app = builder.Build();

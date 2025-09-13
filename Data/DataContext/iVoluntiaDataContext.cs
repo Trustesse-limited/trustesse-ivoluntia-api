@@ -37,7 +37,8 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<State> States { get; set; }
         public DbSet<UserInterestLink> UserInterestLinks { get; set; }
         public DbSet<UserSkillLink> UserSkillLinks { get; set; }
-      
+        public DbSet<Otp> Otps { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

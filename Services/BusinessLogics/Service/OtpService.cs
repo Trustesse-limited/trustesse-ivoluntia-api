@@ -47,19 +47,5 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             await _otpRepository.AddOtpAsync(otp);
             return otpCode;
         }
-
-        //private string GenerateRandomCode(int size, bool includeAlphabet, string defaultValue = "")
-        //{
-        //    if (!string.IsNullOrEmpty(defaultValue))
-        //        return defaultValue;
-
-        //    var random = new Random();
-        //    const string digits = "0123456789";
-        //    const string alphabets = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        //    string chars = digits + (includeAlphabet ? alphabets : "");
-
-        //    return new string(Enumerable.Repeat(chars, size)
-        //        .Select(s => s[random.Next(s.Length)]).ToArray());
-        //}
     }
 }

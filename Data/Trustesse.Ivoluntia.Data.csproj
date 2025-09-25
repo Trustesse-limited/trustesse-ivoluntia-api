@@ -8,8 +8,11 @@
 
   <ItemGroup>
     <Folder Include="Migrations\" />
-    <Folder Include="Repositories\" />
     <Folder Include="Services\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Repositories\OtpRepository.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -15,6 +15,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<ICountryService, CountryService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IOtpService, OtpService>();
 
             services.AddSwaggerGen(options =>
             {

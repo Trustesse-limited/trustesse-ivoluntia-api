@@ -22,7 +22,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             if (request == null)
                 return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid request."));
 
-            if (!Enum.TryParse<PurposeEnum>(request.Purpose.ToString(), true, out var purposeEnum))
+            if (!Enum.TryParse<OtpPurpose>(request.Purpose.ToString(), true, out var purposeEnum))
                 return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid purpose."));
 
             var code = await _otpService.GenerateOtpAsync(request.UserId, purposeEnum);

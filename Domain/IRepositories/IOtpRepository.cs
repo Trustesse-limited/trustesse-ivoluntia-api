@@ -6,8 +6,8 @@ namespace Trustesse.Ivoluntia.Domain.IRepositories
     public interface IOtpRepository
     {
         Task AddOtpAsync(Otp otp);
-        Task<Otp> GetOtpByCodeAsync(string userId, string otpCode, PurposeEnum purpose);
+        Task<Otp> GetOtpByCodeAsync(string userId, string otpCode, OtpPurpose purpose);
         Task MarkOtpAsUsedAsync(Otp otp);
-        Task UpdateOtpAsync(string userId, PurposeEnum purpose);
+        Task UpdateOtpAsync(string userId, OtpPurpose purpose);
     }
 }

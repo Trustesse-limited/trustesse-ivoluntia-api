@@ -1,6 +1,6 @@
 ﻿namespace Trustesse.Ivoluntia.Domain.Enums
 {
-    public enum PurposeEnum
+    public enum OtpPurpose
     {
         PasswordReset = 1,
         Signup = 2,

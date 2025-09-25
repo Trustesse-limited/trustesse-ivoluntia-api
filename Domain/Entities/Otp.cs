@@ -9,7 +9,7 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public string OtpCode { get; set; } = string.Empty;
         public bool IsUsed { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public PurposeEnum Purpose { get; set; }
+        public OtpPurpose Purpose { get; set; }
         public string Channel { get; set; } = "email"; // or "sms"
     }
 }

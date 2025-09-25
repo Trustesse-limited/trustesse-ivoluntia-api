@@ -1,4 +1,5 @@
-﻿using Trustesse.Ivoluntia.Commons.uitilities;
+﻿using Microsoft.AspNetCore.Identity;
+using Trustesse.Ivoluntia.Commons.uitilities;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
 using Trustesse.Ivoluntia.Domain.IRepositories;
@@ -9,12 +10,14 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
     public class OtpService : IOtpService
     {
         readonly IOtpRepository _otpRepository;
-        public OtpService(IOtpRepository otpRepository)
+        private readonly UserManager<User> _userManager;
+        public OtpService(IOtpRepository otpRepository, UserManager<User> userManager)
         {
             _otpRepository = otpRepository;
+            _userManager = userManager;
         }
 
-        public async Task<bool> ConfirmOtpAsync(string userId, string otpCode, PurposeEnum purpose)
+        public async Task<bool> ConfirmOtpAsync(string userId, string otpCode, OtpPurpose purpose)
         {
             var code = await _otpRepository.GetOtpByCodeAsync(userId, otpCode, purpose);
             if (code == null)
@@ -31,9 +34,13 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             return true;
         }
 
-        public async Task<string> GenerateOtpAsync(string userId, PurposeEnum purpose)
+        public async Task<string> GenerateOtpAsync(string userId, OtpPurpose purpose)
         {
-            string otpCode = OtpUtility.GenerateRandomCode(6, false);
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                throw new Exception("User not found");
+
+            string otpCode = OtpUtility.GenerateRandomCode(6, true);
 
             var otp = new Otp
             {

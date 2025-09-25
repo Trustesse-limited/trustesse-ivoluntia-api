@@ -23,7 +23,7 @@ namespace Trustesse.Ivoluntia.Data.Repositories
 
         }
 
-        public async Task<Otp> GetOtpByCodeAsync(string userId, string otpCode, PurposeEnum purpose)
+        public async Task<Otp> GetOtpByCodeAsync(string userId, string otpCode, OtpPurpose purpose)
         {
             return await _dbContext.Otps
                 .Where(o => o.UserId == userId && o.OtpCode == otpCode && o.Purpose == purpose && !o.IsUsed).FirstOrDefaultAsync();
@@ -36,7 +36,7 @@ namespace Trustesse.Ivoluntia.Data.Repositories
             await _dbContext.SaveChangesAsync();
 		}
 
-        public async Task UpdateOtpAsync(string userId, PurposeEnum purpose)
+        public async Task UpdateOtpAsync(string userId, OtpPurpose purpose)
         {
             var existingOtps = await _dbContext.Otps
                 .Where(o => o.UserId == userId && o.Purpose == purpose && !o.IsUsed)

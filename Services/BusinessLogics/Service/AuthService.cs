@@ -18,11 +18,18 @@ public class AuthService : IAuthService
     private readonly IUnitOfWork _uow;
     private readonly IMapper _mapper;
     private readonly UserManager<User> _userManager;
-    public AuthService(IUnitOfWork uow, IMapper mapper, UserManager<User> userManager)
+    private readonly IOtpService _otp;
+    private readonly INotificationService _notify;
+    private readonly IEmailService _email;
+    public AuthService(IUnitOfWork uow, IMapper mapper, UserManager<User> userManager, IOtpService otp,
+        INotificationService notify, IEmailService email)
     {
             _uow = uow; 
             _mapper = mapper;   
             _userManager = userManager; 
+            _otp = otp;
+        _notify = notify;
+        _email = email;
     }
     public async Task<ApiResponse<string>> CreateVolunteer(VolunteerSignUpDto model)
     {
@@ -45,7 +52,7 @@ public class AuthService : IAuthService
                 var result = await _userManager.CreateAsync(volunteer, model.AuthInfo.Password.Trim());
                 if (result.Succeeded)
                 {
-                    var otp = GenerateOTP();
+                var otp = await _otp.GenerateOtpAsync(volunteer.Id, OtpPurpose.Signup);//GenerateOTP();
                     volunteer.OTP = otp;
                     volunteer.OtpSubmittedTime = Convert.ToDateTime(DateTime.Now.ToShortTimeString());
                     volunteer.Id = volunteer.Id;
@@ -54,8 +61,30 @@ public class AuthService : IAuthService
                     {
                         return ApiResponse<string>.Failure(500, "Unable to update user account with OTP details.");
                     }
-                // emailServices
-                var obj = new OnboardingProgress();
+                    else
+                    {
+                    // send otp to email Address
+                    var dict = new Dictionary<string, string>()
+                    {
+                        {"firstname", volunteer.FirstName },
+                        { "otp", volunteer.OTP}
+                    };
+                    var sendMail = await _notify.ComposeNotificationAsync("OtpCode", "Email", dict);
+                    if(sendMail != null)
+                    {
+                        var msg = new EmailModel
+                        {
+                            Receiver = volunteer.Email,
+                            Attachment = null,
+                            Subject = "OTP",
+                            Message = sendMail.Data
+                        };
+                        await _email.SendEmailASync(msg);
+                    }
+                    }
+                    
+
+                    var obj = new OnboardingProgress();
                 {
                     obj.UserId = volunteer.Id;
                     obj.TotalPages = 6;

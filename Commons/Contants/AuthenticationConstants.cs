@@ -18,7 +18,7 @@ public static class AuthenticationConstants
         };
 
     public static readonly List<string> ValidGenders = new() { "Male", "Female", "Other" };
-    public static readonly List<string> ValidAccountTypes = new() { "Volunteer", "Premium", "Standard" };
+    public static readonly List<string> ValidAccountTypes = new() { "Volunteer", "Foundation" };
 
     // Security settings
     public const int MIN_PASSWORD_LENGTH = 8;

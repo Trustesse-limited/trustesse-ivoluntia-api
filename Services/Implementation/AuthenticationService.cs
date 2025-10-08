@@ -34,7 +34,7 @@ public class AuthenticationService(
 
         if (await userManager.IsLockedOutAsync(user))
         {
-            return ApiResponse<LoginResponseModel>.Failure(401, "Account is locked for 1 hour due to multiple failed login attempts.");
+            return ApiResponse<LoginResponseModel>.Failure(403, "Account is locked for 1 hour due to multiple failed login attempts.");
         }
 
         if (!await userManager.CheckPasswordAsync(user, request.Password))

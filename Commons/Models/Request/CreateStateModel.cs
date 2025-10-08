@@ -9,6 +9,6 @@ namespace Trustesse.Ivoluntia.Commons.Models.Request
     public class CreateStateModel
     {
         public string StateName { get; set; }
-        public Guid CountryId { get; set; }
+        public string CountryId { get; set; }
     }
 }

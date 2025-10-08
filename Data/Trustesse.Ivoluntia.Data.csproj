@@ -8,12 +8,15 @@
 
   <ItemGroup>
     <Folder Include="Migrations\" />
-    <Folder Include="Repositories\" />
     <Folder Include="Services\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.19" />
+    <None Include="Repositories\OtpRepository.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.18" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.18" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.18">

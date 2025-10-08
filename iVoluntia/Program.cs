@@ -1,6 +1,11 @@
+using MapsterMapper;
 using Trustesse.Ivoluntia.API.Extensions;
 using Trustesse.Ivoluntia.API.Middlewares;
 using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
+using Trustesse.Ivoluntia.Data.Repositories;
+using Trustesse.Ivoluntia.Domain.IRepositories;
+using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
+using Trustesse.Ivoluntia.Services.BusinessLogics.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +20,26 @@ builder.Services.RegisterJwtServices(builder.Configuration);
 builder.Services.AddScoped<NetworkFilter>();
 builder.Services.AddCustomServices();
 builder.ConfigureHsts();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IMapper, Mapper > ();
+
+#region Services
+//builder.Services.AddScoped<ICountryService, CountryService>();
+//builder.Services.AddScoped<IAuthService, AuthService>();
+#endregion
+
+#region Repository
+builder.Services.AddScoped<ICountryRepository , CountryRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IStateRepository, StateRepository>();
+builder.Services.AddScoped<ILocationRepository, LocationRepository>();
+builder.Services.AddScoped<IOnboardingProgressRepository, OnboardingProgressRepository>();
+builder.Services.AddScoped<IInterestRepository, InterestRepository>();
+builder.Services.AddScoped<ISkillRepository, SkillRepository>();
+builder.Services.AddScoped<IUserInterestLinkRepository, UserInterestLinkRepository>();
+builder.Services.AddScoped<IUserSkillLinkRepository, UserSkillLinkRepository>();
+builder.Services.AddScoped<IOtpRepository, OtpRepository>();
+#endregion
 
 var app = builder.Build();
 

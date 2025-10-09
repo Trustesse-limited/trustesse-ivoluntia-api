@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Trustesse.Ivoluntia.Data.DataContext;
 
@@ -11,9 +12,11 @@ using Trustesse.Ivoluntia.Data.DataContext;
 namespace Trustesse.Ivoluntia.Data.Migrations
 {
     [DbContext(typeof(iVoluntiaDataContext))]
-    partial class iVoluntiaDataContextModelSnapshot : ModelSnapshot
+    [Migration("20251002113208_Programs")]
+    partial class Programs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -276,9 +279,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.Property<bool>("IsDeprecated")
                         .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("LocationId")
-                        .HasColumnType("longtext");
 
                     b.Property<string>("Logo")
                         .HasColumnType("longtext");
@@ -740,15 +740,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("FoundationId")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<bool>("HasDonation")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("tinyint(1)");
-
                     b.Property<bool>("IsDeprecated")
                         .HasColumnType("tinyint(1)");
 
@@ -759,16 +750,11 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("FoundationId");
 
                     b.HasIndex("LocationId");
 
@@ -1279,18 +1265,11 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Program", b =>
                 {
-                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Foundation", "Foundation")
-                        .WithMany("Programs")
-                        .HasForeignKey("FoundationId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Location", "Location")
                         .WithMany()
                         .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Foundation");
 
                     b.Navigation("Location");
                 });
@@ -1388,8 +1367,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Navigation("Admins");
 
                     b.Navigation("Location");
-
-                    b.Navigation("Programs");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.FoundationCategory", b =>

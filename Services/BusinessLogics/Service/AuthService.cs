@@ -7,6 +7,7 @@ using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Data.Repositories;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
+using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 using Location = Trustesse.Ivoluntia.Commons.DTOs.LocationDto;
 using Skill = Trustesse.Ivoluntia.Commons.DTOs.SkillDto;

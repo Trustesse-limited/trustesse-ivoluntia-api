@@ -23,7 +23,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
         public async Task<ApiResponse<string>> SendEmailASync(EmailModel model)
         {
             var json = JsonConvert.SerializeObject(model);
-            var content = new StringContent(json, Encoding.UTF8, "application/josn");
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync($"{_baseUrl}/api/Notifications/send-email", content);
             if(response.IsSuccessStatusCode)
             {

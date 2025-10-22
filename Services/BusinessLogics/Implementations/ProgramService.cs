@@ -36,10 +36,19 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         {
             try
             {
-                var foundationExists = _foundationRepository.GetFoundation(data.FoundationId);
+                var foundation = _foundationRepository.GetFoundation(data.FoundationId).FirstOrDefault();
 
-                if (foundationExists == null)
+                if (foundation == null)
                     return ApiResponse<ProgramDto>.Failure(StatusCodes.Status404NotFound, "Foundation not found");
+
+                if (!foundation.IsActive)
+                    return ApiResponse<ProgramDto>.Failure(StatusCodes.Status403Forbidden, "You cannot create a program for an inactive foundation");
+
+                var programWithSameTitle = _programRepository.GetPrograms().FirstOrDefault(p => p.Title.ToLower() == data.Title.ToLower());
+
+                if (programWithSameTitle != null)
+                    return ApiResponse<ProgramDto>.Failure(StatusCodes.Status409Conflict, "A program with the same title already exists");
+
 
                 var newData = _mapper.Map<Program>(data);
 
@@ -178,6 +187,29 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 _logger.LogError(ex.Message);
                 return ApiResponse<bool>.Failure(StatusCodes.Status500InternalServerError, "An error occurred");
             }
+        }
+
+        public async Task<ApiResponse<bool>> DeleteProgramGoals(string programGoalId)
+        {
+            try
+            {
+                var goal = await _context.ProgramGoals.FindAsync(programGoalId);
+
+                if (goal == null)
+                    return ApiResponse<bool>.Failure(StatusCodes.Status404NotFound, "Program Goal not found");
+
+                _context.ProgramGoals.Remove(goal);
+
+                await _context.SaveChangesAsync();
+
+                return ApiResponse<bool>.Success("Program Goal deleted successfully", true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return ApiResponse<bool>.Failure(StatusCodes.Status500InternalServerError, "An error occurred");
+            }
+
         }
 
     }

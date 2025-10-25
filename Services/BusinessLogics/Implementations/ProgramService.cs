@@ -209,8 +209,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 _logger.LogError(ex.Message);
                 return ApiResponse<bool>.Failure(StatusCodes.Status500InternalServerError, "An error occurred");
             }
-
         }
-
     }
 }

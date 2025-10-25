@@ -4,8 +4,7 @@ using Trustesse.Ivoluntia.API.Middlewares;
 using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
 using Trustesse.Ivoluntia.Data.Repositories;
 using Trustesse.Ivoluntia.Domain.IRepositories;
-using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
-using Trustesse.Ivoluntia.Services.BusinessLogics.Service;
+using Trustesse.Ivoluntia.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +20,10 @@ builder.Services.AddScoped<NetworkFilter>();
 builder.Services.AddCustomServices();
 builder.ConfigureHsts();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IMapper, Mapper > ();
+builder.Services.AddScoped<IMapper, Mapper>();
+
+// Add Mapster mappings
+builder.Services.RegisterMappings();
 
 #region Services
 //builder.Services.AddScoped<ICountryService, CountryService>();
@@ -29,7 +31,7 @@ builder.Services.AddScoped<IMapper, Mapper > ();
 #endregion
 
 #region Repository
-builder.Services.AddScoped<ICountryRepository , CountryRepository>();
+builder.Services.AddScoped<ICountryRepository, CountryRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IStateRepository, StateRepository>();
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();

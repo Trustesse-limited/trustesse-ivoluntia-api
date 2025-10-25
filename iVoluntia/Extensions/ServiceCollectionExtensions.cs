@@ -7,8 +7,12 @@ using Microsoft.OpenApi.Models;
 using Trustesse.Ivoluntia.Commons.Configurations;
 using Trustesse.Ivoluntia.Commons.Contants;
 using Trustesse.Ivoluntia.Data.DataContext;
+using Trustesse.Ivoluntia.Data.Repositories.Implementation;
+using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
 using Trustesse.Ivoluntia.Data.Repositories;
 using Trustesse.Ivoluntia.Domain.Entities;
+using Trustesse.Ivoluntia.Services.BusinessLogics.Implementations;
+using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.Abstractions;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
@@ -22,6 +26,9 @@ namespace Trustesse.Ivoluntia.API.Extensions
         public static IServiceCollection AddCustomSwagger(this IServiceCollection services)
         {
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IProgramService, ProgramService>();
+            services.AddScoped<IProgramRepository, ProgramRepository>();
+            services.AddScoped<IFoundationRepository, FoundationRepository>();
             services.AddScoped<ICountryService, CountryService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IOtpService, OtpService>();

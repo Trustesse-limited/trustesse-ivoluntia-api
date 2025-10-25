@@ -1,10 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Trustesse.Ivoluntia.Domain.Entities;
 
 
@@ -13,7 +8,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
     public class iVoluntiaDataContext : IdentityDbContext<User, Role, string>
     {
 
-      
+
         public iVoluntiaDataContext(DbContextOptions<iVoluntiaDataContext> options) : base(options)
         {
         }
@@ -37,6 +32,9 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<State> States { get; set; }
         public DbSet<UserInterestLink> UserInterestLinks { get; set; }
         public DbSet<UserSkillLink> UserSkillLinks { get; set; }
+        public DbSet<ProgramSkill> ProgramSkills { get; set; }
+        public DbSet<ProgramGoal> ProgramGoals { get; set; }
+        public DbSet<Program> Programs { get; set; }
         public DbSet<Otp> Otps { get; set; }
         public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
 
@@ -141,7 +139,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                       .WithMany(c => c.ChannelSettings)
                       .HasForeignKey(s => s.NotificationChannelId);
             });
-            
+
             modelBuilder.Entity<UserSkillLink>()
                   .HasKey(us => new { us.UserId, us.SkillId });
 
@@ -154,7 +152,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                   .HasOne(us => us.Skill)
                   .WithMany(s => s.UserSkillLinks)
                   .HasForeignKey(us => us.SkillId);
-            
+
             modelBuilder.Entity<UserInterestLink>()
                   .HasKey(us => new { us.UserId, us.InterestId });
 
@@ -167,10 +165,36 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                   .HasOne(us => us.Interest)
                   .WithMany(s => s.UserInterestLinks)
                   .HasForeignKey(us => us.InterestId);
-            
+
+            modelBuilder.Entity<ProgramSkill>()
+                .HasKey(ps => new { ps.ProgramId, ps.SkillId });
+
+
+            modelBuilder.Entity<ProgramSkill>()
+                .HasOne(ps => ps.Program)
+                .WithMany(p => p.ProgramSkills)
+                .HasForeignKey(ps => ps.ProgramId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ProgramSkill>()
+                .HasOne(ps => ps.Skill)
+                .WithMany(s => s.ProgramSkills)
+                .HasForeignKey(ps => ps.SkillId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
+            modelBuilder.Entity<Program>()
+                .HasMany(p => p.ProgramGoals)
+                .WithOne(pg => pg.Program)
+                .HasForeignKey(pg => pg.ProgramId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Foundation>()
+               .HasMany(f => f.Programs)
+               .WithOne(p => p.Foundation)
+               .HasForeignKey(p => p.FoundationId)
+               .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
-
-
-
 }

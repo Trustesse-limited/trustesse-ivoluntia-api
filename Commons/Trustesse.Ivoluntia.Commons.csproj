@@ -3,12 +3,10 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <Folder Include="Extensions\Validations\" />
-    <Folder Include="Models\" />
     <Folder Include="RSAKeys\" />
   </ItemGroup>
 
@@ -17,6 +15,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
     <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Trustesse.Ivoluntia.Domain.csproj" />
   </ItemGroup>
 
 </Project>

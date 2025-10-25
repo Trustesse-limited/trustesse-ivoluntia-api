@@ -31,6 +31,9 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<ICountryService, CountryService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IOtpService, OtpService>();
+            services.AddScoped<IJwtTokenService, JwtTokenService>();
+            services.AddScoped<IAuthenticationService, AuthenticationService>();
+
 
             services.AddSwaggerGen(options =>
             {
@@ -103,7 +106,6 @@ namespace Trustesse.Ivoluntia.API.Extensions
 
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddScoped(typeof(IRepositoryBase<>), typeof(RepositoryBase<>));
             services.AddScoped<IUserRepository, UserRepository>();
 
             return services;

@@ -1,12 +1,11 @@
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using Trustesse.Ivoluntia.Commons.Configurations;
 using Trustesse.Ivoluntia.Commons.Contants;
 using Trustesse.Ivoluntia.Commons.DTOs.Auth;
@@ -20,7 +19,6 @@ public class JwtTokenService(
     IOptions<JwtOptions> jwtOptions,
     ILogger<JwtTokenService> logger,
     UserManager<User> userManager,
-    IUserRefreshTokenRepository userRefreshTokenRepository,
     IUnitOfWork unitOfWork) : IJwtTokenService
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
@@ -79,10 +77,8 @@ public class JwtTokenService(
             CreatedBy = userId
         };
 
-        userRefreshTokenRepository.AddRefreshToken(userRefreshToken);
+        unitOfWork.refreshTokenRepo.Add(userRefreshToken);
         await unitOfWork.CompleteAsync();
-
-
 
         logger.LogInformation("Generated refresh token for user {UserId} with {ExpirationMinutes} minutes expiration",
             userId, expirationMinutes);
@@ -98,16 +94,16 @@ public class JwtTokenService(
             return false;
         }
 
-        var activeTokens = await userRefreshTokenRepository.GetActiveUserTokensAsync(userId);
+        var activeTokens = await unitOfWork.refreshTokenRepo.GetActiveUserTokensAsync(userId);
 
 
-        if (!activeTokens.Any())
+        if (activeTokens == null)
         {
             logger.LogInformation("No active refresh tokens found for user {UserId}", userId);
             return true;
         }
 
-        var revokedCount = await userRefreshTokenRepository.BulkUpdateAsync(userId);
+        var revokedCount = await unitOfWork.refreshTokenRepo.BulkUpdateAsync(userId);
 
         logger.LogInformation("Revoked {Count} refresh tokens for user {UserId} by {RevokedBy}. Reason: {Reason}",
             revokedCount, userId, revokedBy ?? "System", reason ?? "Revoke all user tokens");
@@ -123,7 +119,7 @@ public class JwtTokenService(
             return false;
         }
 
-        var userRefreshToken = await userRefreshTokenRepository.GetUserRefreshTokenAsync(refreshToken, userId);
+        var userRefreshToken = await unitOfWork.refreshTokenRepo.GetUserRefreshTokenAsync(refreshToken, userId);
 
         if (userRefreshToken == null)
         {
@@ -169,7 +165,7 @@ public class JwtTokenService(
             validation.UserId, userRole);
 
         // Update the old token to reference the new token
-        var oldTokenEntity = await userRefreshTokenRepository.GetUserRefreshTokenAsync(oldRefreshToken, userId);
+        var oldTokenEntity = await unitOfWork.refreshTokenRepo.GetUserRefreshTokenAsync(oldRefreshToken, userId);
 
         if (oldTokenEntity != null)
         {
@@ -193,7 +189,7 @@ public class JwtTokenService(
             };
         }
 
-        var userRefreshToken = await userRefreshTokenRepository.GetUserRefreshTokenAsync(refreshToken, userId);
+        var userRefreshToken = await unitOfWork.refreshTokenRepo.GetUserRefreshTokenAsync(refreshToken, userId);
 
         if (userRefreshToken == null)
         {

@@ -11,13 +11,14 @@ public interface ISpecification<T>
     int Skip { get; }
     bool isPagingEnabled { get; }
 }
-public interface IGenericRepository<T> where T : class  
+public interface IGenericRepository<T> where T : class
 {
     Task<IReadOnlyList<T>> GetAllAsync();
 
     Task<T> GetByIdAsync(Guid id);
 
     Task<T> GetByExpressionAsync(Expression<Func<T, bool>> expression);
+
 
     Task<List<T>> GetAsync(Expression<Func<T, bool>> expression = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderby = null,
         int pageNumber = 0, int pageSize = 0);
@@ -49,4 +50,6 @@ public interface IGenericRepository<T> where T : class
     void Delete(T entity);
 
     int Count(Expression<Func<T, bool>> expression);
+    IQueryable<T> GetByExpression(Expression<Func<T, bool>> expression);
+    Task<int> BulkUpdateAsync(Expression<Func<T, bool>> predicate, Expression<Func<Microsoft.EntityFrameworkCore.Query.SetPropertyCalls<T>, Microsoft.EntityFrameworkCore.Query.SetPropertyCalls<T>>> setPropertyCalls, CancellationToken cancellationToken = default);
 }

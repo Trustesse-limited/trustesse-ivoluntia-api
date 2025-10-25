@@ -1,3 +1,5 @@
+using System;
+using Microsoft.EntityFrameworkCore;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.IRepositories;
@@ -10,9 +12,17 @@ public class UserRepository : GenericRepository<User>, IUserRepository
 
     public UserRepository(iVoluntiaDataContext context) : base(context)
     {
-            _context = context;
+        _context = context;
     }
-    
+
+    public async Task<User?> GetUserByEmailWithFoundationAsync(string email, CancellationToken cancellationToken)
+    {
+        return await _context.Set<User>()
+            .Where(x => x.Email != null && x.Email.Trim().ToLower() == email.Trim().ToLower())
+            .Include(x => x.Foundation)
+            .Include(x => x.OnboardingProgress)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }
 
 public class OnboardingProgressRepository : GenericRepository<OnboardingProgress>, IOnboardingProgressRepository
@@ -64,4 +74,3 @@ public class InterestRepository : GenericRepository<Interest>, IInterestReposito
         _context = context;
     }
 }
-

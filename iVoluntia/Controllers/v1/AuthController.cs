@@ -1,17 +1,28 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Trustesse.Ivoluntia.API.Extensions;
 using Trustesse.Ivoluntia.Commons.DTOs;
+using Trustesse.Ivoluntia.Commons.DTOs.Auth;
+using Trustesse.Ivoluntia.Services.Abstractions;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
 namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
-    [Route("api/v1/countries")]
+    [Route("api/v1/auth")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController(IAuthenticationService authenticationService, IAuthService authService) : ControllerBase
     {
-        private readonly IAuthService _authService;
-        public AuthController(IAuthService authService)
+        [HttpPost("login")]
+        public async Task<IActionResult> LoginAsync(LoginRequestModel request, CancellationToken cancellationToken)
         {
-            _authService = authService;
+            var response = await authenticationService.LoginAsync(request, cancellationToken);
+            return response.ToActionResult();
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshTokenAsync(RefreshTokenRequestModel request, CancellationToken cancellationToken)
+        {
+            var response = await authenticationService.RefreshTokenAsync(request, cancellationToken);
+            return response.ToActionResult();
         }
 
         [HttpPost("volunteer")]
@@ -20,7 +31,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             if (request == null)
                 return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid request."));
 
-            var result = await _authService.CreateVolunteer(request);
+            var result = await authService.CreateVolunteer(request);
 
             if (result.StatusCode != 200)
             {

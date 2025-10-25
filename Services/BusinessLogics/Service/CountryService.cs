@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Linq;
@@ -9,8 +9,8 @@ using Microsoft.AspNetCore.Http;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.Models.Request;
 using Trustesse.Ivoluntia.Commons.Models.Response;
-using Trustesse.Ivoluntia.Data.Repositories;
 using Trustesse.Ivoluntia.Domain.Entities;
+using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
@@ -42,12 +42,11 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             catch (Exception ex)
             {
                 return ApiResponse<string>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
-               
             }
         }
-        public async Task<Country> GetCountryById(Guid countryId)
+        public async Task<Country?> GetCountryById(Guid countryId)
         {
-            Country country = null;
+            Country? country = null;
             try
             {
                 country = await _uow.countryRepo.GetByIdAsync(countryId);
@@ -56,7 +55,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             catch (Exception ex)
             {
 
-              
+
             }
             return country;
         }
@@ -69,7 +68,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             }
             catch (Exception ex)
             {
-                
+
             }
             return countries;
         }*/
@@ -140,17 +139,17 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             }
             return ApiResponse<string>.Success("State Save successfully.", null);
         }
-        
-        public async Task<State> GetStateByIdAsync(Guid stateId)
+
+        public async Task<State?> GetStateByIdAsync(Guid stateId)
         {
-            State result = null;
+            State? result = null;
             try
             {
                 result = await _uow.stateRepo.GetByIdAsync(stateId);
             }
             catch (Exception ex)
             {
-               
+
             }
             return result;
         }
@@ -170,8 +169,8 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                         CountryId = x.Country.Id,
                         CountryName = x.Country.CountryName
                     }).OrderBy(x => x.StateName).ToList();
-                  
-                    return ApiResponse<List<GetStateResponse>>.Success("State Successfully retreive", stateResponse); 
+
+                    return ApiResponse<List<GetStateResponse>>.Success("State Successfully retreive", stateResponse);
                 }
                 else
                 {

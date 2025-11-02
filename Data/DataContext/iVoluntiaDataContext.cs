@@ -36,6 +36,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<ProgramGoal> ProgramGoals { get; set; }
         public DbSet<Program> Programs { get; set; }
         public DbSet<Otp> Otps { get; set; }
+        public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

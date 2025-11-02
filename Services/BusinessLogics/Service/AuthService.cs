@@ -7,6 +7,7 @@ using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Data.Repositories;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
+using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 using Location = Trustesse.Ivoluntia.Commons.DTOs.LocationDto;
 using Skill = Trustesse.Ivoluntia.Commons.DTOs.SkillDto;
@@ -352,15 +353,15 @@ public class AuthService : IAuthService
         }
         return ApiResponse<string>.Failure(400, "unable to get hash password");
     }
-    public async Task<ApiResponse<string>> ValidateOTP(string otp, string email)
+    public async Task<ApiResponse<string>> ConfirmUser(ConfirmUserModel model)
     {
-        var user = await _userManager.FindByEmailAsync(email.Trim().ToLower());
+        var user = await _userManager.FindByEmailAsync(model.Email.Trim().ToLower());
         if (user == null)
         {
             return ApiResponse<string>.Failure(404, "User not found.");
         }
-        TimeSpan time = DateTime.Now.TimeOfDay.Subtract(user.OtpSubmittedTime.GetValueOrDefault().TimeOfDay);
-        if (user.OTP == otp && time.TotalSeconds <= 600)
+        var confirmOtp = await _otp.ConfirmOtpAsync(user.Id, model.OtpCode, model.purpose);
+        if (confirmOtp = true)
         {
             user.EmailConfirmed = true;
             var result = await _userManager.UpdateAsync(user);
@@ -391,41 +392,83 @@ public class AuthService : IAuthService
             return ApiResponse<string>.Failure(400, "Password change Fail");
         }   
     }
-    public async Task<ApiResponse<string>> ResendOTP(string email)
+    public async Task<ApiResponse<string>> ResendOTP(string email, OtpPurpose purpose)
     {
         var user = await _userManager.FindByEmailAsync(email.Trim().ToLower());
         if (user != null)
         {
-            //Generate OTP
-            var otp = await _otp.GenerateOtpAsync(user.Id, OtpPurpose.PasswordReset);
-            user.OTP = otp;
-            user.OtpSubmittedTime = Convert.ToDateTime(DateTime.Now.ToShortTimeString());
-            var result = await _userManager.UpdateAsync(user).ConfigureAwait(false);
-            if (!result.Succeeded)
+            //verify if the otp is used
+            var isUsed = await _otp.ConfirmOtpAsync(user.Id, user.OTP, purpose);
+            if(isUsed == false)
             {
-                return ApiResponse<string>.Failure(500, "Unable to update user account with OTP details.");
-            }
-            else
-            {
-                // send otp to email Address
-                var dict = new Dictionary<string, string>()
+                //Generate OTP
+                var otp = await _otp.GenerateOtpAsync(user.Id, OtpPurpose.PasswordReset);
+                user.OTP = otp;
+                user.OtpSubmittedTime = Convert.ToDateTime(DateTime.Now.ToShortTimeString());
+                var result = await _userManager.UpdateAsync(user).ConfigureAwait(false);
+                if (!result.Succeeded)
+                {
+                    return ApiResponse<string>.Failure(500, "Unable to update user account with OTP details.");
+                }
+                else
+                {
+                    // send otp to email Address
+                    var dict = new Dictionary<string, string>()
                     {
                         {"firstname", user.FirstName },
                         { "otp", user.OTP}
                     };
-                var sendMail = await _notify.ComposeNotificationAsync("Otp", "Email", dict);
-                if (sendMail != null)
-                {
-                    var msg = new EmailModel
+                    var sendMail = await _notify.ComposeNotificationAsync("Otp", "Email", dict);
+                    if (sendMail != null)
                     {
-                        Receivers = new List<string> { user.Email },
-                        Attachments = null,
-                        Subject = "OTP",
-                        Message = sendMail.Data
-                    };
-                    await _email.SendEmailASync(msg);
-                    return ApiResponse<string>.Success("An OTP has been sent to your registered email", null);
+                        var msg = new EmailModel
+                        {
+                            Receivers = new List<string> { user.Email },
+                            Attachments = null,
+                            Subject = "OTP",
+                            Message = sendMail.Data
+                        };
+                        await _email.SendEmailASync(msg);
+                        return ApiResponse<string>.Success("An OTP has been sent to your registered email", null);
+                    }
                 }
+            }
+            else if(isUsed == true)
+            {
+                var otp = await _otp.GenerateOtpAsync(user.Id, OtpPurpose.PasswordReset);
+                user.OTP = otp;
+                user.OtpSubmittedTime = Convert.ToDateTime(DateTime.Now.ToShortTimeString());
+                var result = await _userManager.UpdateAsync(user).ConfigureAwait(false);
+                if (!result.Succeeded)
+                {
+                    return ApiResponse<string>.Failure(500, "Unable to update user account with OTP details.");
+                }
+                else
+                {
+                    // send otp to email Address
+                    var dict = new Dictionary<string, string>()
+                    {
+                        {"firstname", user.FirstName },
+                        { "otp", user.OTP}
+                    };
+                    var sendMail = await _notify.ComposeNotificationAsync("Otp", "Email", dict);
+                    if (sendMail != null)
+                    {
+                        var msg = new EmailModel
+                        {
+                            Receivers = new List<string> { user.Email },
+                            Attachments = null,
+                            Subject = "OTP",
+                            Message = sendMail.Data
+                        };
+                        await _email.SendEmailASync(msg);
+                        return ApiResponse<string>.Success("An OTP has been sent to your registered email", null);
+                    }
+                }
+            }
+            else
+            {
+                return ApiResponse<string>.Failure(404, "Otp not found");
             }
         }
         return ApiResponse<string>.Failure(400, "User not found.");
@@ -446,19 +489,5 @@ public class AuthService : IAuthService
         }
         return result;
     }
-    private string GenerateOTP()
-    {
-        try
-        {
-            byte[] seed = Guid.NewGuid().ToByteArray();
-            Random _random = new Random(BitConverter.ToInt32(seed, 0));
-            int _rand = _random.Next(100000, 1000000);
-
-            return _rand.ToString();
-        }
-        catch (Exception ex)
-        {
-            return null;
-        }
-    }
+   
 }

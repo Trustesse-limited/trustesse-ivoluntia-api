@@ -4,6 +4,7 @@ using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.Models.Request;
 using Trustesse.Ivoluntia.Domain.Enums;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
+using Trustesse.Ivoluntia.Services.BusinessLogics.Service;
 
 namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
@@ -12,9 +13,11 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
     public class OtpController : ControllerBase
     {
         private readonly IOtpService _otpService;
-        public OtpController(IOtpService otpService)
+        private readonly IAuthService _authService;
+        public OtpController(IOtpService otpService, IAuthService authService)
         {
             _otpService = otpService;
+            _authService = authService;
         }
         [HttpPost("generate-otp")]
         public async Task<IActionResult> GenerateOtp([FromBody] GenerateOtpDto request)
@@ -45,6 +48,19 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             }
 
             return Ok(ApiResponse<string>.Success("OTP confirmed.", null));
+        }
+
+        [HttpPost("resendotp")]
+        public async Task<IActionResult> ResendOTP(string email, OtpPurpose purpose)
+        {
+            var result = await _authService.ResendOTP(email, purpose);
+
+            if (result.StatusCode != 200)
+            {
+                return BadRequest(new { ResponseCode = 500, ResponseMessage = "Internal server error." });
+            }
+
+            return Ok(result);
         }
     }
 }

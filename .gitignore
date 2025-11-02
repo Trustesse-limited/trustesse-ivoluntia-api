@@ -33,6 +33,7 @@ obj/
 # System files
 Thumbs.db
 *.log
+.DS_Store
 
 # .NET Core
 project.lock.json

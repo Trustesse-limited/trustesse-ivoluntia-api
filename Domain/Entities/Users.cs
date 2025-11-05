@@ -26,10 +26,12 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public string? FoundationId { get; set; }
         public virtual OnboardingProgress OnboardingProgress { get; set; }
         public Foundation? Foundation { get; set; }
+        public string? ProgramId { get; set; }
+        public Program? Program { get; set; }
         public ICollection<Skill?> Skills { get; set; } = new List<Skill>();
         public ICollection<Interest?> Interests { get; set; } = new List<Interest>();
         public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
         public ICollection<UserSkillLink?> UserSkillLinks { get; set; } = new List<UserSkillLink>();
         public ICollection<UserInterestLink?> UserInterestLinks { get; set; } = new List<UserInterestLink>();
-    }
+    };
 }

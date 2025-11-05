@@ -179,6 +179,21 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 return ApiResponse<bool>.Failure(StatusCodes.Status500InternalServerError, "An error occurred");
             }
         }
-
+        public async Task<ApiResponse<string>> UpdateProgramStatusAsync(UpdateProgramStatusDto updateProgramStatusDto)
+        {
+            try
+            {
+                var programStatus = await _programRepository.UpdateProgramStatusAsync(updateProgramStatusDto);
+                if(programStatus.StatusCode == StatusCodes.Status200OK)
+                {
+                    return ApiResponse<string>.Success($"{programStatus.Message}", $"{programStatus.Data}");
+                }
+                return ApiResponse<string>.Failure(programStatus.StatusCode, $"{programStatus.Message}");
+            }
+            catch(Exception ex)
+            {
+                return ApiResponse<string>.Failure(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
     }
 }

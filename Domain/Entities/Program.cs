@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Trustesse.Ivoluntia.Domain.Enums;
 
 namespace Trustesse.Ivoluntia.Domain.Entities
 {
@@ -20,11 +21,11 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public bool HasDonation { get; set; }
         public bool IsActive { get; set; }
         public int Status { get; set; }
-
         public string FoundationId { get; set; }
         public Foundation Foundation { get; set; }
-
         public ICollection<ProgramSkill> ProgramSkills { get; set; } = new List<ProgramSkill>();
         public ICollection<ProgramGoal> ProgramGoals { get; set; } = new List<ProgramGoal>();
+        public ICollection<User> Users{ get; set; } = new List<User>();
+        public ICollection<ProgramRejectionReason> ProgramRejectionReasons { get; set; } = new List<ProgramRejectionReason>();
     }
 }

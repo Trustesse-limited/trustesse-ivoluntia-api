@@ -25,16 +25,20 @@ namespace Trustesse.Ivoluntia.API.Extensions
         public static IServiceCollection AddCustomSwagger(this IServiceCollection services)
         {
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<IProgramService, ProgramService>();
             services.AddScoped<IProgramRepository, ProgramRepository>();
             services.AddScoped<IFoundationRepository, FoundationRepository>();
             services.AddScoped<ICountryService, CountryService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IOtpService, OtpService>();
+<<<<<<< Updated upstream
             services.AddHttpClient<IEmailService, EmailService>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
 
+=======
+>>>>>>> Stashed changes
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo

@@ -1,8 +1,12 @@
-﻿namespace Trustesse.Ivoluntia.Domain.Enums
+﻿using System;
+
+namespace Trustesse.Ivoluntia.Domain.Enums
 {
     public enum ProgramStatus
     {
-        Pending,
-        Active,
+        Pending = 0,
+        Active = 1,
+        Queried = 8,      
+        Ended = 9
     }
 }

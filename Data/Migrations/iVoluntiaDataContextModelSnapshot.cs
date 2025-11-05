@@ -808,6 +808,39 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.ToTable("ProgramGoals");
                 });
 
+            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.ProgramRejectionReason", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DateUpdated")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsDeprecated")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("ProgramId")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("RejectedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("RejectionComment")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProgramId");
+
+                    b.ToTable("ProgramRejectionReasons");
+                });
+
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.ProgramSkill", b =>
                 {
                     b.Property<string>("ProgramId")
@@ -1024,6 +1057,9 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<string>("ProgramId")
+                        .HasColumnType("varchar(255)");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("longtext");
 
@@ -1047,6 +1083,8 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("ProgramId");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -1305,6 +1343,16 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Navigation("Program");
                 });
 
+            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.ProgramRejectionReason", b =>
+                {
+                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Program", "Program")
+                        .WithMany("ProgramRejectionReasons")
+                        .HasForeignKey("ProgramId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Program");
+                });
+
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.ProgramSkill", b =>
                 {
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Program", "Program")
@@ -1342,7 +1390,14 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .HasForeignKey("FoundationId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Program", "Program")
+                        .WithMany("Users")
+                        .HasForeignKey("ProgramId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.Navigation("Foundation");
+
+                    b.Navigation("Program");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.UserInterestLink", b =>
@@ -1411,7 +1466,11 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                 {
                     b.Navigation("ProgramGoals");
 
+                    b.Navigation("ProgramRejectionReasons");
+
                     b.Navigation("ProgramSkills");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Skill", b =>

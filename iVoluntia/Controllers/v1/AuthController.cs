@@ -2,14 +2,13 @@ using Microsoft.AspNetCore.Mvc;
 using Trustesse.Ivoluntia.API.Extensions;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Auth;
-using Trustesse.Ivoluntia.Services.Abstractions;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
 namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
-    [Route("api/v1/auth")]
+    [Route("api/v1/[Controller]")]
     [ApiController]
-    public class AuthController(IAuthenticationService authenticationService, IAuthService authService) : ControllerBase
+    public class AuthController(IAuthenticationService authenticationService, IAuthenticationService authService) : ControllerBase
     {
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync(LoginRequestModel request, CancellationToken cancellationToken)

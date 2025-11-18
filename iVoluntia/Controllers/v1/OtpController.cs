@@ -1,20 +1,18 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.Models.Request;
 using Trustesse.Ivoluntia.Domain.Enums;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
-using Trustesse.Ivoluntia.Services.BusinessLogics.Service;
 
 namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
-    [Route("api/v1/otps")]
+    [Route("api/v1/[Controller]")]
     [ApiController]
     public class OtpController : ControllerBase
     {
         private readonly IOtpService _otpService;
-        private readonly IAuthService _authService;
-        public OtpController(IOtpService otpService, IAuthService authService)
+        private readonly IAuthenticationService _authService;
+        public OtpController(IOtpService otpService, IAuthenticationService authService)
         {
             _otpService = otpService;
             _authService = authService;

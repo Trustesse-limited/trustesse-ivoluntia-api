@@ -30,7 +30,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<IProgramRepository, ProgramRepository>();
             services.AddScoped<IFoundationRepository, FoundationRepository>();
             services.AddScoped<ICountryService, CountryService>();
-            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IOtpService, OtpService>();
 <<<<<<< Updated upstream
             services.AddHttpClient<IEmailService, EmailService>();

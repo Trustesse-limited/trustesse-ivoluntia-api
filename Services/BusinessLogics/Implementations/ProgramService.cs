@@ -18,18 +18,21 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         private readonly iVoluntiaDataContext _context;
         private readonly IProgramRepository _programRepository;
         private readonly IFoundationRepository _foundationRepository;
+        private readonly ICurrentUserService _currentUserService;
         private readonly IMapper _mapper;
         public ProgramService(
             ILogger<ProgramService> logger,
             iVoluntiaDataContext context,
             IProgramRepository programRepository,
             IFoundationRepository foundationRepository,
+            ICurrentUserService currentUserService,
             IMapper mapper)
         {
             _logger = logger;
             _context = context;
             _programRepository = programRepository;
             _foundationRepository = foundationRepository;
+            _currentUserService = currentUserService;
             _mapper = mapper;
         }
         public async Task<ApiResponse<ProgramDto>> CreateProgram(CreateProgramDto data)
@@ -193,10 +196,26 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         {
             try
             {
-                var goal = await _context.ProgramGoals.FindAsync(programGoalId);
+                var userId = _currentUserService.GetUserId();
+
+                if (userId == null)
+                    return ApiResponse<bool>.Failure(StatusCodes.Status401Unauthorized, "You must log in first");
+
+                var userFoundationId = await _currentUserService.GetUserFoundationId(userId);
+
+                var goal = await _context.ProgramGoals.Include(g => g.Program).FirstOrDefaultAsync(g => g.Id == programGoalId);
 
                 if (goal == null)
                     return ApiResponse<bool>.Failure(StatusCodes.Status404NotFound, "Program Goal not found");
+
+                if (goal.Program.FoundationId != userFoundationId)
+                    return ApiResponse<bool>.Failure(StatusCodes.Status403Forbidden, "You are not allowed to delete this program goal");
+
+                if (goal.Program.HasProgramEnded())
+                    return ApiResponse<bool>.Failure(StatusCodes.Status403Forbidden, "Program already ended");
+
+                if (goal.IsAchieved)
+                    return ApiResponse<bool>.Failure(StatusCodes.Status403Forbidden, "You are not allowed to delete achieved goal");
 
                 _context.ProgramGoals.Remove(goal);
 

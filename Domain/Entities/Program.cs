@@ -26,5 +26,12 @@ namespace Trustesse.Ivoluntia.Domain.Entities
 
         public ICollection<ProgramSkill> ProgramSkills { get; set; } = new List<ProgramSkill>();
         public ICollection<ProgramGoal> ProgramGoals { get; set; } = new List<ProgramGoal>();
+
+
+
+        public bool HasProgramEnded()
+        {
+            return EndDate < DateTime.UtcNow;
+        }
     }
 }

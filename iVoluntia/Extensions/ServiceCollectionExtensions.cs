@@ -34,6 +34,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddHttpClient<IEmailService, EmailService>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             services.AddSwaggerGen(options =>
             {

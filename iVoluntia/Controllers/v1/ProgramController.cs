@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Trustesse.Ivoluntia.Commons.DTOs;
@@ -7,8 +8,6 @@ using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 
 namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
-
-    [ApiController]
     [ApiVersion("1.0")]
     [Route("v{version:apiVersion}/[controller]")]
     public class ProgramsController : ControllerBase
@@ -71,14 +70,14 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             return Ok(result);
         }
         [HttpPut("update-program-status")]
-        [Authorize(Roles = "SuperAdmin, FoundationAdmin")]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, FoundationAdmin")]
         public async Task<IActionResult> UpdateProgramStatusAsync([FromBody]UpdateProgramStatusDto updateProgramStatusDto)
         {
             try
             {
                 if(updateProgramStatusDto.ProgramId == null && updateProgramStatusDto.Status == null)
                 {
-                    return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "programid and status cannot be null"));
+                    return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "program id and status cannot be null"));
                 }
                 if (HttpContext.User.IsInRole("FoundationAdmin") & updateProgramStatusDto.Status != "Pending")
                 {
@@ -93,7 +92,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             }
             catch (Exception ex)
             {
-                return BadRequest(ex);
+                return BadRequest(ex.Message);
             }
         }
     }

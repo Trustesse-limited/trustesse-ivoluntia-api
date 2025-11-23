@@ -76,7 +76,8 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
         {
             try
             {
-                var program = await _context.Programs.Include(x => x.ProgramRejectionReasons).FirstOrDefaultAsync(x => x.Id == updateProgramStatusDto.ProgramId);
+                var program = await _context.Programs.Include(x => x.Users).FirstOrDefaultAsync(x => x.Id == updateProgramStatusDto.ProgramId);
+                var foundationAdminEmail = program.Users.Where(x => x.ProgramId == program.Id && x.Email == program.CreatedBy).FirstOrDefault();
                 if (program == null)
                 {
                     return ApiResponse<string>.Failure(StatusCodes.Status404NotFound, "program not found");
@@ -89,7 +90,6 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                 {
                     return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "invalid status");
                 }
-                var superAdmin = program.ProgramRejectionReasons.FirstOrDefault(x => x.ProgramId == program.Id);
                 if (updateProgramStatusDto.Status == "Active")
                 {
                     program.Status = (int)ProgramStatus.Active;
@@ -99,8 +99,8 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                     placeHolder.Add("UserName", program.CreatedBy);
                     placeHolder.Add("Title", program.Title);
                     placeHolder.Add("Status", updateProgramStatusDto.Status);
-                    var notification = _notificationRepository.ComposeNotificationAsync("programstatusupdate", "Email", placeHolder);
-                    //notification service method(notification, program.CreatedBy(email of program creator)) to send email to creator(foundation admin)
+                    var notification = await _notificationRepository.ComposeNotificationAsync("programstatusupdate", "Email", placeHolder);
+                    return ApiResponse<string>.Success($"{foundationAdminEmail}", notification.Data);
                 }
                 else if (updateProgramStatusDto.Status == "Pending")
                 {
@@ -108,12 +108,11 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                     _context.Programs.Update(program);
                     await _context.SaveChangesAsync();
                     Dictionary<string, string> placeHolder = new Dictionary<string, string>();
-                    placeHolder.Add("UserName", superAdmin.QueriedByFullName);
                     placeHolder.Add("Title", program.Title);
                     placeHolder.Add("Status", updateProgramStatusDto.Status);
-                    var notification = _notificationRepository.ComposeNotificationAsync("programstatusupdate", "email", placeHolder);
-                    //notification service method(notification, program.QueriedByFullName(email of superadmin)) to send email to (superadmin)
-                }
+                    var notification = await _notificationRepository.ComposeNotificationAsync("programstatusupdate", "email", placeHolder);
+                    return ApiResponse<string>.Success($"{foundationAdminEmail}", notification.Data);
+                }   
                 else if (updateProgramStatusDto.Status == "Queried")
                 {
                     program.Status = (int)ProgramStatus.Queried;
@@ -122,9 +121,9 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                     {
                         Id = Guid.NewGuid().ToString(),
                         ProgramId = program.Id,
-                        QueriedBy = "put login userid",
+                        QueriedBy = "superadminid",
                         QueriedMessage = updateProgramStatusDto.QueriedComment,
-                        QueriedByFullName = "put the login username(superadmin email)"
+                        QueriedByFullName = "superadminusername"
                     };
                     await _context.ProgramRejectionReasons.AddAsync(rejectionReason);
                     await _context.SaveChangesAsync();
@@ -132,8 +131,8 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                     placeHolder.Add("UserName", program.CreatedBy);
                     placeHolder.Add("Title", program.Title);
                     placeHolder.Add("Status", updateProgramStatusDto.Status);
-                    var notification = _notificationRepository.ComposeNotificationAsync("programstatusupdate", "email", placeHolder);
-                    //notification service method(notification, program.CreatedBy(email of program creator)) to send email to creator(foundation admin)
+                    var notification = await _notificationRepository.ComposeNotificationAsync("programstatusupdate", "email", placeHolder);
+                    return ApiResponse<string>.Success($"{foundationAdminEmail}", notification.Data);
                 }
                 else
                 {
@@ -141,18 +140,17 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                     _context.Programs.Update(program);
                     await _context.SaveChangesAsync();
                     var users = program.Users.Where(x => x.ProgramId == program.Id).ToList();
-                    List<string> emails = new List<string>();
+                    string emails = "";
                     Dictionary<string, string> placeHolder = new Dictionary<string, string>();
                     placeHolder.Add("Title", program.Title);
                     placeHolder.Add("Status", updateProgramStatusDto.Status);
                     foreach (var user in users)
                     {
-                        emails.Add(user.Email);
+                        emails = emails + user.Email + ' ';
                     }
-                    var notification = _notificationRepository.ComposeNotificationAsync("programended", "email", placeHolder);
-                    //notification service method(notification, emails) to send email to volunters 
+                    var notification = await _notificationRepository.ComposeNotificationAsync("programended", "email", placeHolder);
+                    return ApiResponse<string>.Success(emails, notification.Data);
                 }
-                return ApiResponse<string>.Success("program status updated", $"{updateProgramStatusDto.Status}");
             }
             catch(Exception ex)
             {

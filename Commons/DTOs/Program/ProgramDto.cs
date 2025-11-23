@@ -40,6 +40,7 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Program
 
         [Required]
         public string FoundationId { get; set; }
+        public string CreatorEmail { get; set; }    
 
         public long DonationTarget { get; set; }
 

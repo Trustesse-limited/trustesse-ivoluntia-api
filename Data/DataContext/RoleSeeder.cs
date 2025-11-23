@@ -72,5 +72,4 @@ namespace Trustesse.Ivoluntia.Data.DataContext
             }
         }
     }
-
 }

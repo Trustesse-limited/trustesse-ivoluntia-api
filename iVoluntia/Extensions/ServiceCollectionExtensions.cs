@@ -32,13 +32,9 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<ICountryService, CountryService>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IOtpService, OtpService>();
-<<<<<<< Updated upstream
             services.AddHttpClient<IEmailService, EmailService>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
-
-=======
->>>>>>> Stashed changes
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo

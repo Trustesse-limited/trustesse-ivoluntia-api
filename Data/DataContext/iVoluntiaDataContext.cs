@@ -34,13 +34,8 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<Program> Programs { get; set; }
         public DbSet<ProgramRejectionReason> ProgramRejectionReasons{ get; set;}
         public DbSet<Otp> Otps { get; set; }
-<<<<<<< Updated upstream
         public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
 
-
-=======
-        
->>>>>>> Stashed changes
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

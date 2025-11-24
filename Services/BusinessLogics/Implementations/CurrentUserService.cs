@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 
@@ -35,7 +36,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
            _user?.Identity?.IsAuthenticated is true;
 
 
-        public async Task<string> GetUserFoundationId(string userId)
+        public async Task<ApiResponse<string>> GetUserFoundationId(string userId)
         {
 
             var foundationId = await _context.Users
@@ -44,9 +45,9 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 .FirstOrDefaultAsync();
 
             if (foundationId == null)
-                throw new InvalidOperationException("User has no FoundationId");
+                return ApiResponse<string>.Failure(StatusCodes.Status404NotFound, "No foundation Id found for user");
 
-            return foundationId;
+            return ApiResponse<string>.Success("user foundation id retrieved successfully", foundationId);
         }
     }
 }

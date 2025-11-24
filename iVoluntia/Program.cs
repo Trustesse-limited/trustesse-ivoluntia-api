@@ -1,6 +1,5 @@
 using MapsterMapper;
 using Trustesse.Ivoluntia.API.Extensions;
-using Trustesse.Ivoluntia.API.Middlewares;
 using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
 using Trustesse.Ivoluntia.Data.Repositories;
 using Trustesse.Ivoluntia.Domain.IRepositories;
@@ -64,9 +63,9 @@ if (Convert.ToBoolean(builder.Configuration.GetSection("CORS:Enabled").Value)) a
 else app.UseCors("AllowAll");
 
 app.UseHsts();
-app.UseRouting();
-app.UseMiddleware<ExceptionMiddleware>();
 app.UseHttpsRedirection();
+app.UseRouting();
+//app.UseMiddleware<ExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

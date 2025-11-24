@@ -208,7 +208,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 if (goal == null)
                     return ApiResponse<bool>.Failure(StatusCodes.Status404NotFound, "Program Goal not found");
 
-                if (goal.Program.FoundationId != userFoundationId)
+                if (goal.Program.FoundationId != userFoundationId.Data)
                     return ApiResponse<bool>.Failure(StatusCodes.Status403Forbidden, "You are not allowed to delete this program goal");
 
                 if (goal.Program.HasProgramEnded())

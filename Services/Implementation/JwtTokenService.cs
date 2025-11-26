@@ -40,15 +40,19 @@ public class JwtTokenService : IJwtTokenService
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_jwtOptions.Key);
 
-        // Get token expiration based on role
         var expirationMinutes = AuthenticationConstants.TokenExpirations.ContainsKey(role)
             ? AuthenticationConstants.TokenExpirations[role].AccessToken
             : 60;
+
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new[]
             {
+                    new Claim(JwtRegisteredClaimNames.Sub, claims.UserId),
+                    new Claim(ClaimTypes.NameIdentifier, claims.UserId),
+                    new Claim(JwtRegisteredClaimNames.Email, claims.Email),
+                    new Claim(ClaimTypes.Name, claims.Email),
                     new Claim(ClaimTypes.Role, claims.Role),
                     new Claim(ClaimTypes.GivenName, claims.FirstName),
                     new Claim(ClaimTypes.Surname, claims.LastName),
@@ -62,81 +66,9 @@ public class JwtTokenService : IJwtTokenService
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
 
-        //var tokenDescriptor = new SecurityTokenDescriptor
-        //{
-        //    Subject = new ClaimsIdentity(claims),
-        //    Expires = DateTime.Now.AddDays(1),
-        //    Audience = _jwtConfiguration.ValidAudience,
-        //    Issuer = _jwtConfiguration.ValidIssuer,
-        //    SigningCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256Signature)
-        //};
-        //var tokenHandler = new JwtSecurityTokenHandler();
-
-
-
-
-
-
-
-
-
-
-
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }
-
-    //public static string GenerateToken(User user, List<string> userRoles, string userPermissions, string lastLogin, List<Claim> appPermission)
-    //{
-    //    var appPermissionAsString = "";
-    //    JwtConfiguration _jwtConfiguration = new();
-    //    _configuration.Bind(_jwtConfiguration.SectionName, _jwtConfiguration);
-
-    //    var orgCode = string.IsNullOrEmpty(user.Organisation.OrganisationCode) ? "" : user.Organisation.OrganisationCode;
-
-    //    var claims = new List<Claim>
-    //        {
-    //            new Claim(CustomClaimTypes.Id, user.Id),
-    //            new Claim(ClaimTypes.Email, user.Email),
-    //            new Claim(ClaimTypes.Name, user.UserName),
-    //            new Claim(CustomClaimTypes.OrganisationId, user.OrganisationId),
-    //            new Claim(CustomClaimTypes.OrganisationCode, orgCode),
-    //            new Claim(CustomClaimTypes.FirstName, user.LastName),
-    //            new Claim(CustomClaimTypes.FirstName, user.FirstName),
-    //            new Claim(CustomClaimTypes.UserOrganisationName, user.Organisation.OrganisationName),
-    //            new Claim(CustomClaimTypes.Permissions, userPermissions),
-    //            new Claim(CustomClaimTypes.UserLastLogin, lastLogin),
-    //            new Claim(CustomClaimTypes.ProfilePicture, user.ProfilePicture),
-    //            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-    //        };
-
-
-    //    foreach (var item in appPermission)
-    //    {
-    //        claims.Add(new Claim(CustomClaimTypes.AppPermissions, item.Value));
-    //    }
-
-    //    foreach (var role in userRoles)
-    //    {
-    //        claims.Add(new Claim(ClaimTypes.Role, role));
-    //    }
-
-    //    var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfiguration.Key));
-
-    //    var tokenDescriptor = new SecurityTokenDescriptor
-    //    {
-    //        Subject = new ClaimsIdentity(claims),
-    //        Expires = DateTime.Now.AddDays(1),
-    //        Audience = _jwtConfiguration.ValidAudience,
-    //        Issuer = _jwtConfiguration.ValidIssuer,
-    //        SigningCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256Signature)
-    //    };
-    //    var tokenHandler = new JwtSecurityTokenHandler();
-    //    var token = tokenHandler.CreateToken(tokenDescriptor);
-
-    //    return tokenHandler.WriteToken(token);
-    //}
-    //acf-qqjo-bko
 
     public async Task<string> GenerateRefreshTokenAsync(string userId, string role)
     {

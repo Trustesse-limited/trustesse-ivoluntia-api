@@ -1,4 +1,4 @@
-﻿using Asp.Versioning;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
@@ -6,10 +6,9 @@ using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 
 namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
-
+    [Route("api/v1/[Controller]")]
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/[controller]")]
+    [Authorize]
     public class ProgramsController : ControllerBase
     {
         private readonly IProgramService _programService;
@@ -59,13 +58,13 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         }
 
 
-        [HttpDelete("delete")]
-        public async Task<IActionResult> DeleteProgram(string id)
+        [HttpDelete("delete-program-goal")]
+        public async Task<IActionResult> DeleteProgram(string programGoalId)
         {
-            if (id == null)
+            if (programGoalId == null)
                 return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid request."));
 
-            var result = await _programService.RemoveProgram(id);
+            var result = await _programService.DeleteProgramGoals(programGoalId);
 
             return Ok(result);
         }

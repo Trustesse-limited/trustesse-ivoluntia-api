@@ -22,20 +22,29 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         private readonly iVoluntiaDataContext _context;
         private readonly IProgramRepository _programRepository;
         private readonly IFoundationRepository _foundationRepository;
+<<<<<<< HEAD
         private readonly IEmailService _emailService;
+=======
+        private readonly ICurrentUserService _currentUserService;
+>>>>>>> 569c8f7abce645902da56cbd18497728bab7334b
         private readonly IMapper _mapper;
         public ProgramService(
             ILogger<ProgramService> logger,
             iVoluntiaDataContext context,
             IProgramRepository programRepository,
             IFoundationRepository foundationRepository,
+<<<<<<< HEAD
             IEmailService emailService, 
+=======
+            ICurrentUserService currentUserService,
+>>>>>>> 569c8f7abce645902da56cbd18497728bab7334b
             IMapper mapper)
         {
             _logger = logger;
             _context = context;
             _programRepository = programRepository;
             _foundationRepository = foundationRepository;
+            _currentUserService = currentUserService;
             _mapper = mapper;
             _emailService = emailService;
         }
@@ -46,10 +55,19 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         {
             try
             {
-                var foundationExists = _foundationRepository.GetFoundation(data.FoundationId);
+                var foundation = _foundationRepository.GetFoundation(data.FoundationId).FirstOrDefault();
 
-                if (foundationExists == null)
+                if (foundation == null)
                     return ApiResponse<ProgramDto>.Failure(StatusCodes.Status404NotFound, "Foundation not found");
+
+                if (!foundation.IsActive)
+                    return ApiResponse<ProgramDto>.Failure(StatusCodes.Status403Forbidden, "You cannot create a program for an inactive foundation");
+
+                var programWithSameTitle = _programRepository.GetPrograms().FirstOrDefault(p => p.Title.ToLower() == data.Title.ToLower());
+
+                if (programWithSameTitle != null)
+                    return ApiResponse<ProgramDto>.Failure(StatusCodes.Status409Conflict, "A program with the same title already exists");
+
 
                 var newData = _mapper.Map<Program>(data);
 
@@ -189,6 +207,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 return ApiResponse<bool>.Failure(StatusCodes.Status500InternalServerError, "An error occurred");
             }
         }
+<<<<<<< HEAD
         public async Task<ApiResponse<string>> UpdateProgramStatusAsync(UpdateProgramStatusDto updateProgramStatusDto)
         {
             try
@@ -217,5 +236,45 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 return ApiResponse<string>.Failure(StatusCodes.Status500InternalServerError, ex.Message);
             }
          }
+=======
+
+        public async Task<ApiResponse<bool>> DeleteProgramGoals(string programGoalId)
+        {
+            try
+            {
+                var userId = _currentUserService.GetUserId();
+
+                if (userId == null)
+                    return ApiResponse<bool>.Failure(StatusCodes.Status401Unauthorized, "You must log in first");
+
+                var userFoundationId = await _currentUserService.GetUserFoundationId(userId);
+
+                var goal = await _context.ProgramGoals.Include(g => g.Program).FirstOrDefaultAsync(g => g.Id == programGoalId);
+
+                if (goal == null)
+                    return ApiResponse<bool>.Failure(StatusCodes.Status404NotFound, "Program Goal not found");
+
+                if (goal.Program.FoundationId != userFoundationId.Data)
+                    return ApiResponse<bool>.Failure(StatusCodes.Status403Forbidden, "You are not allowed to delete this program goal");
+
+                if (goal.Program.HasProgramEnded())
+                    return ApiResponse<bool>.Failure(StatusCodes.Status403Forbidden, "Program already ended");
+
+                if (goal.IsAchieved)
+                    return ApiResponse<bool>.Failure(StatusCodes.Status403Forbidden, "You are not allowed to delete achieved goal");
+
+                _context.ProgramGoals.Remove(goal);
+
+                await _context.SaveChangesAsync();
+
+                return ApiResponse<bool>.Success("Program Goal deleted successfully", true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return ApiResponse<bool>.Failure(StatusCodes.Status500InternalServerError, "An error occurred");
+            }
+        }
+>>>>>>> 569c8f7abce645902da56cbd18497728bab7334b
     }
 }

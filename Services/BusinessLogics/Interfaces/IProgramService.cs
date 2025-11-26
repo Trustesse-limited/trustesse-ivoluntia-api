@@ -10,6 +10,10 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces
         Task<ApiResponse<bool>> UpdateProgram(UpdateProgramDTO data);
         Task<ApiResponse<IEnumerable<ProgramDto>>> GetPrograms();
         Task<ApiResponse<IEnumerable<ProgramDto>>> GetProgram(string id);
+<<<<<<< HEAD
         Task<ApiResponse<string>> UpdateProgramStatusAsync(UpdateProgramStatusDto updateProgramStatusDto);
+=======
+        Task<ApiResponse<bool>> DeleteProgramGoals(string programGoalId);
+>>>>>>> 569c8f7abce645902da56cbd18497728bab7334b
     }
 }

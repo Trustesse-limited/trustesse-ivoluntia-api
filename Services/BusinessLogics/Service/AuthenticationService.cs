@@ -328,6 +328,8 @@ public class AuthenticationService : IAuthenticationService
 
         var jwtClaims = new JwtClaimsModel
         {
+            UserId = user.Id,
+            Email = user.Email,
             Role = primaryRole,
             FirstName = user.FirstName,
             LastName = user.LastName,

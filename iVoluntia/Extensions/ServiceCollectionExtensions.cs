@@ -35,6 +35,11 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddHttpClient<IEmailService, EmailService>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
+<<<<<<< HEAD
+=======
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+>>>>>>> 569c8f7abce645902da56cbd18497728bab7334b
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo
@@ -49,10 +54,11 @@ namespace Trustesse.Ivoluntia.API.Extensions
                                 Example: 'Bearer ey12345abcdef'",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
                     Scheme = "Bearer"
                 });
-                options.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
                         new OpenApiSecurityScheme
@@ -61,12 +67,9 @@ namespace Trustesse.Ivoluntia.API.Extensions
                             {
                                 Type = ReferenceType.SecurityScheme,
                                 Id = "Bearer"
-                            },
-                            Scheme = "oauth2",
-                            Name = "Bearer",
-                            In = ParameterLocation.Header
+                            }
                         },
-                        new List<string>()
+                        Array.Empty<string>()
                     }
                 });
             });
@@ -146,29 +149,37 @@ namespace Trustesse.Ivoluntia.API.Extensions
 
         public static IServiceCollection RegisterJwtServices(this IServiceCollection services, IConfiguration configuration)
         {
-            var jwtOptions = configuration.GetSection(nameof(JwtOptions));
+            var jwtOptions = configuration.GetSection("JwtOptions");
             services.Configure<JwtOptions>(jwtOptions);
-            var jwtIssuer = jwtOptions[nameof(JwtOptions.Issuer)];
-            var jwtAudience = jwtOptions[nameof(JwtOptions.Audience)];
-            var jwtSecretKey = jwtOptions[nameof(JwtOptions.Key)];
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
+            var issuer = jwtOptions["Issuer"];
+            var audience = jwtOptions["Audience"];
+            var key = jwtOptions["Key"];
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = jwtIssuer,
-                        ValidAudience = jwtAudience,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey))
-                    };
-                });
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = issuer,
+                    ValidAudience = audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+                };
+            });
 
             return services;
         }
+
 
         public static IServiceCollection AddCustomServices(this IServiceCollection services)
         {

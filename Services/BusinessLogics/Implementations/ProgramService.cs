@@ -22,22 +22,16 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         private readonly iVoluntiaDataContext _context;
         private readonly IProgramRepository _programRepository;
         private readonly IFoundationRepository _foundationRepository;
-<<<<<<< HEAD
         private readonly IEmailService _emailService;
-=======
         private readonly ICurrentUserService _currentUserService;
->>>>>>> 569c8f7abce645902da56cbd18497728bab7334b
         private readonly IMapper _mapper;
         public ProgramService(
             ILogger<ProgramService> logger,
             iVoluntiaDataContext context,
             IProgramRepository programRepository,
             IFoundationRepository foundationRepository,
-<<<<<<< HEAD
             IEmailService emailService, 
-=======
             ICurrentUserService currentUserService,
->>>>>>> 569c8f7abce645902da56cbd18497728bab7334b
             IMapper mapper)
         {
             _logger = logger;
@@ -48,9 +42,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             _mapper = mapper;
             _emailService = emailService;
         }
-
-
-
         public async Task<ApiResponse<ProgramDto>> CreateProgram(CreateProgramDto data)
         {
             try
@@ -207,20 +198,19 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 return ApiResponse<bool>.Failure(StatusCodes.Status500InternalServerError, "An error occurred");
             }
         }
-<<<<<<< HEAD
         public async Task<ApiResponse<string>> UpdateProgramStatusAsync(UpdateProgramStatusDto updateProgramStatusDto)
         {
             try
-            {                
-                var programStatus = await _programRepository.UpdateProgramStatusAsync(updateProgramStatusDto);
+            {
+                var id = _currentUserService.GetUserId();
+                var programStatus = await _programRepository.UpdateProgramStatusAsync(updateProgramStatusDto, id);
                 if(programStatus.StatusCode != StatusCodes.Status200OK)
                 {
                     return ApiResponse<string>.Failure(programStatus.StatusCode, programStatus.Message);
                 }
                 EmailModel emailModel = new EmailModel
                 {
-                    Receivers = programStatus.Message.TrimEnd().Split(' ').ToList(),    
-                    //Attachments = "my attachment",
+                    Receivers = programStatus.Message.TrimEnd().Split(' ').ToList(),   
                     Subject = "program status",
                     Message = HttpUtility.HtmlDecode(programStatus.Data)
                 };
@@ -236,7 +226,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 return ApiResponse<string>.Failure(StatusCodes.Status500InternalServerError, ex.Message);
             }
          }
-=======
 
         public async Task<ApiResponse<bool>> DeleteProgramGoals(string programGoalId)
         {
@@ -275,6 +264,5 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 return ApiResponse<bool>.Failure(StatusCodes.Status500InternalServerError, "An error occurred");
             }
         }
->>>>>>> 569c8f7abce645902da56cbd18497728bab7334b
     }
 }

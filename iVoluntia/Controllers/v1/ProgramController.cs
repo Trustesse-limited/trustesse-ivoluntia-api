@@ -1,10 +1,7 @@
-<<<<<<< HEAD
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-=======
 ﻿using Microsoft.AspNetCore.Authorization;
->>>>>>> 569c8f7abce645902da56cbd18497728bab7334b
 using Microsoft.AspNetCore.Mvc;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
@@ -12,14 +9,9 @@ using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 
 namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
-<<<<<<< HEAD
-    [ApiVersion("1.0")]
-    [Route("v{version:apiVersion}/[controller]")]
-=======
     [Route("api/v1/[Controller]")]
     [ApiController]
     [Authorize]
->>>>>>> 569c8f7abce645902da56cbd18497728bab7334b
     public class ProgramsController : ControllerBase
     {
         private readonly IProgramService _programService;
@@ -80,7 +72,6 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             return Ok(result);
         }
         [HttpPut("update-program-status")]
-        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "SuperAdmin, FoundationAdmin")]
         public async Task<IActionResult> UpdateProgramStatusAsync([FromBody]UpdateProgramStatusDto updateProgramStatusDto)
         {
             try
@@ -90,6 +81,10 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
                     return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "program id and status cannot be null"));
                 }
                 if (HttpContext.User.IsInRole("FoundationAdmin") & updateProgramStatusDto.Status != "Pending")
+                {
+                    return Unauthorized(ApiResponse<string>.Failure(StatusCodes.Status401Unauthorized, "Unauthorized"));
+                }
+                if(!HttpContext.User.IsInRole("FoundationAdmin") && !HttpContext.User.IsInRole("SuperAdmin"))
                 {
                     return Unauthorized(ApiResponse<string>.Failure(StatusCodes.Status401Unauthorized, "Unauthorized"));
                 }

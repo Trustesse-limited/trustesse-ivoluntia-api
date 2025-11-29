@@ -25,17 +25,12 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public Foundation Foundation { get; set; }
         public ICollection<ProgramSkill> ProgramSkills { get; set; } = new List<ProgramSkill>();
         public ICollection<ProgramGoal> ProgramGoals { get; set; } = new List<ProgramGoal>();
-<<<<<<< HEAD
         public ICollection<User> Users{ get; set; } = new List<User>();
         public ICollection<ProgramRejectionReason> ProgramRejectionReasons { get; set; } = new List<ProgramRejectionReason>();
-=======
-
-
 
         public bool HasProgramEnded()
         {
             return EndDate < DateTime.UtcNow;
         }
->>>>>>> 569c8f7abce645902da56cbd18497728bab7334b
     }
 }

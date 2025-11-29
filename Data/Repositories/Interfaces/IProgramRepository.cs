@@ -11,6 +11,6 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Interfaces
         IQueryable<Program> GetPrograms();
         bool UpdateProgram(Program data);
         IQueryable<Program> GetProgram(string dataId);
-        Task<ApiResponse<string>> UpdateProgramStatusAsync(UpdateProgramStatusDto updateProgramStatusDto);
+        Task<ApiResponse<string>> UpdateProgramStatusAsync(UpdateProgramStatusDto updateProgramStatusDto, string id);
     }
 }

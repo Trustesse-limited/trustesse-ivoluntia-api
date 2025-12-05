@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
+using Trustesse.Ivoluntia.Domain.Enums;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 
 namespace Trustesse.Ivoluntia.API.Controllers.v1
@@ -80,11 +81,11 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
                 {
                     return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "program id and status cannot be null"));
                 }
-                if (HttpContext.User.IsInRole("FoundationAdmin") & updateProgramStatusDto.Status != "Pending")
+                if (HttpContext.User.IsInRole(UserRolesEnum.FoundationAdmin.ToString()) && updateProgramStatusDto.Status != ProgramStatus.Pending.ToString())
                 {
                     return Unauthorized(ApiResponse<string>.Failure(StatusCodes.Status401Unauthorized, "Unauthorized"));
                 }
-                if(!HttpContext.User.IsInRole("FoundationAdmin") && !HttpContext.User.IsInRole("SuperAdmin"))
+                if (!HttpContext.User.IsInRole(UserRolesEnum.FoundationAdmin.ToString()) && !HttpContext.User.IsInRole(UserRolesEnum.SuperAdmin.ToString()))
                 {
                     return Unauthorized(ApiResponse<string>.Failure(StatusCodes.Status401Unauthorized, "Unauthorized"));
                 }

@@ -87,19 +87,19 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                 {
                     return ApiResponse<string>.Failure(StatusCodes.Status404NotFound, "program not found");
                 }
-                if (program.Status == 0 & updateProgramStatusDto.Status == "Pending" || program.Status == 1 & updateProgramStatusDto.Status == "Active" || program.Status == 8 & updateProgramStatusDto.Status == "Queried" || program.Status == 9 & updateProgramStatusDto.Status == "Ended")
+                if (program.Status == (int)ProgramStatus.Pending & updateProgramStatusDto.Status == ProgramStatus.Pending.ToString() || program.Status == (int)ProgramStatus.Active & updateProgramStatusDto.Status == ProgramStatus.Active.ToString() || program.Status == (int)ProgramStatus.Queried & updateProgramStatusDto.Status == ProgramStatus.Queried.ToString() || program.Status == (int)ProgramStatus.Ended & updateProgramStatusDto.Status == ProgramStatus.Ended.ToString())
                 {
                     return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Cannot set new status to current status");
                 }
-                if (updateProgramStatusDto.Status != "Pending" & updateProgramStatusDto.Status != "Active" & updateProgramStatusDto.Status != "Queried" & updateProgramStatusDto.Status != "Ended")
+                if (updateProgramStatusDto.Status != ProgramStatus.Pending.ToString() & updateProgramStatusDto.Status != ProgramStatus.Active.ToString() & updateProgramStatusDto.Status != ProgramStatus.Queried.ToString() & updateProgramStatusDto.Status != ProgramStatus.Ended.ToString())
                 {
                     return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "invalid status");
                 }
-                if(updateProgramStatusDto.Status == "Pending" && program.Status != 8)
+                if(updateProgramStatusDto.Status == ProgramStatus.Pending.ToString() && program.Status != (int)ProgramStatus.Queried)
                 {
                     return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "cannot change status of program");
                 }
-                if (updateProgramStatusDto.Status == "Active")
+                if (updateProgramStatusDto.Status == ProgramStatus.Active.ToString())
                 {
                     program.Status = (int)ProgramStatus.Active;
                     _context.Programs.Update(program);
@@ -111,7 +111,7 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                     var notification = await _notificationRepository.ComposeNotificationAsync("programstatusupdate", "Email", placeHolder);
                     return ApiResponse<string>.Success($"{foundationAdminEmail}", notification.Data);
                 }
-                else if (updateProgramStatusDto.Status == "Pending")
+                else if (updateProgramStatusDto.Status == ProgramStatus.Pending.ToString())
                 {
                     var user = program.ProgramRejectionReasons.FirstOrDefault();
                     program.Status = (int)ProgramStatus.Pending;
@@ -124,7 +124,7 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                     var notification = await _notificationRepository.ComposeNotificationAsync("programstatusupdate", "email", placeHolder);
                     return ApiResponse<string>.Success($"{foundationAdminEmail}", notification.Data);
                 }   
-                else if (updateProgramStatusDto.Status == "Queried")
+                else if (updateProgramStatusDto.Status == ProgramStatus.Queried.ToString())
                 {
                     var users = await _context.Users.Where(x => x.Id == id).FirstOrDefaultAsync();   
                     program.Status = (int)ProgramStatus.Queried;

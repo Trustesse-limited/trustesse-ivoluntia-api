@@ -211,7 +211,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 EmailModel emailModel = new EmailModel
                 {
                     Receivers = programStatus.Message.TrimEnd().Split(' ').ToList(),   
-                    Subject = "program status",
+                    Subject = "program status update",
                     Message = HttpUtility.HtmlDecode(programStatus.Data)
                 };
                 var emailResponse = await _emailService.SendEmailASync(emailModel);

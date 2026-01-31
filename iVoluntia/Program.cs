@@ -1,9 +1,12 @@
+using CloudinaryDotNet;
 using MapsterMapper;
+using Microsoft.Extensions.Options;
 using Trustesse.Ivoluntia.API.Extensions;
 using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
 using Trustesse.Ivoluntia.Data.Repositories;
 using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services;
+using Trustesse.Ivoluntia.Services.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +26,20 @@ builder.Services.AddScoped<IMapper, Mapper>();
 
 // Add Mapster mappings
 builder.Services.RegisterMappings();
+
+
+//add cloudinary settings
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings"));
+
+
+builder.Services.AddSingleton(serviceProvider =>
+{
+    var settings = serviceProvider.GetRequiredService<IOptions<CloudinarySettings>>().Value;
+    var account = new Account(settings.CloudName, settings.ApiKey, settings.ApiSecret);
+    return new Cloudinary(account);
+});
+
 
 #region Services
 //builder.Services.AddScoped<ICountryService, CountryService>();

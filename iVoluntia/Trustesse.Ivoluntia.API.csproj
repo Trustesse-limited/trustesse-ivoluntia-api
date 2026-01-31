@@ -31,4 +31,10 @@
     <ProjectReference Include="..\Services\Trustesse.Ivoluntia.Services.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

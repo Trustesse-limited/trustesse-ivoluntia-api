@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Infrastructure.Implementation;
+using Ivoluntia.BackgroudServices.Services.Implementations;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -36,6 +38,9 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<IFileUploadService, CloudinaryService>();
+            services.AddScoped<IFileUploadServiceFactory, FileUploadServiceFactory>();
+
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo

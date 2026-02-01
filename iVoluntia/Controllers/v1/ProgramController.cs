@@ -10,7 +10,7 @@ using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 
 namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
-    [Route("api/v1/[Controller]")]
+    [Route("api/[Controller]")]
     [ApiController]
     [Authorize]
     public class ProgramsController : ControllerBase

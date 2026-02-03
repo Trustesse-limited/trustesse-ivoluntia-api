@@ -2,13 +2,17 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Web;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
+using Trustesse.Ivoluntia.Commons.Models.Request;
 using Trustesse.Ivoluntia.Data.DataContext;
+using Trustesse.Ivoluntia.Data.Migrations;
 using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
+using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
 {
@@ -18,6 +22,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         private readonly iVoluntiaDataContext _context;
         private readonly IProgramRepository _programRepository;
         private readonly IFoundationRepository _foundationRepository;
+        private readonly IEmailService _emailService;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMapper _mapper;
         public ProgramService(
@@ -25,6 +30,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             iVoluntiaDataContext context,
             IProgramRepository programRepository,
             IFoundationRepository foundationRepository,
+            IEmailService emailService, 
             ICurrentUserService currentUserService,
             IMapper mapper)
         {
@@ -34,6 +40,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             _foundationRepository = foundationRepository;
             _currentUserService = currentUserService;
             _mapper = mapper;
+            _emailService = emailService;
         }
         public async Task<ApiResponse<ProgramDto>> CreateProgram(CreateProgramDto data)
         {
@@ -78,8 +85,8 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                         });
                     }
                 }
-
                 newData.IsActive = false;
+                newData.CreatedBy = data.CreatorEmail;
                 newData.Status = (int)ProgramStatus.Pending;
 
                 var response = _programRepository.CreateProgram(newData);
@@ -191,6 +198,34 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 return ApiResponse<bool>.Failure(StatusCodes.Status500InternalServerError, "An error occurred");
             }
         }
+        public async Task<ApiResponse<string>> UpdateProgramStatusAsync(UpdateProgramStatusDto updateProgramStatusDto)
+        {
+            try
+            {
+                var id = _currentUserService.GetUserId();
+                var programStatus = await _programRepository.UpdateProgramStatusAsync(updateProgramStatusDto, id);
+                if(programStatus.StatusCode != StatusCodes.Status200OK)
+                {
+                    return ApiResponse<string>.Failure(programStatus.StatusCode, programStatus.Message);
+                }
+                EmailModel emailModel = new EmailModel
+                {
+                    Receivers = programStatus.Message.TrimEnd().Split(' ').ToList(),   
+                    Subject = "program status update",
+                    Message = HttpUtility.HtmlDecode(programStatus.Data)
+                };
+                var emailResponse = await _emailService.SendEmailASync(emailModel);
+                if (programStatus.StatusCode == StatusCodes.Status200OK & emailResponse.StatusCode == StatusCodes.Status200OK)
+                {
+                    return ApiResponse<string>.Success($"program status updated and email sent to {programStatus.Message}", $"{programStatus.Data}");
+                }
+                return ApiResponse<string>.Failure(programStatus.StatusCode, $"{programStatus.Message}");
+            }
+            catch(Exception ex)
+            {
+                return ApiResponse<string>.Failure(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+         }
 
         public async Task<ApiResponse<bool>> DeleteProgramGoals(string programGoalId)
         {

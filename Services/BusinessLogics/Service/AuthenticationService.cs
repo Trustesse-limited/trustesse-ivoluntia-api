@@ -302,7 +302,6 @@ public class AuthenticationService : IAuthenticationService
         {
             return ApiResponse<LoginResponseModel>.Failure(401, "Invalid credentials");
         }
-
         if (!user.IsActive || user.Foundation?.IsActive != true)
         {
             return ApiResponse<LoginResponseModel>.Failure(401, "Account is inactive");
@@ -342,7 +341,6 @@ public class AuthenticationService : IAuthenticationService
             user?.Id!, primaryRole);
 
         user!.LastLogin = DateTime.UtcNow;
-
         await _uow.CompleteAsync();
 
         var longinResponse = new LoginResponseModel

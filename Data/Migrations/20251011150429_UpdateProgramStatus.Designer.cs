@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Trustesse.Ivoluntia.Data.DataContext;
 
@@ -11,9 +12,11 @@ using Trustesse.Ivoluntia.Data.DataContext;
 namespace Trustesse.Ivoluntia.Data.Migrations
 {
     [DbContext(typeof(iVoluntiaDataContext))]
-    partial class iVoluntiaDataContextModelSnapshot : ModelSnapshot
+    [Migration("20251011150429_UpdateProgramStatus")]
+    partial class UpdateProgramStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -680,8 +683,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("OnboardingProgress");
                 });
@@ -829,13 +831,10 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Property<string>("ProgramId")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("QueriedBy")
+                    b.Property<string>("RejectedBy")
                         .HasColumnType("longtext");
 
-                    b.Property<string>("QueriedByFullName")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("QueriedMessage")
+                    b.Property<string>("RejectionComment")
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
@@ -1123,59 +1122,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.ToTable("UserInterestLinks");
                 });
 
-            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.UserRefreshToken", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("DateUpdated")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<bool>("IsDeprecated")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<bool>("IsRevoked")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("ReplacedByToken")
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime?>("RevokedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("RevokedBy")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("RevokedReason")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserRefreshTokens");
-                });
-
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.UserSkillLink", b =>
                 {
                     b.Property<string>("UserId")
@@ -1366,8 +1312,8 @@ namespace Trustesse.Ivoluntia.Data.Migrations
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.OnboardingProgress", b =>
                 {
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.User", "User")
-                        .WithOne("OnboardingProgress")
-                        .HasForeignKey("Trustesse.Ivoluntia.Domain.Entities.OnboardingProgress", "UserId");
+                        .WithMany()
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });
@@ -1476,17 +1422,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.UserRefreshToken", b =>
-                {
-                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.UserSkillLink", b =>
                 {
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Skill", "Skill")
@@ -1553,8 +1488,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Navigation("Location");
 
                     b.Navigation("Notifications");
-
-                    b.Navigation("OnboardingProgress");
 
                     b.Navigation("UserInterestLinks");
 

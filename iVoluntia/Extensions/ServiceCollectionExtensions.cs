@@ -27,6 +27,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
         public static IServiceCollection AddCustomSwagger(this IServiceCollection services)
         {
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<IProgramService, ProgramService>();
             services.AddScoped<IProgramRepository, ProgramRepository>();
             services.AddScoped<IFoundationRepository, FoundationRepository>();

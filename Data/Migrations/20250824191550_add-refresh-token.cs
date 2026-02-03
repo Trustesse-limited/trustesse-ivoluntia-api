@@ -127,8 +127,8 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
-         
-            
+
+
 
             migrationBuilder.CreateIndex(
                 name: "IX_States_CountryId",

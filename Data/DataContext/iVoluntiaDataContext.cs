@@ -112,6 +112,16 @@ namespace Trustesse.Ivoluntia.Data.DataContext
             {
                 entity.Property(u => u.Address)
                       .HasMaxLength(500);
+
+                entity.HasOne(l => l.Country)
+                      .WithMany()
+                      .HasForeignKey(l => l.CountryId)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(l => l.State)
+                      .WithMany()
+                      .HasForeignKey(l => l.StateId)
+                      .OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<Notification>(entity =>
@@ -185,7 +195,13 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                 .HasMany(p => p.Users)
                 .WithOne(pg => pg.Program)
                 .HasForeignKey(pg => pg.ProgramId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Program>()
+                .HasOne(p => p.Location)
+                .WithMany()
+                .HasForeignKey(p => p.LocationId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Foundation>()
                .HasMany(f => f.Programs)

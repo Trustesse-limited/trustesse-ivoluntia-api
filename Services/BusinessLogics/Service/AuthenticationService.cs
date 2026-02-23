@@ -302,7 +302,12 @@ public class AuthenticationService : IAuthenticationService
         {
             return ApiResponse<LoginResponseModel>.Failure(401, "Invalid credentials");
         }
-        if (!user.IsActive || user.Foundation?.IsActive != true)
+
+        var roles = await _userManager.GetRolesAsync(user);
+        var primaryRole = roles.FirstOrDefault() ?? "Volunteer";
+        var isSuperAdmin = primaryRole == UserRolesEnum.SuperAdmin.ToString();
+
+        if (!user.IsActive || (!isSuperAdmin && user.Foundation?.IsActive != true))
         {
             return ApiResponse<LoginResponseModel>.Failure(401, "Account is inactive");
         }
@@ -323,9 +328,6 @@ public class AuthenticationService : IAuthenticationService
         user.LastLogin = DateTime.UtcNow;
         user.DateUpdated = DateTime.UtcNow;
 
-        var roles = await _userManager.GetRolesAsync(user);
-        var primaryRole = roles.FirstOrDefault() ?? "Volunteer";
-
         var jwtClaims = new JwtClaimsModel
         {
             UserId = user.Id,
@@ -333,7 +335,7 @@ public class AuthenticationService : IAuthenticationService
             Role = primaryRole,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            OrganizationName = user?.Foundation?.Name!,
+            OrganizationName = user?.Foundation?.Name ?? string.Empty,
         };
 
         var accessToken = _jwtTokenService.GenerateAccessTokenAsync(jwtClaims, primaryRole);
@@ -347,8 +349,8 @@ public class AuthenticationService : IAuthenticationService
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            HasCompletedOnboarding = user.OnboardingProgress.HasCompletedOnboarding,
-            LastCompletedPage = user.OnboardingProgress.LastCompletedPage,
+            HasCompletedOnboarding = user.OnboardingProgress?.HasCompletedOnboarding ?? true,
+            LastCompletedPage = user.OnboardingProgress?.LastCompletedPage ?? 0,
             Message = "Login successful"
         };
 

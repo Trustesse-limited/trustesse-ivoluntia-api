@@ -4,7 +4,6 @@
     {
         Otp,
         WelcomeMessage,
-        Donation,
         Onboarding,
     }
 }

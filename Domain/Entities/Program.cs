@@ -27,6 +27,7 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public ICollection<ProgramGoal> ProgramGoals { get; set; } = new List<ProgramGoal>();
         public ICollection<User> Users{ get; set; } = new List<User>();
         public ICollection<ProgramRejectionReason> ProgramRejectionReasons { get; set; } = new List<ProgramRejectionReason>();
+        public ICollection<Donation> Donations { get; set; }    
 
         public bool HasProgramEnded()
         {

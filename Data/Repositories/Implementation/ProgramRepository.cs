@@ -108,7 +108,7 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                     placeHolder.Add("UserName", program.CreatedBy);
                     placeHolder.Add("Title", program.Title);
                     placeHolder.Add("Status", updateProgramStatusDto.Status);
-                    var notification = await _notificationRepository.ComposeNotificationAsync("programstatusupdate", "Email", placeHolder);
+                    var notification = await _notificationRepository.ComposeNotificationAsync(NotificationTypeEnum.ProgramStatusUpdate.ToString(), NotificationChannelEnum.Email.ToString(), placeHolder);
                     return ApiResponse<string>.Success($"{foundationAdminEmail}", notification.Data);
                 }
                 else if (updateProgramStatusDto.Status == ProgramStatus.Pending.ToString())
@@ -121,7 +121,7 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                     placeHolder.Add("UserName", program.CreatedBy);
                     placeHolder.Add("Title", program.Title);
                     placeHolder.Add("Status", updateProgramStatusDto.Status);
-                    var notification = await _notificationRepository.ComposeNotificationAsync("programstatusupdate", "email", placeHolder);
+                    var notification = await _notificationRepository.ComposeNotificationAsync(NotificationTypeEnum.ProgramStatusUpdate.ToString(), NotificationChannelEnum.Email.ToString(), placeHolder);
                     return ApiResponse<string>.Success($"{foundationAdminEmail}", notification.Data);
                 }   
                 else if (updateProgramStatusDto.Status == ProgramStatus.Queried.ToString())
@@ -143,7 +143,7 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                     placeHolder.Add("UserName", program.CreatedBy);
                     placeHolder.Add("Title", program.Title);
                     placeHolder.Add("Status", updateProgramStatusDto.Status);
-                    var notification = await _notificationRepository.ComposeNotificationAsync("programstatusupdate", "email", placeHolder);
+                    var notification = await _notificationRepository.ComposeNotificationAsync(NotificationTypeEnum.ProgramStatusUpdate.ToString(), NotificationChannelEnum.Email.ToString(), placeHolder);
                     return ApiResponse<string>.Success($"{foundationAdminEmail} {users.Email}", notification.Data);
                 }
                 else
@@ -160,7 +160,7 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                     {
                         emails = emails + user.Email + ' ';
                     }
-                    var notification = await _notificationRepository.ComposeNotificationAsync("programended", "email", placeHolder);
+                    var notification = await _notificationRepository.ComposeNotificationAsync(NotificationTypeEnum.ProgramEnded.ToString(), NotificationChannelEnum.Email.ToString(), placeHolder);
                     return ApiResponse<string>.Success(emails, notification.Data);
                 }
             }

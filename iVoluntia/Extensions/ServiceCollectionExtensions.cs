@@ -26,6 +26,8 @@ namespace Trustesse.Ivoluntia.API.Extensions
     {
         public static IServiceCollection AddCustomSwagger(this IServiceCollection services)
         {
+            services.AddScoped<IDonationService, DonationService>();
+            services.AddScoped<IDonationRepository, DonationRepository>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<IProgramService, ProgramService>();
@@ -92,7 +94,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
                     policyBuilder.WithOrigins(config.GetSection("CORS:AllowedOrigins").Value!.Split(','))
                                 .WithMethods(config.GetSection("CORS:AllowedMethods").Value!.Split(','))
                                 .WithHeaders(config.GetSection("CORS:AllowedHeaders").Value!.Split(','))
-                                .AllowCredentials();
+.AllowCredentials();
                 });
             });
 
@@ -100,13 +102,9 @@ namespace Trustesse.Ivoluntia.API.Extensions
         }
         public static IServiceCollection AddCustomDatabase(this IServiceCollection services, IConfiguration config)
         {
-            services.AddDbContext<iVoluntiaDataContext>(options =>
-                options.UseMySql(
-                    config.GetConnectionString("DefaultConnection")!,
-                    ServerVersion.AutoDetect(config.GetConnectionString("DefaultConnection")!),
-                    mySqlOptions => mySqlOptions.MigrationsAssembly("Trustesse.Ivoluntia.Data")
-                )
-            );
+            services.AddDbContext<iVoluntiaDataContext>(option =>                                 option.UseSqlServer(config.GetConnectionString("DefaultConnection")));
+             //,
+            //mySqlOptions => mySqlOptions.MigrationsAssembly("Trustesse.Ivoluntia.Data")));
 
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();

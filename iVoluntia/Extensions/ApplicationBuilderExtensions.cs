@@ -12,8 +12,8 @@ namespace Trustesse.Ivoluntia.API.Extensions
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
 
-            await RoleSeeder.SeedRolesAsync(roleManager);
-            await RoleSeeder.SeedSuperAdminUserAsync(userManager, roleManager);
+            //await RoleSeeder.SeedRolesAsync(roleManager);
+            //await RoleSeeder.SeedSuperAdminUserAsync(userManager, roleManager);
         }
         public static void ConfigureHsts(this WebApplicationBuilder builder)
         {

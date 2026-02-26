@@ -72,7 +72,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 
             return Ok(result);
         }
-        [HttpPut("update-program-status")]
+        [HttpPut("updateprogramstatus")]
         public async Task<IActionResult> UpdateProgramStatusAsync([FromBody]UpdateProgramStatusDto updateProgramStatusDto)
         {
             try

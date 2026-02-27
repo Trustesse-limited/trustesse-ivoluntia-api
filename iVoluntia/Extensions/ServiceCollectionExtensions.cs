@@ -101,10 +101,9 @@ namespace Trustesse.Ivoluntia.API.Extensions
         public static IServiceCollection AddCustomDatabase(this IServiceCollection services, IConfiguration config)
         {
             services.AddDbContext<iVoluntiaDataContext>(options =>
-                options.UseMySql(
+                options.UseSqlServer(
                     config.GetConnectionString("DefaultConnection")!,
-                    ServerVersion.AutoDetect(config.GetConnectionString("DefaultConnection")!),
-                    mySqlOptions => mySqlOptions.MigrationsAssembly("Trustesse.Ivoluntia.Data")
+                    sqlServerOptions => sqlServerOptions.MigrationsAssembly("Trustesse.Ivoluntia.Data")
                 )
             );
 

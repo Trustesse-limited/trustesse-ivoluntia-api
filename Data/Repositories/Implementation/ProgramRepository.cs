@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
 using Trustesse.Ivoluntia.Data.DataContext;
-using Trustesse.Ivoluntia.Data.Migrations;
 using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;

@@ -218,6 +218,10 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 {
                     return ApiResponse<string>.Success($"program status updated and email sent to {programStatus.Message}", $"{programStatus.Data}");
                 }
+                if(programStatus.StatusCode == StatusCodes.Status200OK)
+                {
+                    return ApiResponse<string>.Success($"{programStatus.Message}", $"{programStatus.Data}");
+                }
                 return ApiResponse<string>.Failure(programStatus.StatusCode, $"{programStatus.Message}");
             }
             catch(Exception ex)

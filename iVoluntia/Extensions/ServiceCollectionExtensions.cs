@@ -38,7 +38,6 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<IOtpService, OtpService>();
             services.AddHttpClient<IEmailService, EmailService>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
-            services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IFileUploadService, CloudinaryService>();
             services.AddScoped<IFileUploadServiceFactory, FileUploadServiceFactory>();

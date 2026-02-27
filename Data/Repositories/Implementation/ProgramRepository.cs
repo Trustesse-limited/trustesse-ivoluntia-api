@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
 using Trustesse.Ivoluntia.Data.DataContext;
+using Trustesse.Ivoluntia.Data.Migrations;
 using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
@@ -81,7 +82,6 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                 }
                 var program = await _context.Programs.Include(x => x.Users).Include(x => x.ProgramRejectionReasons).FirstOrDefaultAsync(x => x.Id == updateProgramStatusDto.ProgramId);
                 var foundationAdminEmail = program.Users.Where(x => x.ProgramId == program.Id && x.Email == program.CreatedBy).FirstOrDefault();
-              
                 if (program == null)
                 {
                     return ApiResponse<string>.Failure(StatusCodes.Status404NotFound, "program not found");
@@ -112,7 +112,6 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                 }
                 else if (updateProgramStatusDto.Status == ProgramStatus.Pending.ToString())
                 {
-                    var user = program.ProgramRejectionReasons.FirstOrDefault();
                     program.Status = (int)ProgramStatus.Pending;
                     _context.Programs.Update(program);
                     await _context.SaveChangesAsync();
@@ -125,16 +124,16 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                 }   
                 else if (updateProgramStatusDto.Status == ProgramStatus.Queried.ToString())
                 {
-                    var users = await _context.Users.Where(x => x.Id == id).FirstOrDefaultAsync();   
+                    var admin = await _context.Users.Where(x => x.Id == id).FirstOrDefaultAsync();   
                     program.Status = (int)ProgramStatus.Queried;
                     _context.Programs.Update(program);
                     var rejectionReason = new ProgramRejectionReason
                     {
                         Id = Guid.NewGuid().ToString(),
                         ProgramId = program.Id,
-                        QueriedBy = users.Id,
+                        QueriedBy = admin.Id,
                         QueriedMessage = updateProgramStatusDto.QueriedComment,
-                        QueriedByFullName = users.Email
+                        QueriedByFullName = admin.Email
                     };
                     await _context.ProgramRejectionReasons.AddAsync(rejectionReason);
                     await _context.SaveChangesAsync();
@@ -143,7 +142,7 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                     placeHolder.Add("Title", program.Title);
                     placeHolder.Add("Status", updateProgramStatusDto.Status);
                     var notification = await _notificationRepository.ComposeNotificationAsync(NotificationTypeEnum.ProgramStatusUpdate.ToString(), NotificationChannelEnum.Email.ToString(), placeHolder);
-                    return ApiResponse<string>.Success($"{foundationAdminEmail} {users.Email}", notification.Data);
+                    return ApiResponse<string>.Success($"{foundationAdminEmail} {admin.Email}", notification.Data);
                 }
                 else
                 {
@@ -151,6 +150,7 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                     _context.Programs.Update(program);
                     await _context.SaveChangesAsync();
                     var users = program.Users.Where(x => x.ProgramId == program.Id).ToList();
+
                     string emails = "";
                     Dictionary<string, string> placeHolder = new Dictionary<string, string>();
                     placeHolder.Add("Title", program.Title);

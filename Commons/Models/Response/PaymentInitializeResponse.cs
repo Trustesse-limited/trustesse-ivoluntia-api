@@ -13,6 +13,7 @@ namespace Trustesse.Ivoluntia.Commons.Models.Response
         public string AuthorizationUrl { get; set; }
         [JsonPropertyName("accesscode")]
         public string AccessCode { get; set; }
+        [JsonPropertyName("reference")]
         public string Reference { get; set; }
     }
 }

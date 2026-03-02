@@ -20,6 +20,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         [HttpPost("donate")]
         public async Task<IActionResult> Donation(DonationDto donationDto)
         {
+           
             var response = await _donationService.InitializeDonation(donationDto);
             try
             {
@@ -36,7 +37,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         }
         //update donation by donationId
         [HttpPut("update")]
-        public async Task<IActionResult> DonationUpdate(string donationId)
+        public async Task<IActionResult> Update(UpdateDto donationId)
         {
             var response = await _donationService.UpdateDonationAsync(donationId);    
             try

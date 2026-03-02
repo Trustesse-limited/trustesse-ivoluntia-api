@@ -40,12 +40,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         {
             _donationRepository = donationRepository;
             _configuration = configuration;
-            //_client = client;
-            //_baseUrl = _configuration["PaymentGateway:BaseUrl"];
-            //_client = new HttpClient
-            //{
-            //    // BaseAddress = new Uri(_baseUrl)
-            //};
             _client = client;
             _baseUrl = configuration["PaymentGateway:BaseUrl"];
             _currentUserService = currentUserService;
@@ -74,11 +68,11 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                         };
 
                     var dbResponse = await _donationRepository.InitializeDonation(donation);
-                    if(dbResponse == false)
+                    if(dbResponse)
                     {
                         InitializeDonationDto initializeDonationDto = new InitializeDonationDto
                         {
-                            Amount = donation.Amount,
+                            Amount = donationDto.Amount.ToString(),
                             Email = donation.DonorEmail,
                             ServicePaidFor = donation.ServicePaidFor,
                             ServiceId = donation.Id,
@@ -87,10 +81,13 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                             Callback_Url = "https://www.google.com",
                             UserId = donation.UserId
                         };
+                        
                         var json = JsonConvert.SerializeObject(initializeDonationDto);
                         var content = new StringContent(json, Encoding.UTF8, "application/json");
-                        using var response = await _client.PostAsync("https://localhost:/api/5112/PaystackTransaction/DonationPayment", content);
+                        using var response = await _client.PostAsync("https://localhost:7175/api/PaystackTransaction/DonationPayment", content);
                         response.EnsureSuccessStatusCode();
+                        var result = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine(result);
                         var initializeResponse = await response.Content.ReadFromJsonAsync<PaymentInitializeResponse>();
                         if (initializeResponse != null)
                         {
@@ -98,7 +95,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                         }
                     }  
                     }
-                //using var responsee = await _client.PostAsJsonAsync("PaystackTransaction/DonationPayment", initializeDonationDto);
                 return ApiResponse<PaymentInitializeResponse>.Failure(StatusCodes.Status404NotFound, "data not found");
             }
             catch (Exception ex) 
@@ -107,34 +103,34 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             }
         }
         //update donation with donation id
-        public async Task<ApiResponse<string>> UpdateDonationAsync(string donationId)
+        public async Task<ApiResponse<string>> UpdateDonationAsync(UpdateDto donationId)
         {
-            var programAdminEmail = await _donationRepository.UpdateDonationAsync(donationId);
+            var email = await _donationRepository.UpdateDonationAsync(donationId);
             try
             {
-                if (programAdminEmail != null)
+                if (email != null)
                 {
-                    //send email to donor
-                    string userFirstName = _currentUserService.GetUserFirstName(); 
-                    string userEmail = _currentUserService.GetUserEmail();  
+                    string[] emails = email.Split(' ');
+                    //send email to donor 
+                    string donorEmail = emails[1];
                     Dictionary<string, string> donorHolder = new Dictionary<string, string>();
-                    donorHolder.Add("FirstName", userFirstName);
+                    donorHolder.Add("FirstName", donorEmail.Split('@')[0]); 
                     var donorMessage = await _notificationService.ComposeNotificationAsync(NotificationTypeEnum.Donation.ToString(), NotificationChannelEnum.Email.ToString(), donorHolder);
                     EmailModel donorEmailModel = new EmailModel
                     {
-                        Receivers = userEmail.Trim().Split().ToList(),   
+                        Receivers = donorEmail.Trim().Split().ToList(),   
                         Subject = "program donation",
                         Message = HttpUtility.HtmlDecode(donorMessage.Data)
                     };
                     var donorEmailResponse = await _emailService.SendEmailASync(donorEmailModel);
                     //send email to program creator
-                    string[] programAdminInfo = programAdminEmail.Split(' ');
+                    string programAdminEmail = emails[1];
                     Dictionary<string, string> adminHolder = new Dictionary<string, string>();
-                    adminHolder.Add("FirstName", programAdminInfo[1]);
+                    adminHolder.Add("FirstName", programAdminEmail.Split('@')[0]);
                     var adminMessage = await _notificationService.ComposeNotificationAsync(NotificationTypeEnum.DonationMade.ToString(), NotificationChannelEnum.Email.ToString(), adminHolder);
                     EmailModel adminEmailModel = new EmailModel
                     {
-                        Receivers = programAdminInfo[0].Trim().Split().ToList(),
+                        Receivers = programAdminEmail.Trim().Split().ToList(),
                         Subject = "donation made",
                         Message = HttpUtility.HtmlDecode(adminMessage.Data)
                     };

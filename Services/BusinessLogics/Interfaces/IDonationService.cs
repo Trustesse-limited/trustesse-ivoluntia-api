@@ -13,6 +13,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces
     public interface IDonationService
     {
         Task<ApiResponse<PaymentInitializeResponse>> InitializeDonation(DonationDto donationDto);
-        Task<ApiResponse<string>> UpdateDonationAsync(string donationId);
+        Task<ApiResponse<string>> UpdateDonationAsync(UpdateDto donationId);
     }
 }

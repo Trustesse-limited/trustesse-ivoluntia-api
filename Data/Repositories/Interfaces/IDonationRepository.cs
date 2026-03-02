@@ -12,6 +12,6 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Interfaces
     public interface IDonationRepository
     {
         Task<bool> InitializeDonation(Donation donation);
-        Task<string> UpdateDonationAsync(string donationId);
+        Task<string> UpdateDonationAsync(UpdateDto donationId);
     }
 }

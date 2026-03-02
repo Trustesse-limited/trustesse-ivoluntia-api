@@ -195,7 +195,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                 .HasMany(p => p.Users)
                 .WithOne(pg => pg.Program)
                 .HasForeignKey(pg => pg.ProgramId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Program>()
                 .HasOne(p => p.Location)

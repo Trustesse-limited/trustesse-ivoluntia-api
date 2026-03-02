@@ -39,19 +39,20 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                 return false;
             }
         }
-        public async Task<string> UpdateDonationAsync(string donationId)
+        public async Task<string> UpdateDonationAsync(UpdateDto donationId)
         {
-            var donation = await _iVoluntiaDataContext.Donations.Include(x => x.User).FirstOrDefaultAsync(x => x.Id == donationId);
+            var donation = await _iVoluntiaDataContext.Donations.Include(x => x.Program).FirstOrDefaultAsync(x => x.Id == donationId.Id);
             try
             {
                 if (donation != null)
                 {
+                   
                     donation.StatusOfDonation = DonationStatus.Received.ToString();
                     donation.SettlementTimeDate = DateTime.Now; 
                     donation.DateUpdated = DateTime.Now;
                     _iVoluntiaDataContext.Donations.Update(donation);
                     await _iVoluntiaDataContext.SaveChangesAsync();
-                    return $"{donation.User.Email} {donation.User.FirstName}";//program admin email
+                    return $"{donation.Program.CreatedBy} {donation.DonorEmail}";//program admin email
                 }
                 return "no data found";
             }

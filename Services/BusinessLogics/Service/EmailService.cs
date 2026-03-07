@@ -24,10 +24,10 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
         {
             var json = JsonConvert.SerializeObject(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync($"{_baseUrl}/api/Notifications/send-email", content);
-            if(response.IsSuccessStatusCode)
+             var response = await _httpClient.PostAsync("https://localhost:7083/api/Notifications/send-email", content);
+            if (response.IsSuccessStatusCode)
             {
-                return ApiResponse<string>.Success("OTP successfully sent to registered email.", null);
+                return ApiResponse<string>.Success("email successfully sent to registered email.", null);
             }
             return ApiResponse<string>.Failure(500, "Unable to update user account with OTP details.");
         }

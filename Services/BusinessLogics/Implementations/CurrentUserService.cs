@@ -24,6 +24,10 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         public string? Name => _user?.Identity?.Name;
 
         private string _userId = string.Empty;
+        private string  _userEmail = string.Empty; 
+        private string _firstName = string.Empty;   
+
+      
 
         public string GetUserId() =>
            IsAuthenticated()
@@ -31,6 +35,20 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
              ?? _user?.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
              ?? Guid.Empty.ToString()
            : _userId;
+
+        public string GetUserEmail() =>
+           IsAuthenticated()
+           ? _user?.FindFirst(ClaimTypes.Email)?.Value
+             ?? _user?.FindFirst(JwtRegisteredClaimNames.Email)?.Value 
+             ?? string.Empty
+           : _userEmail;
+
+        public string GetUserFirstName() =>
+          IsAuthenticated()
+          ? _user?.FindFirst(ClaimTypes.GivenName)?.Value
+            ?? _user?.FindFirst(JwtRegisteredClaimNames.GivenName)?.Value
+            ?? string.Empty
+          : _firstName;
 
         public bool IsAuthenticated() =>
            _user?.Identity?.IsAuthenticated is true;

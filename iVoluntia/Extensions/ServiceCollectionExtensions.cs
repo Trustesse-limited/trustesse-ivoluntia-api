@@ -26,6 +26,8 @@ namespace Trustesse.Ivoluntia.API.Extensions
     {
         public static IServiceCollection AddCustomSwagger(this IServiceCollection services)
         {
+            services.AddScoped<IDonationService, DonationService>();
+            services.AddScoped<IDonationRepository, DonationRepository>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<IProgramService, ProgramService>();
@@ -36,7 +38,6 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<IOtpService, OtpService>();
             services.AddHttpClient<IEmailService, EmailService>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
-            services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IFileUploadService, CloudinaryService>();
             services.AddScoped<IFileUploadServiceFactory, FileUploadServiceFactory>();
@@ -92,7 +93,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
                     policyBuilder.WithOrigins(config.GetSection("CORS:AllowedOrigins").Value!.Split(','))
                                 .WithMethods(config.GetSection("CORS:AllowedMethods").Value!.Split(','))
                                 .WithHeaders(config.GetSection("CORS:AllowedHeaders").Value!.Split(','))
-                                .AllowCredentials();
+.AllowCredentials();
                 });
             });
 

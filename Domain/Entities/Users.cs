@@ -33,5 +33,6 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
         public ICollection<UserSkillLink?> UserSkillLinks { get; set; } = new List<UserSkillLink>();
         public ICollection<UserInterestLink?> UserInterestLinks { get; set; } = new List<UserInterestLink>();
+        public ICollection<Donation> Donations { get; set; }        
     };
 }

@@ -2,13 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using Trustesse.Ivoluntia.Domain.Entities;
 
-
 namespace Trustesse.Ivoluntia.Data.DataContext
 {
     public class iVoluntiaDataContext : IdentityDbContext<User, Role, string>
     {
-
-
         public iVoluntiaDataContext(DbContextOptions<iVoluntiaDataContext> options) : base(options)
         {
         }
@@ -35,17 +32,16 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<ProgramSkill> ProgramSkills { get; set; }
         public DbSet<ProgramGoal> ProgramGoals { get; set; }
         public DbSet<Program> Programs { get; set; }
+        public DbSet<ProgramRejectionReason> ProgramRejectionReasons{ get; set;}
         public DbSet<Otp> Otps { get; set; }
         public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
-
-
+        public DbSet<Donation> Donations { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<User>(entity =>
             {
-
                 entity.HasOne(u => u.Foundation)
                       .WithMany(f => f.Admins)
                       .HasForeignKey(u => u.FoundationId)
@@ -63,7 +59,6 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                 entity.HasMany(u => u.Interests)
                       .WithMany(i => i.Users)
                       .UsingEntity(j => j.ToTable("UserInterests"));
-
 
                 entity.Property(u => u.FirstName)
                       .HasMaxLength(50);
@@ -96,34 +91,37 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                       .WithMany(c => c.Foundations)
                       .HasForeignKey(f => f.CategoryId)
                       .OnDelete(DeleteBehavior.Restrict);
-
             });
 
             modelBuilder.Entity<Interest>(entity =>
             {
-
                 entity.Property(u => u.Name)
                       .HasMaxLength(50);
-
                 entity.Property(u => u.Description)
                       .HasMaxLength(500);
             });
-
             modelBuilder.Entity<Skill>(entity =>
             {
-
                 entity.Property(u => u.Name)
                       .HasMaxLength(50);
-
                 entity.Property(u => u.Description)
                       .HasMaxLength(500);
             });
 
             modelBuilder.Entity<Location>(entity =>
             {
-
                 entity.Property(u => u.Address)
                       .HasMaxLength(500);
+
+                entity.HasOne(l => l.Country)
+                      .WithMany()
+                      .HasForeignKey(l => l.CountryId)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(l => l.State)
+                      .WithMany()
+                      .HasForeignKey(l => l.StateId)
+                      .OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<Notification>(entity =>
@@ -169,7 +167,6 @@ namespace Trustesse.Ivoluntia.Data.DataContext
             modelBuilder.Entity<ProgramSkill>()
                 .HasKey(ps => new { ps.ProgramId, ps.SkillId });
 
-
             modelBuilder.Entity<ProgramSkill>()
                 .HasOne(ps => ps.Program)
                 .WithMany(p => p.ProgramSkills)
@@ -182,12 +179,29 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                 .HasForeignKey(ps => ps.SkillId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-
-            modelBuilder.Entity<Program>()
+            modelBuilder.Entity<Program>() 
                 .HasMany(p => p.ProgramGoals)
                 .WithOne(pg => pg.Program)
                 .HasForeignKey(pg => pg.ProgramId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Program>()
+                .HasMany(p => p.ProgramRejectionReasons)
+                .WithOne(pg => pg.Program)
+                .HasForeignKey(pg => pg.ProgramId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Program>()
+                .HasMany(p => p.Users)
+                .WithOne(pg => pg.Program)
+                .HasForeignKey(pg => pg.ProgramId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Program>()
+                .HasOne(p => p.Location)
+                .WithMany()
+                .HasForeignKey(p => p.LocationId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Foundation>()
                .HasMany(f => f.Programs)
@@ -195,6 +209,17 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                .HasForeignKey(p => p.FoundationId)
                .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<Donation>()
+              .HasOne(d => d.Program)
+              .WithMany(p => p.Donations)
+              .HasForeignKey(d => d.ProgramId)
+              .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Donation>()
+             .HasOne(d => d.User)
+             .WithMany(u => u.Donations)
+             .HasForeignKey(d => d.UserId)
+             .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

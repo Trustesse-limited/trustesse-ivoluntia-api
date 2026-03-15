@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Infrastructure.Implementation;
+using Ivoluntia.BackgroudServices.Services.Implementations;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -24,16 +26,21 @@ namespace Trustesse.Ivoluntia.API.Extensions
     {
         public static IServiceCollection AddCustomSwagger(this IServiceCollection services)
         {
+            services.AddScoped<IDonationService, DonationService>();
+            services.AddScoped<IDonationRepository, DonationRepository>();
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<IProgramService, ProgramService>();
             services.AddScoped<IProgramRepository, ProgramRepository>();
             services.AddScoped<IFoundationRepository, FoundationRepository>();
             services.AddScoped<ICountryService, CountryService>();
-            services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IOtpService, OtpService>();
-            services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
-
+            services.AddScoped<IOtpService, OtpService>();
+            services.AddHttpClient<IEmailService, EmailService>();
+            services.AddScoped<IJwtTokenService, JwtTokenService>();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<IFileUploadService, CloudinaryService>();
+            services.AddScoped<IFileUploadServiceFactory, FileUploadServiceFactory>();
 
             services.AddSwaggerGen(options =>
             {
@@ -49,10 +56,11 @@ namespace Trustesse.Ivoluntia.API.Extensions
                                 Example: 'Bearer ey12345abcdef'",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
                     Scheme = "Bearer"
                 });
-                options.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
                         new OpenApiSecurityScheme
@@ -61,12 +69,9 @@ namespace Trustesse.Ivoluntia.API.Extensions
                             {
                                 Type = ReferenceType.SecurityScheme,
                                 Id = "Bearer"
-                            },
-                            Scheme = "oauth2",
-                            Name = "Bearer",
-                            In = ParameterLocation.Header
+                            }
                         },
-                        new List<string>()
+                        Array.Empty<string>()
                     }
                 });
             });
@@ -88,7 +93,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
                     policyBuilder.WithOrigins(config.GetSection("CORS:AllowedOrigins").Value!.Split(','))
                                 .WithMethods(config.GetSection("CORS:AllowedMethods").Value!.Split(','))
                                 .WithHeaders(config.GetSection("CORS:AllowedHeaders").Value!.Split(','))
-                                .AllowCredentials();
+.AllowCredentials();
                 });
             });
 
@@ -97,10 +102,9 @@ namespace Trustesse.Ivoluntia.API.Extensions
         public static IServiceCollection AddCustomDatabase(this IServiceCollection services, IConfiguration config)
         {
             services.AddDbContext<iVoluntiaDataContext>(options =>
-                options.UseMySql(
+                options.UseSqlServer(
                     config.GetConnectionString("DefaultConnection")!,
-                    ServerVersion.AutoDetect(config.GetConnectionString("DefaultConnection")!),
-                    mySqlOptions => mySqlOptions.MigrationsAssembly("Trustesse.Ivoluntia.Data")
+                    sqlServerOptions => sqlServerOptions.MigrationsAssembly("Trustesse.Ivoluntia.Data")
                 )
             );
 
@@ -146,29 +150,37 @@ namespace Trustesse.Ivoluntia.API.Extensions
 
         public static IServiceCollection RegisterJwtServices(this IServiceCollection services, IConfiguration configuration)
         {
-            var jwtOptions = configuration.GetSection(nameof(JwtOptions));
+            var jwtOptions = configuration.GetSection("JwtOptions");
             services.Configure<JwtOptions>(jwtOptions);
-            var jwtIssuer = jwtOptions[nameof(JwtOptions.Issuer)];
-            var jwtAudience = jwtOptions[nameof(JwtOptions.Audience)];
-            var jwtSecretKey = jwtOptions[nameof(JwtOptions.Key)];
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
+            var issuer = jwtOptions["Issuer"];
+            var audience = jwtOptions["Audience"];
+            var key = jwtOptions["Key"];
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = jwtIssuer,
-                        ValidAudience = jwtAudience,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey))
-                    };
-                });
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = issuer,
+                    ValidAudience = audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+                };
+            });
 
             return services;
         }
+
 
         public static IServiceCollection AddCustomServices(this IServiceCollection services)
         {

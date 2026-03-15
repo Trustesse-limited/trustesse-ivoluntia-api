@@ -15,27 +15,44 @@ using Trustesse.Ivoluntia.Services.Abstractions;
 
 namespace Trustesse.Ivoluntia.Services.Implementation;
 
-public class JwtTokenService(
+public class JwtTokenService : IJwtTokenService
+{
+    private readonly JwtOptions _jwtOptions;
+    private readonly ILogger<JwtTokenService> _logger;
+    private readonly UserManager<User> _userManager;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public JwtTokenService(
     IOptions<JwtOptions> jwtOptions,
     ILogger<JwtTokenService> logger,
     UserManager<User> userManager,
-    IUnitOfWork unitOfWork) : IJwtTokenService
-{
-    private readonly JwtOptions _jwtOptions = jwtOptions.Value;
+    IUnitOfWork unitOfWork)
+    {
+        _jwtOptions = jwtOptions.Value;
+        _logger = logger;
+        _userManager = userManager;
+        _unitOfWork = unitOfWork;
+
+    }
+
     public string GenerateAccessTokenAsync(JwtClaimsModel claims, string role)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_jwtOptions.Key);
 
-        // Get token expiration based on role
         var expirationMinutes = AuthenticationConstants.TokenExpirations.ContainsKey(role)
             ? AuthenticationConstants.TokenExpirations[role].AccessToken
             : 60;
+
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new[]
             {
+                    new Claim(JwtRegisteredClaimNames.Sub, claims.UserId),
+                    new Claim(ClaimTypes.NameIdentifier, claims.UserId),
+                    new Claim(JwtRegisteredClaimNames.Email, claims.Email),
+                    new Claim(ClaimTypes.Name, claims.Email),
                     new Claim(ClaimTypes.Role, claims.Role),
                     new Claim(ClaimTypes.GivenName, claims.FirstName),
                     new Claim(ClaimTypes.Surname, claims.LastName),
@@ -56,7 +73,7 @@ public class JwtTokenService(
     public async Task<string> GenerateRefreshTokenAsync(string userId, string role)
     {
         //TODO: use custom exception
-        var user = await userManager.FindByIdAsync(userId) ?? throw new Exception("User not found");
+        var user = await _userManager.FindByIdAsync(userId) ?? throw new Exception("User not found");
         var randomNumber = new byte[64];
         using var rng = RandomNumberGenerator.Create();
         rng.GetBytes(randomNumber);
@@ -77,10 +94,10 @@ public class JwtTokenService(
             CreatedBy = userId
         };
 
-        unitOfWork.refreshTokenRepo.Add(userRefreshToken);
-        await unitOfWork.CompleteAsync();
+        _unitOfWork.refreshTokenRepo.Add(userRefreshToken);
+        await _unitOfWork.CompleteAsync();
 
-        logger.LogInformation("Generated refresh token for user {UserId} with {ExpirationMinutes} minutes expiration",
+        _logger.LogInformation("Generated refresh token for user {UserId} with {ExpirationMinutes} minutes expiration",
             userId, expirationMinutes);
 
         return refreshToken;
@@ -90,22 +107,22 @@ public class JwtTokenService(
     {
         if (string.IsNullOrEmpty(userId))
         {
-            logger.LogWarning("Attempted to revoke tokens for null or empty user ID");
+            _logger.LogWarning("Attempted to revoke tokens for null or empty user ID");
             return false;
         }
 
-        var activeTokens = await unitOfWork.refreshTokenRepo.GetActiveUserTokensAsync(userId);
+        var activeTokens = await _unitOfWork.refreshTokenRepo.GetActiveUserTokensAsync(userId);
 
 
         if (activeTokens == null)
         {
-            logger.LogInformation("No active refresh tokens found for user {UserId}", userId);
+            _logger.LogInformation("No active refresh tokens found for user {UserId}", userId);
             return true;
         }
 
-        var revokedCount = await unitOfWork.refreshTokenRepo.BulkUpdateAsync(userId);
+        var revokedCount = await _unitOfWork.refreshTokenRepo.BulkUpdateAsync(userId);
 
-        logger.LogInformation("Revoked {Count} refresh tokens for user {UserId} by {RevokedBy}. Reason: {Reason}",
+        _logger.LogInformation("Revoked {Count} refresh tokens for user {UserId} by {RevokedBy}. Reason: {Reason}",
             revokedCount, userId, revokedBy ?? "System", reason ?? "Revoke all user tokens");
 
         return true;
@@ -115,21 +132,21 @@ public class JwtTokenService(
     {
         if (string.IsNullOrEmpty(refreshToken))
         {
-            logger.LogWarning("Attempted to revoke null or empty refresh token");
+            _logger.LogWarning("Attempted to revoke null or empty refresh token");
             return false;
         }
 
-        var userRefreshToken = await unitOfWork.refreshTokenRepo.GetUserRefreshTokenAsync(refreshToken, userId);
+        var userRefreshToken = await _unitOfWork.refreshTokenRepo.GetUserRefreshTokenAsync(refreshToken, userId);
 
         if (userRefreshToken == null)
         {
-            logger.LogWarning("Attempted to revoke non-existent refresh token");
+            _logger.LogWarning("Attempted to revoke non-existent refresh token");
             return false;
         }
 
         if (userRefreshToken.IsRevoked)
         {
-            logger.LogInformation("Refresh token {TokenId} is already revoked", userRefreshToken.Id);
+            _logger.LogInformation("Refresh token {TokenId} is already revoked", userRefreshToken.Id);
             return true;
         }
 
@@ -138,9 +155,9 @@ public class JwtTokenService(
         userRefreshToken.RevokedBy = revokedBy ?? "System";
         userRefreshToken.RevokedReason = reason ?? "Manual revocation";
 
-        await unitOfWork.CompleteAsync();
+        await _unitOfWork.CompleteAsync();
 
-        logger.LogInformation("Refresh token {TokenId} revoked by {RevokedBy} for user {UserId}. Reason: {Reason}",
+        _logger.LogInformation("Refresh token {TokenId} revoked by {RevokedBy} for user {UserId}. Reason: {Reason}",
             userRefreshToken.Id, revokedBy ?? "System", userRefreshToken.UserId, reason ?? "Manual revocation");
 
 
@@ -165,15 +182,15 @@ public class JwtTokenService(
             validation.UserId, userRole);
 
         // Update the old token to reference the new token
-        var oldTokenEntity = await unitOfWork.refreshTokenRepo.GetUserRefreshTokenAsync(oldRefreshToken, userId);
+        var oldTokenEntity = await _unitOfWork.refreshTokenRepo.GetUserRefreshTokenAsync(oldRefreshToken, userId);
 
         if (oldTokenEntity != null)
         {
             oldTokenEntity.ReplacedByToken = newToken;
-            await unitOfWork.CompleteAsync();
+            await _unitOfWork.CompleteAsync();
         }
 
-        logger.LogInformation("Rotated refresh token for user {UserId}", validation.UserId);
+        _logger.LogInformation("Rotated refresh token for user {UserId}", validation.UserId);
         return newToken;
     }
 
@@ -189,11 +206,11 @@ public class JwtTokenService(
             };
         }
 
-        var userRefreshToken = await unitOfWork.refreshTokenRepo.GetUserRefreshTokenAsync(refreshToken, userId);
+        var userRefreshToken = await _unitOfWork.refreshTokenRepo.GetUserRefreshTokenAsync(refreshToken, userId);
 
         if (userRefreshToken == null)
         {
-            logger.LogWarning("Refresh token not found: {Token}", refreshToken.Substring(0, Math.Min(10, refreshToken.Length)) + "...");
+            _logger.LogWarning("Refresh token not found: {Token}", refreshToken.Substring(0, Math.Min(10, refreshToken.Length)) + "...");
             return new RefreshTokenValidationResult
             {
                 IsValid = false,
@@ -204,7 +221,7 @@ public class JwtTokenService(
 
         if (userRefreshToken.IsRevoked)
         {
-            logger.LogWarning("Attempted use of revoked refresh token {TokenId} by user {UserId}",
+            _logger.LogWarning("Attempted use of revoked refresh token {TokenId} by user {UserId}",
                 userRefreshToken.Id, userRefreshToken.UserId);
 
             // Potential token theft - revoke all tokens for this user
@@ -221,7 +238,7 @@ public class JwtTokenService(
         // Check if token is expired
         if (userRefreshToken.IsExpired)
         {
-            logger.LogInformation("Expired refresh token used by user {UserId}", userRefreshToken.UserId);
+            _logger.LogInformation("Expired refresh token used by user {UserId}", userRefreshToken.UserId);
             return new RefreshTokenValidationResult
             {
                 IsValid = false,
@@ -231,7 +248,7 @@ public class JwtTokenService(
         }
 
 
-        logger.LogDebug("Refresh token validated successfully for user {UserId}", userRefreshToken.UserId);
+        _logger.LogDebug("Refresh token validated successfully for user {UserId}", userRefreshToken.UserId);
 
         return new RefreshTokenValidationResult
         {
@@ -267,7 +284,7 @@ public class JwtTokenService(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Token validation failed");
+            _logger.LogError(ex, "Token validation failed");
             return null;
         }
 

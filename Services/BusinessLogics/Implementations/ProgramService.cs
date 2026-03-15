@@ -2,13 +2,16 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Web;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
+using Trustesse.Ivoluntia.Commons.Models.Request;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
+using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
 {
@@ -18,30 +21,56 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         private readonly iVoluntiaDataContext _context;
         private readonly IProgramRepository _programRepository;
         private readonly IFoundationRepository _foundationRepository;
+        private readonly IEmailService _emailService;
+        private readonly ICurrentUserService _currentUserService;
         private readonly IMapper _mapper;
+        private readonly IFileUploadService _fileUploadService;
         public ProgramService(
             ILogger<ProgramService> logger,
             iVoluntiaDataContext context,
             IProgramRepository programRepository,
             IFoundationRepository foundationRepository,
-            IMapper mapper)
+            IEmailService emailService,
+            ICurrentUserService currentUserService,
+            IMapper mapper,
+            IFileUploadService fileUploadService)
         {
             _logger = logger;
             _context = context;
             _programRepository = programRepository;
             _foundationRepository = foundationRepository;
+            _currentUserService = currentUserService;
             _mapper = mapper;
+            _emailService = emailService;
+            _fileUploadService = fileUploadService;
         }
         public async Task<ApiResponse<ProgramDto>> CreateProgram(CreateProgramDto data)
         {
             try
             {
-                var foundationExists = _foundationRepository.GetFoundation(data.FoundationId);
+                var foundation = _foundationRepository.GetFoundation(data.FoundationId).FirstOrDefault();
 
-                if (foundationExists == null)
+                if (foundation == null)
                     return ApiResponse<ProgramDto>.Failure(StatusCodes.Status404NotFound, "Foundation not found");
 
+                if (!foundation.IsActive)
+                    return ApiResponse<ProgramDto>.Failure(StatusCodes.Status403Forbidden, "You cannot create a program for an inactive foundation");
+
+                var programWithSameTitle = _programRepository.GetPrograms().FirstOrDefault(p => p.Title.ToLower() == data.Title.ToLower());
+
+                if (programWithSameTitle != null)
+                    return ApiResponse<ProgramDto>.Failure(StatusCodes.Status409Conflict, "A program with the same title already exists");
+
+
                 var newData = _mapper.Map<Program>(data);
+
+
+                if (!string.IsNullOrWhiteSpace(data.BannerImage))
+                {
+                    string fileName = Guid.NewGuid().ToString();
+                    var imageUrl = await _fileUploadService.UploadImageFromBase64Async(data.BannerImage, fileName);
+                    newData.BannerImage = imageUrl;
+                }
 
                 if (data.SkillIds != null && data.SkillIds.Any())
                 {
@@ -66,8 +95,8 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                         });
                     }
                 }
-
                 newData.IsActive = false;
+                newData.CreatedBy = data.CreatorEmail;
                 newData.Status = (int)ProgramStatus.Pending;
 
                 var response = _programRepository.CreateProgram(newData);
@@ -159,7 +188,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         {
             try
             {
-                var existingData = _programRepository.GetProgram(data.Id);
+                var existingData = await _programRepository.GetProgram(data.Id).FirstOrDefaultAsync();
 
                 if (existingData == null)
                     return ApiResponse<bool>.Failure(StatusCodes.Status404NotFound, "Program not found");
@@ -168,6 +197,28 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                     return ApiResponse<bool>.Failure(StatusCodes.Status403Forbidden, "You cannot set Start date to a date in the past");
 
                 _mapper.Map(data, existingData);
+
+                if (!string.IsNullOrWhiteSpace(data.BannerImage))
+                {
+                    if (data.BannerImage.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!string.Equals(existingData.BannerImage, data.BannerImage, StringComparison.OrdinalIgnoreCase))
+                        {
+                            existingData.BannerImage = data.BannerImage;
+                        }
+                    }
+                    else
+                    {
+                        string fileName = Guid.NewGuid().ToString();
+
+                        var imageUrl = await _fileUploadService.UploadImageFromBase64Async(data.BannerImage, fileName);
+
+                        if (!string.IsNullOrWhiteSpace(imageUrl))
+                        {
+                            existingData.BannerImage = imageUrl;
+                        }
+                    }
+                }
 
                 await _context.SaveChangesAsync();
 
@@ -180,5 +231,75 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             }
         }
 
+        public async Task<ApiResponse<string>> UpdateProgramStatusAsync(UpdateProgramStatusDto updateProgramStatusDto)
+        {
+            try
+            {
+                var id = _currentUserService.GetUserId();
+                var programStatus = await _programRepository.UpdateProgramStatusAsync(updateProgramStatusDto, id);
+                if (programStatus.StatusCode != StatusCodes.Status200OK)
+                {
+                    return ApiResponse<string>.Failure(programStatus.StatusCode, programStatus.Message);
+                }
+                EmailModel emailModel = new EmailModel
+                {
+                    Receivers = programStatus.Message.TrimEnd().Split(' ').ToList(),
+                    Subject = "program status update",
+                    Message = HttpUtility.HtmlDecode(programStatus.Data)
+                };
+                var emailResponse = await _emailService.SendEmailASync(emailModel);
+                if (programStatus.StatusCode == StatusCodes.Status200OK & emailResponse.StatusCode == StatusCodes.Status200OK)
+                {
+                    return ApiResponse<string>.Success($"program status updated and email sent to {programStatus.Message}", $"{programStatus.Data}");
+                }
+                if (programStatus.StatusCode == StatusCodes.Status200OK)
+                {
+                    return ApiResponse<string>.Success($"{programStatus.Message}", $"{programStatus.Data}");
+                }
+                return ApiResponse<string>.Failure(programStatus.StatusCode, $"{programStatus.Message}");
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<string>.Failure(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        public async Task<ApiResponse<bool>> DeleteProgramGoals(string programGoalId)
+        {
+            try
+            {
+                var userId = _currentUserService.GetUserId();
+
+                if (userId == null)
+                    return ApiResponse<bool>.Failure(StatusCodes.Status401Unauthorized, "You must log in first");
+
+                var userFoundationId = await _currentUserService.GetUserFoundationId(userId);
+
+                var goal = await _context.ProgramGoals.Include(g => g.Program).FirstOrDefaultAsync(g => g.Id == programGoalId);
+
+                if (goal == null)
+                    return ApiResponse<bool>.Failure(StatusCodes.Status404NotFound, "Program Goal not found");
+
+                if (goal.Program.FoundationId != userFoundationId.Data)
+                    return ApiResponse<bool>.Failure(StatusCodes.Status403Forbidden, "You are not allowed to delete this program goal");
+
+                if (goal.Program.HasProgramEnded())
+                    return ApiResponse<bool>.Failure(StatusCodes.Status403Forbidden, "Program already ended");
+
+                if (goal.IsAchieved)
+                    return ApiResponse<bool>.Failure(StatusCodes.Status403Forbidden, "You are not allowed to delete achieved goal");
+
+                _context.ProgramGoals.Remove(goal);
+
+                await _context.SaveChangesAsync();
+
+                return ApiResponse<bool>.Success("Program Goal deleted successfully", true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return ApiResponse<bool>.Failure(StatusCodes.Status500InternalServerError, "An error occurred");
+            }
+        }
     }
 }

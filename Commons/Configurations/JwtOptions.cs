@@ -1,5 +1,3 @@
-using System;
-
 namespace Trustesse.Ivoluntia.Commons.Configurations;
 
 public class JwtOptions

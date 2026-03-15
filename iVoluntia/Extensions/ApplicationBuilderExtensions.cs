@@ -1,5 +1,4 @@
-﻿using Asp.Versioning;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Domain.Entities;
 
@@ -12,9 +11,14 @@ namespace Trustesse.Ivoluntia.API.Extensions
             using var scope = app.ApplicationServices.CreateScope();
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+            var context = scope.ServiceProvider.GetRequiredService<iVoluntiaDataContext>();
 
-            await RoleSeeder.SeedRolesAsync(roleManager);
-            await RoleSeeder.SeedSuperAdminUserAsync(userManager, roleManager);
+            await Seeder.SeedRolesAsync(roleManager);
+            await Seeder.SeedSuperAdminUserAsync(userManager, roleManager);
+            await Seeder.SeedFoundationAsync(context);
+            await Seeder.SeedFoundationAdminAsync(userManager, context);
+            await Seeder.SeedSkillsAsync(context);
+            await Seeder.SeedProgramAsync(context);
         }
         public static void ConfigureHsts(this WebApplicationBuilder builder)
         {
@@ -23,13 +27,6 @@ namespace Trustesse.Ivoluntia.API.Extensions
                 options.Preload = true;
                 options.IncludeSubDomains = true;
                 options.MaxAge = TimeSpan.FromDays(365);
-            });
-
-            builder.Services.AddApiVersioning(options =>
-            {
-                options.AssumeDefaultVersionWhenUnspecified = true;
-                options.DefaultApiVersion = new ApiVersion(1, 0);
-                options.ReportApiVersions = true;
             });
         }
     }

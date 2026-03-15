@@ -1,5 +1,3 @@
-using Asp.Versioning;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Trustesse.Ivoluntia.Commons.DTOs;
@@ -11,7 +9,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
     [Route("api/[Controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class ProgramsController : ControllerBase
     {
         private readonly IProgramService _programService;
@@ -71,13 +69,14 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 
             return Ok(result);
         }
+
         [HttpPut("updateprogramstatus")]
         [Authorize(Roles = "SuperAdmin, FoundationAdmin")]
-        public async Task<IActionResult> UpdateProgramStatusAsync([FromBody]UpdateProgramStatusDto updateProgramStatusDto)
+        public async Task<IActionResult> UpdateProgramStatusAsync([FromBody] UpdateProgramStatusDto updateProgramStatusDto)
         {
             try
             {
-                if(updateProgramStatusDto.ProgramId == null && updateProgramStatusDto.Status == null)
+                if (updateProgramStatusDto.ProgramId == null && updateProgramStatusDto.Status == null)
                 {
                     return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "program id and status cannot be null"));
                 }
@@ -87,10 +86,10 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
                 }
                 if (!HttpContext.User.IsInRole(UserRolesEnum.FoundationAdmin.ToString()) && !HttpContext.User.IsInRole(UserRolesEnum.SuperAdmin.ToString()))
                 {
-                  return Unauthorized(ApiResponse<string>.Failure(StatusCodes.Status403Forbidden, "Forbidden"));
+                    return Unauthorized(ApiResponse<string>.Failure(StatusCodes.Status403Forbidden, "Forbidden"));
                 }
                 var statusUpdate = await _programService.UpdateProgramStatusAsync(updateProgramStatusDto);
-                if(statusUpdate.StatusCode == StatusCodes.Status200OK)
+                if (statusUpdate.StatusCode == StatusCodes.Status200OK)
                 {
                     return Ok(statusUpdate);
                 }

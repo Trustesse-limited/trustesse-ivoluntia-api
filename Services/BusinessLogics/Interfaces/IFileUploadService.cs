@@ -6,5 +6,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces
     public interface IFileUploadService
     {
         Task<ApiResponse<IReadOnlyList<string>>> UploadFilesAsync(IEnumerable<IFormFile> files);
+        Task<string> UploadImageFromBase64Async(string base64String, string fileNameWithoutExtension, int maxFileSizeInMb = 5);
     }
 }

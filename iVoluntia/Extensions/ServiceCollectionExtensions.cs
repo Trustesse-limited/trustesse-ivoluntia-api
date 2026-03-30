@@ -41,6 +41,8 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IFileUploadService, CloudinaryService>();
             services.AddScoped<IFileUploadServiceFactory, FileUploadServiceFactory>();
+            services.AddScoped<IVolunteerService, VolunteerService>();
+            services.AddScoped<IVolunteerRepository, VolunteerRepository>();
 
             services.AddSwaggerGen(options =>
             {

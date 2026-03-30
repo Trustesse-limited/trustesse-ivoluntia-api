@@ -9,7 +9,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
     [Route("api/[Controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class ProgramsController : ControllerBase
     {
         private readonly IProgramService _programService;

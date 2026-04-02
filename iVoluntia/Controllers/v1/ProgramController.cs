@@ -9,7 +9,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
     [Route("api/[Controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class ProgramsController : ControllerBase
     {
         private readonly IProgramService _programService;
@@ -98,6 +98,44 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+        [HttpPost("join-program")]
+        public async Task<IActionResult> JoinProgram(string programId)
+        {
+            try
+            {
+                if (programId != null)
+                {
+                    var response = await _programService.JoinProgram(programId);        
+                    if(response.StatusCode == StatusCodes.Status200OK)
+                    {
+                        return Ok(response);    
+                    }
+                    return BadRequest(response);
+                }
+                return BadRequest();
+            }
+            catch (Exception ex) 
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+        [HttpPost("leave-program")]
+        public async Task<IActionResult> LeaveProgram(string programId)
+        {
+            try
+            {
+                var response = await _programService.LeaveProgram(programId);
+                if(response.StatusCode == StatusCodes.Status200OK)
+                {
+                    return Ok(response);
+                }
+                return BadRequest(response);
+            }
+            catch (Exception ex) 
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
     }

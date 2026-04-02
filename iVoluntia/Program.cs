@@ -64,11 +64,10 @@ var app = builder.Build();
 // Seed roles and superadmin
 await app.SeedDefaultDataAsync();
 
-if (app.Environment.IsDevelopment())
-{
+
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+
 
 app.MapGet("/", context =>
 {

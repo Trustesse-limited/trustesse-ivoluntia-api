@@ -1,5 +1,6 @@
 ﻿using MapsterMapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Web;
@@ -23,6 +24,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         private readonly IFoundationRepository _foundationRepository;
         private readonly IEmailService _emailService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly INotificationService _notificationService;     
         private readonly IMapper _mapper;
         private readonly IFileUploadService _fileUploadService;
         public ProgramService(
@@ -33,7 +35,8 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             IEmailService emailService,
             ICurrentUserService currentUserService,
             IMapper mapper,
-            IFileUploadService fileUploadService)
+            IFileUploadService fileUploadService,
+            INotificationService notificationService)
         {
             _logger = logger;
             _context = context;
@@ -43,6 +46,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             _mapper = mapper;
             _emailService = emailService;
             _fileUploadService = fileUploadService;
+            _notificationService = notificationService;
         }
         public async Task<ApiResponse<ProgramDto>> CreateProgram(CreateProgramDto data)
         {
@@ -235,35 +239,48 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         {
             try
             {
-                var id = _currentUserService.GetUserId();
-                var programStatus = await _programRepository.UpdateProgramStatusAsync(updateProgramStatusDto, id);
-                if (programStatus.StatusCode != StatusCodes.Status200OK)
+                //var loginUserEmail = _currentUserService.GetUserEmail();
+                var createdBy = await _programRepository.UpdateProgramStatusAsync(updateProgramStatusDto);
+                var createdBySplit = createdBy.Split('&');
+                if (createdBySplit[0] == "foundationAdmin" || createdBySplit[0] == "superAdmin")
                 {
-                    return ApiResponse<string>.Failure(programStatus.StatusCode, programStatus.Message);
+                    Dictionary<string, string> placeHolder = new Dictionary<string, string>();
+                    placeHolder.Add("UserName", createdBySplit[1]);
+                    placeHolder.Add("Title", createdBySplit[2]);
+                    placeHolder.Add("Status", updateProgramStatusDto.Status);
+                    var notification = await _notificationService.ComposeNotificationAsync(NotificationTypeEnum.ProgramStatusUpdate.ToString(), NotificationChannelEnum.Email.ToString(), placeHolder);
+                    EmailModel emailModel = new EmailModel
+                    {
+                        Receivers = createdBySplit[1].TrimEnd().Split(' ').ToList(),
+                        Subject = "program status update",
+                        Message = HttpUtility.HtmlDecode(notification.Data)
+                    };
+                    var emailResponse = await _emailService.SendEmailASync(emailModel);
+                    return ApiResponse<string>.Success($"program status updated and email sent to", $"{createdBySplit[0]}");
                 }
-                EmailModel emailModel = new EmailModel
+                if (createdBySplit[0] == "volunteers")
                 {
-                    Receivers = programStatus.Message.TrimEnd().Split(' ').ToList(),
-                    Subject = "program status update",
-                    Message = HttpUtility.HtmlDecode(programStatus.Data)
-                };
-                var emailResponse = await _emailService.SendEmailASync(emailModel);
-                if (programStatus.StatusCode == StatusCodes.Status200OK & emailResponse.StatusCode == StatusCodes.Status200OK)
-                {
-                    return ApiResponse<string>.Success($"program status updated and email sent to {programStatus.Message}", $"{programStatus.Data}");
+                    Dictionary<string, string> placeHolder = new Dictionary<string, string>();
+                    placeHolder.Add("UserName", "volunteer");
+                    placeHolder.Add("Title", createdBySplit[2]);
+                    placeHolder.Add("Status", updateProgramStatusDto.Status);
+                    var notification = await _notificationService.ComposeNotificationAsync(NotificationTypeEnum.ProgramEnded.ToString(), NotificationChannelEnum.Email.ToString(), placeHolder);
+                    EmailModel emailModel = new EmailModel
+                    {
+                        Receivers = createdBySplit[1].TrimEnd().Split(' ').ToList(),
+                        Subject = "program status update",
+                        Message = HttpUtility.HtmlDecode(notification.Data)
+                    };
+                    var emailResponse = await _emailService.SendEmailASync(emailModel);
+                    return ApiResponse<string>.Success($"program status updated and email sent to volunteers", $"{createdBySplit[0]}");
                 }
-                if (programStatus.StatusCode == StatusCodes.Status200OK)
-                {
-                    return ApiResponse<string>.Success($"{programStatus.Message}", $"{programStatus.Data}");
-                }
-                return ApiResponse<string>.Failure(programStatus.StatusCode, $"{programStatus.Message}");
+                return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, createdBy);
             }
             catch (Exception ex)
             {
                 return ApiResponse<string>.Failure(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
-
         public async Task<ApiResponse<bool>> DeleteProgramGoals(string programGoalId)
         {
             try
@@ -300,6 +317,80 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 _logger.LogError(ex.Message);
                 return ApiResponse<bool>.Failure(StatusCodes.Status500InternalServerError, "An error occurred");
             }
+        }
+        public async Task<ApiResponse<string>> JoinProgram(string programId)
+        {
+            var createdBy = await _programRepository.JoinProgram(programId, _currentUserService.GetUserId());
+            if(createdBy == "user already in this program")
+            {
+                return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, createdBy);
+            }
+            if(createdBy == "this program has ended")
+            {
+                return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, createdBy);
+            }
+            var userEmail = _currentUserService.GetUserEmail();
+            //send email to volunteer
+            string name = userEmail.Split('@')[0];
+            Dictionary<string, string> placeHolder = new Dictionary<string, string>();
+            placeHolder.Add("Name", name);
+            var notificationCompose = await _notificationService.ComposeNotificationAsync(NotificationTypeEnum.JoinProgram.ToString(), NotificationChannelEnum.Email.ToString(), placeHolder);
+            EmailModel volunteerEmailModel = new EmailModel
+            {
+                Receivers = userEmail.Trim().Split().ToList(),
+                Subject = "request to join program",
+                Message = HttpUtility.HtmlDecode(notificationCompose.Data)
+            };
+            var volunteerEmailResponse = await _emailService.SendEmailASync(volunteerEmailModel);
+            //send email to program admin
+            string adminName = createdBy.Split('@')[0];
+            Dictionary<string, string> adminPlaceHolder = new Dictionary<string, string>();
+            adminPlaceHolder.Add("Name", adminName);
+            adminPlaceHolder.Add("VolunteerEmail", userEmail);
+            var adminNotificationCompose = await _notificationService.ComposeNotificationAsync(NotificationTypeEnum.RequestToJoinProgram.ToString(), NotificationChannelEnum.Email.ToString(), adminPlaceHolder);
+            EmailModel adminEmailModel = new EmailModel
+            {
+                Receivers = createdBy.Trim().Split().ToList(),
+                Subject = "request to join program",
+                Message = HttpUtility.HtmlDecode(adminNotificationCompose.Data)
+            };
+            var adminEmailResponse = await _emailService.SendEmailASync(adminEmailModel);
+            return ApiResponse<string>.Success("email sent to volunteer and program admin", "join program notification");
+        }
+        public async Task<ApiResponse<string>> LeaveProgram(string programId)
+        {
+            var createdBy = await _programRepository.LeaveProgram(programId, _currentUserService.GetUserId());
+            if(createdBy == "user not found")
+            {
+                return ApiResponse<string>.Failure(StatusCodes.Status404NotFound, createdBy);
+            }
+            var userEmail = _currentUserService.GetUserEmail();
+            //send email to volunteer
+            string name = userEmail.Split('@')[0];
+            Dictionary<string, string> placeHolder = new Dictionary<string, string>();
+            placeHolder.Add("Name", name);
+            var notificationCompose = await _notificationService.ComposeNotificationAsync(NotificationTypeEnum.LeaveProgram.ToString(), NotificationChannelEnum.Email.ToString(), placeHolder);
+            EmailModel volunteerEmailModel = new EmailModel
+            {
+                Receivers = userEmail.Trim().Split().ToList(),
+                Subject = "request to leave program",
+                Message = HttpUtility.HtmlDecode(notificationCompose.Data)
+            };
+            var volunteerEmailResponse = await _emailService.SendEmailASync(volunteerEmailModel);
+            //send email to program admin
+            string adminName = createdBy.Split('@')[0];
+            Dictionary<string, string> adminPlaceHolder = new Dictionary<string, string>();
+            adminPlaceHolder.Add("Name", adminName);
+            adminPlaceHolder.Add("volunteerEmail", userEmail);
+            var adminNotificationCompose = await _notificationService.ComposeNotificationAsync(NotificationTypeEnum.RequestToLeaveProgram.ToString(), NotificationChannelEnum.Email.ToString(), adminPlaceHolder);
+            EmailModel adminEmailModel = new EmailModel
+            {
+                Receivers = createdBy.Trim().Split().ToList(),
+                Subject = "request to leave program",
+                Message = HttpUtility.HtmlDecode(adminNotificationCompose.Data)
+            };
+            var adminEmailResponse = await _emailService.SendEmailASync(adminEmailModel);
+            return ApiResponse<string>.Success("email sent to volunter and admin", "leave program notification");
         }
     }
 }

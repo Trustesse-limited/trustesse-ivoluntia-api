@@ -84,7 +84,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                         
                         var json = JsonConvert.SerializeObject(initializeDonationDto);
                         var content = new StringContent(json, Encoding.UTF8, "application/json");
-                        using var response = await _client.PostAsync("https://localhost:7175/api/PaystackTransaction/DonationPayment", content);
+                        using var response = await _client.PostAsync($"{_baseUrl}/api/PaystackTransaction/DonationPayment", content);
                         response.EnsureSuccessStatusCode();
                         var result = await response.Content.ReadAsStringAsync();
                         Console.WriteLine(result);

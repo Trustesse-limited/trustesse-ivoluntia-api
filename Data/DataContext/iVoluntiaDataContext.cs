@@ -36,6 +36,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<Otp> Otps { get; set; }
         public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
         public DbSet<Donation> Donations { get; set; }
+        public DbSet<UserProgram> userPrograms { get; set; }    
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -192,16 +193,15 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Program>()
-                .HasMany(p => p.Users)
-                .WithOne(pg => pg.Program)
-                .HasForeignKey(pg => pg.ProgramId)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            modelBuilder.Entity<Program>()
                 .HasOne(p => p.Location)
                 .WithMany()
                 .HasForeignKey(p => p.LocationId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Program>()
+               .HasMany(p => p.Users)
+               .WithMany(u => u.Programs)
+               .UsingEntity<UserProgram>(); 
 
             modelBuilder.Entity<Foundation>()
                .HasMany(f => f.Programs)

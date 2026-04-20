@@ -39,6 +39,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddHttpClient<IEmailService, EmailService>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<ICurrentUserRepository, CurrentUserRepository>();
             services.AddScoped<IFileUploadService, CloudinaryService>();
             services.AddScoped<IFileUploadServiceFactory, FileUploadServiceFactory>();
 
@@ -103,6 +104,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
         {
             services.AddDbContext<iVoluntiaDataContext>(options =>
                 options.UseSqlServer(
+
                     config.GetConnectionString("DefaultConnection")!,
                     sqlServerOptions => sqlServerOptions.MigrationsAssembly("Trustesse.Ivoluntia.Data")
                 )
@@ -189,6 +191,5 @@ namespace Trustesse.Ivoluntia.API.Extensions
 
             return services;
         }
-
     }
 }

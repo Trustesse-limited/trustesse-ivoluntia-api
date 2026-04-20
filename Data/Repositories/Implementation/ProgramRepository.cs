@@ -79,26 +79,16 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
             {
                 string loginUserEmail = _currentUserRepository.GetUserEmail();
                 if(loginUserEmail == null)
-                {
                     return ("user not log in");
-                }
                 var program = await _context.Programs.FirstOrDefaultAsync(x => x.Id == updateProgramStatusDto.ProgramId);
                 if (program == null)
-                {
                     return ("program not found");
-                }
                 if (program.Status == (int)ProgramStatus.Pending & updateProgramStatusDto.Status == ProgramStatus.Pending.ToString() || program.Status == (int)ProgramStatus.Active & updateProgramStatusDto.Status == ProgramStatus.Active.ToString() || program.Status == (int)ProgramStatus.Queried & updateProgramStatusDto.Status == ProgramStatus.Queried.ToString() || program.Status == (int)ProgramStatus.Ended & updateProgramStatusDto.Status == ProgramStatus.Ended.ToString())
-                {
                     return ("Cannot set new status to current status");
-                }
                 if (updateProgramStatusDto.Status != ProgramStatus.Pending.ToString() & updateProgramStatusDto.Status != ProgramStatus.Active.ToString() & updateProgramStatusDto.Status != ProgramStatus.Queried.ToString() & updateProgramStatusDto.Status != ProgramStatus.Ended.ToString())
-                {
                     return ("invalid status");
-                }
-                if(updateProgramStatusDto.Status == ProgramStatus.Pending.ToString() && program.Status != (int)ProgramStatus.Queried)
-                {
+                if(updateProgramStatusDto.Status == ProgramStatus.Pending.ToString() & program.Status != (int)ProgramStatus.Queried)
                     return ("cannot change status of program");
-                }
                 if (updateProgramStatusDto.Status == ProgramStatus.Active.ToString())
                 {
                     program.Status = (int)ProgramStatus.Active;
@@ -118,13 +108,15 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                 {  
                     program.Status = (int)ProgramStatus.Queried;
                     _context.Programs.Update(program);
+                    var name = _currentUserRepository.GetUserFirstName();
                     var rejectionReason = new ProgramRejectionReason
                     {
                         Id = Guid.NewGuid().ToString(),
                         ProgramId = program.Id,
                         QueriedBy = loginUserEmail,
                         QueriedMessage = updateProgramStatusDto.QueriedComment,
-                        QueriedByFullName = loginUserEmail.Split('@')[0]
+                        QueriedByFullName = name,
+                        CreatedBy = loginUserEmail
                     };
                     await _context.ProgramRejectionReasons.AddAsync(rejectionReason);
                     await _context.SaveChangesAsync();
@@ -155,13 +147,9 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
             var userProgram = await _context.userPrograms.Where(x => x.UserId == userId && x.ProgramId == programId).FirstOrDefaultAsync();
             var programGoal = await _context.ProgramGoals.Include(x => x.Program).Where(x => x.ProgramId == programId).FirstOrDefaultAsync();
             if (userProgram != null)
-            {
                 return "user already in this program";
-            }
             if (programGoal.Program.EndDate < DateTime.Now || programGoal.IsAchieved == true)
-            {
                 return "this program has ended";
-            }
             var addUserProgram = new UserProgram
             {
                 ProgramId = programId,  
@@ -178,9 +166,7 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
         {
             var userProgram = await _context.userPrograms.Include(p => p.Program).Where(x => x.UserId == userId && x.ProgramId == programId).FirstOrDefaultAsync();
             if(userProgram == null)
-            {
                 return "user not found";
-            }
             userProgram.Status = UserProgramStatusEnum.Left.ToString();     
             _context.userPrograms.Update(userProgram);  
             await _context.SaveChangesAsync();

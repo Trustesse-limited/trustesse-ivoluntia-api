@@ -34,8 +34,6 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
             await _context.Programs.AddAsync(data);
             return data;
         }
-
-
         public IQueryable<Program> GetProgram(string dataId)
         {
             var query = _context.Programs
@@ -49,14 +47,10 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
 
             return query;
         }
-
-
         public IQueryable<Program> GetPrograms()
         {
             return _context.Programs.AsQueryable();
         }
-
-
         public async Task<bool> RemoveProgram(string dataId)
         {
             var data = await _context.Programs.Where(p => p.Id == dataId).FirstAsync();
@@ -64,9 +58,7 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
             _context.Programs.Remove(data);
 
             return true;
-
         }
-
         public bool UpdateProgram(Program data)
         {
             _context.Programs.Update(data);
@@ -145,9 +137,11 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
         public async Task<string> JoinProgram(string programId, string userId)
         {
             var userProgram = await _context.userPrograms.Where(x => x.UserId == userId && x.ProgramId == programId).FirstOrDefaultAsync();
-            var programGoal = await _context.ProgramGoals.Include(x => x.Program).Where(x => x.ProgramId == programId).FirstOrDefaultAsync();
+            var programGoal = await _context.ProgramGoals.Include(x => x.Program).Where(x => x.ProgramId == programId).FirstOrDefaultAsync();   
             if (userProgram != null)
                 return "user already in this program";
+            if (programGoal.Program == null)
+                return "program not found";
             if (programGoal.Program.EndDate < DateTime.Now || programGoal.IsAchieved == true)
                 return "this program has ended";
             var addUserProgram = new UserProgram
@@ -164,10 +158,10 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
         }
         public async Task<string> LeaveProgram(string programId,string userId)
         {
-            var userProgram = await _context.userPrograms.Include(p => p.Program).Where(x => x.UserId == userId && x.ProgramId == programId).FirstOrDefaultAsync();
-            if(userProgram == null)
+            var userProgram = await _context.userPrograms.Include(p => p.Program).Where(x => x.UserId == userId & x.ProgramId == programId).FirstOrDefaultAsync();      
+            if (userProgram == null)
                 return "user not found";
-            userProgram.Status = UserProgramStatusEnum.Left.ToString();     
+            userProgram.Status = UserProgramStatusEnum.Left.ToString();
             _context.userPrograms.Update(userProgram);  
             await _context.SaveChangesAsync();
             return userProgram.Program.CreatedBy;

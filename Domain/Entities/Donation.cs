@@ -11,7 +11,7 @@ namespace Trustesse.Ivoluntia.Domain.Entities
     {
         [Column(TypeName = "decimal(18,2)")]
         public decimal Amount { get; set; }
-        public string ReferenceNumber { get; set; } 
+        public string ReferenceNumber { get; set; }     
         public string ProgramId { get; set; } 
         public Program Program { get; set; }   
         public string? DonorMessage { get; set; } 

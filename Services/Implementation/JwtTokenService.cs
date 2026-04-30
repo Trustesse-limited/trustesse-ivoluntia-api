@@ -43,8 +43,6 @@ public class JwtTokenService : IJwtTokenService
         var expirationMinutes = AuthenticationConstants.TokenExpirations.ContainsKey(role)
             ? AuthenticationConstants.TokenExpirations[role].AccessToken
             : 60;
-
-
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new[]
@@ -57,6 +55,7 @@ public class JwtTokenService : IJwtTokenService
                     new Claim(ClaimTypes.GivenName, claims.FirstName),
                     new Claim(ClaimTypes.Surname, claims.LastName),
                     new Claim("OrganizationName", claims.OrganizationName),
+                    new Claim("FoundationId", claims.FoundationId),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
                 }),

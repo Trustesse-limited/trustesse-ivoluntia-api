@@ -9,9 +9,10 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Interfaces
 {
     public interface ICurrentUserRepository
     {
-        Task<ApiResponse<string>> GetUserFoundationId(string userId);
+        //Task<ApiResponse<string>> GetUserFoundationId(string userId);
         string GetUserId();
         string GetUserEmail();
         string GetUserFirstName();
+        string GetUserFoundationId();
     }
 }

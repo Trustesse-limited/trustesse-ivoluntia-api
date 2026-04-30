@@ -8,5 +8,6 @@ public record JwtClaimsModel
     public string FirstName { get; init; } = string.Empty;
     public string LastName { get; init; } = string.Empty;
     public string OrganizationName { get; init; } = string.Empty;
+    public string FoundationId { get; init; } = string.Empty;
     public DateTime IssuedAt { get; init; } = DateTime.UtcNow;
 }

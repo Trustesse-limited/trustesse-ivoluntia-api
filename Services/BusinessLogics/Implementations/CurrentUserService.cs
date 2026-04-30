@@ -5,6 +5,7 @@ using System.Security.Claims;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
+using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
@@ -23,12 +24,18 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
          _currentUserRepository.GetUserEmail(); 
 
         public string GetUserFirstName() =>
-         _currentUserRepository.GetUserFirstName(); 
+         _currentUserRepository.GetUserFirstName();
 
-        public async Task<ApiResponse<string>> GetUserFoundationId(string userId)
+        public string GetUserFoundationId()
         {
-            var response = await _currentUserRepository.GetUserFoundationId(userId);
-            return ApiResponse<string>.Success("user foundation id retrieved successfully", response.Data);
+            var response = _currentUserRepository.GetUserFoundationId();
+            return response;
         }
+
+        //public async Task<ApiResponse<string>> GetUserFoundationId(string userId)
+        //{
+        //    var response = await _currentUserRepository.GetUserFoundationId(userId);
+        //    return ApiResponse<string>.Success("user foundation id retrieved successfully", response.Data);
+        //}
     }
 }

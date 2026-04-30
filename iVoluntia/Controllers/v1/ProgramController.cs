@@ -17,8 +17,6 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         {
             _programService = programService;
         }
-
-
         [HttpPost("create")]
         public async Task<IActionResult> CreateProgram([FromBody] CreateProgramDto request)
         {
@@ -29,7 +27,6 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 
             return Ok(result);
         }
-
         [HttpGet("get-programs")]
         public async Task<IActionResult> GetPrograms()
         {
@@ -37,7 +34,6 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 
             return Ok(result);
         }
-
         [HttpGet("get-program-by-id")]
         public async Task<IActionResult> GetProgram(string id)
         {
@@ -45,8 +41,6 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 
             return Ok(result);
         }
-
-
         [HttpPut("update")]
         public async Task<IActionResult> UpdateProgram([FromBody] UpdateProgramDTO request)
         {
@@ -57,8 +51,6 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 
             return Ok(result);
         }
-
-
         [HttpDelete("delete-program-goal")]
         public async Task<IActionResult> DeleteProgram(string programGoalId)
         {
@@ -69,7 +61,6 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 
             return Ok(result);
         }
-
         [HttpPut("updateprogramstatus")]
         [Authorize(Roles = "SuperAdmin, FoundationAdmin")]
         public async Task<IActionResult> UpdateProgramStatusAsync([FromBody] UpdateProgramStatusDto updateProgramStatusDto)
@@ -114,7 +105,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
                     }
                     return BadRequest(response);
                 }
-                return BadRequest();
+                return BadRequest("program id cannot be null");
             }
             catch (Exception ex) 
             {

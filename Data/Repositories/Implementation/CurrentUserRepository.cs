@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
+using Trustesse.Ivoluntia.Domain.Entities;
 
 namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
 {
@@ -17,21 +18,18 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
     {
         private readonly IHttpContextAccessor _http;
         private ClaimsPrincipal? _user;
-        private readonly iVoluntiaDataContext _context;
-        public CurrentUserRepository(IHttpContextAccessor http, iVoluntiaDataContext context)
+        //private readonly iVoluntiaDataContext _context;
+        public CurrentUserRepository(IHttpContextAccessor http)
         {
             _http = http;
             _user = _http.HttpContext?.User;
-            _context = context;
+            //_context = context;
         }
-
         public string? Name => _user?.Identity?.Name;
-
         private string _userId = string.Empty;
         private string _userEmail = string.Empty;
         private string _firstName = string.Empty;
-
-
+        private string _foundationId = string.Empty;
 
         public string GetUserId() =>
            IsAuthenticated()
@@ -54,22 +52,24 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
             ?? string.Empty
           : _firstName;
 
+        public string GetUserFoundationId()
+        {
+            if (IsAuthenticated())
+                return _user.FindFirst("FoundationId").Value;
+            return _foundationId;   
+        }
         public bool IsAuthenticated() =>
            _user?.Identity?.IsAuthenticated is true;
 
-
-        public async Task<ApiResponse<string>> GetUserFoundationId(string userId)
-        {
-
-            var foundationId = await _context.Users
-                .Where(u => u.Id == userId)
-                .Select(u => u.FoundationId)
-                .FirstOrDefaultAsync();
-
-            if (foundationId == null)
-                return ApiResponse<string>.Failure(StatusCodes.Status404NotFound, "No foundation Id found for user");
-
-            return ApiResponse<string>.Success("user foundation id retrieved successfully", foundationId);
-        }
+        //public async Task<ApiResponse<string>> GetUserFoundationId(string userId)
+        //{
+        //    var foundationId = await _context.Users
+        //        .Where(u => u.Id == userId)
+        //        .Select(u => u.FoundationId)
+        //        .FirstOrDefaultAsync();
+        //    if (foundationId == null)
+        //        return ApiResponse<string>.Failure(StatusCodes.Status404NotFound, "No foundation Id found for user");
+        //    return ApiResponse<string>.Success("user foundation id retrieved successfully", foundationId);
+        //}
     }
 }

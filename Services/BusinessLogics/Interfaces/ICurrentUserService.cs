@@ -5,9 +5,10 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces
 {
     public interface ICurrentUserService
     {
-        Task<ApiResponse<string>> GetUserFoundationId(string userId);
+        //Task<ApiResponse<string>> GetUserFoundationId(string userId);
         string GetUserId();
         string GetUserEmail();
         string GetUserFirstName();
+        string GetUserFoundationId();
     }
 }

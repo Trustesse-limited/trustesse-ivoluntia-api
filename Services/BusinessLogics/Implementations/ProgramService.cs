@@ -64,18 +64,13 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
 
                 if (programWithSameTitle != null)
                     return ApiResponse<ProgramDto>.Failure(StatusCodes.Status409Conflict, "A program with the same title already exists");
-
-
                 var newData = _mapper.Map<Program>(data);
-
-
                 if (!string.IsNullOrWhiteSpace(data.BannerImage))
                 {
                     string fileName = Guid.NewGuid().ToString();
                     var imageUrl = await _fileUploadService.UploadImageFromBase64Async(data.BannerImage, fileName);
                     newData.BannerImage = imageUrl;
                 }
-
                 if (data.SkillIds != null && data.SkillIds.Any())
                 {
                     foreach (var skillId in data.SkillIds)
@@ -87,7 +82,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                         });
                     }
                 }
-
                 if (data.ProgramGoals != null && data.ProgramGoals.Any())
                 {
                     foreach (var goalDto in data.ProgramGoals)
@@ -102,16 +96,11 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 newData.IsActive = false;
                 newData.CreatedBy = data.CreatorEmail;
                 newData.Status = (int)ProgramStatus.Pending;
-
                 var response = _programRepository.CreateProgram(newData);
-
                 await _context.SaveChangesAsync();
-
                 if (response == null)
                     return ApiResponse<ProgramDto>.Failure(StatusCodes.Status400BadRequest, "Failed to create program");
-
                 var resutlDto = _mapper.Map<ProgramDto>(newData);
-
                 return ApiResponse<ProgramDto>.Success("Program created successfully", resutlDto);
             }
             catch (Exception ex)
@@ -120,7 +109,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 return ApiResponse<ProgramDto>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred");
             }
         }
-
         public async Task<ApiResponse<IEnumerable<ProgramDto>>> GetPrograms()
         {
             try
@@ -132,7 +120,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 var resultDto = _mapper.Map<IEnumerable<ProgramDto>>(response);
 
                 return ApiResponse<IEnumerable<ProgramDto>>.Success("Programs retrieved successfully", resultDto);
-
             }
             catch (Exception ex)
             {
@@ -141,7 +128,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 return ApiResponse<IEnumerable<ProgramDto>>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred");
             }
         }
-
         public async Task<ApiResponse<IEnumerable<ProgramDto>>> GetProgram(string id)
         {
             try
@@ -153,7 +139,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 var resultDto = _mapper.Map<IEnumerable<ProgramDto>>(response);
 
                 return ApiResponse<IEnumerable<ProgramDto>>.Success("Program retrieved successfully", resultDto);
-
             }
             catch (Exception ex)
             {
@@ -162,7 +147,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 return ApiResponse<IEnumerable<ProgramDto>>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred");
             }
         }
-
         public async Task<ApiResponse<bool>> RemoveProgram(string dataId)
         {
             try
@@ -187,7 +171,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 return ApiResponse<bool>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred");
             }
         }
-
         public async Task<ApiResponse<bool>> UpdateProgram(UpdateProgramDTO data)
         {
             try
@@ -223,7 +206,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                         }
                     }
                 }
-
                 await _context.SaveChangesAsync();
 
                 return ApiResponse<bool>.Success("Program updated successfully", true);
@@ -234,7 +216,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 return ApiResponse<bool>.Failure(StatusCodes.Status500InternalServerError, "An error occurred");
             }
         }
-
         public async Task<ApiResponse<string>> UpdateProgramStatusAsync(UpdateProgramStatusDto updateProgramStatusDto)
         {
             try
@@ -289,14 +270,14 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 if (userId == null)
                     return ApiResponse<bool>.Failure(StatusCodes.Status401Unauthorized, "You must log in first");
 
-                var userFoundationId = await _currentUserService.GetUserFoundationId(userId);
+                var userFoundationId =  _currentUserService.GetUserFoundationId();
 
                 var goal = await _context.ProgramGoals.Include(g => g.Program).FirstOrDefaultAsync(g => g.Id == programGoalId);
 
                 if (goal == null)
                     return ApiResponse<bool>.Failure(StatusCodes.Status404NotFound, "Program Goal not found");
 
-                if (goal.Program.FoundationId != userFoundationId.Data)
+                if (goal.Program.FoundationId != userFoundationId)
                     return ApiResponse<bool>.Failure(StatusCodes.Status403Forbidden, "You are not allowed to delete this program goal");
 
                 if (goal.Program.HasProgramEnded())
@@ -324,6 +305,9 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, response);
             if(response == "this program has ended")
                 return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, response);
+            if (response == "program not found")
+                return ApiResponse<string>.Failure(StatusCodes.Status404NotFound, response);
+            
             //send email to volunteer
             var userEmail = _currentUserService.GetUserEmail();
             string name = _currentUserService.GetUserFirstName();
@@ -354,7 +338,9 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         public async Task<ApiResponse<string>> LeaveProgram(string programId)
         {
             var response = await _programRepository.LeaveProgram(programId, _currentUserService.GetUserId());
-            if(response == "user not found")
+            if(response == "program not found")
+                return ApiResponse<string>.Failure(StatusCodes.Status404NotFound, response);
+            if (response == "user not found")
                 return ApiResponse<string>.Failure(StatusCodes.Status404NotFound, response);
             var userEmail = _currentUserService.GetUserEmail();
             //send email to volunteer

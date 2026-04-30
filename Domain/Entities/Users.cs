@@ -34,6 +34,5 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public ICollection<Donation> Donations { get; set; }   
         public ICollection<Program> Programs { get; set; }
         public ICollection<UserProgram> UsersPrograms { get; set; }
-
     };
 }

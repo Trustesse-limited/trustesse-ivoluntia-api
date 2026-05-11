@@ -39,7 +39,8 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<Otp> Otps { get; set; }
         public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
         public DbSet<Donation> Donations { get; set; }
-        public DbSet<UserProgram> userPrograms { get; set; } 
+        public DbSet<UserProgram> userPrograms { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -242,8 +243,18 @@ namespace Trustesse.Ivoluntia.Data.DataContext
              .WithMany(u => u.Donations)
              .HasForeignKey(d => d.UserId)
              .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<Donation>()
               .HasQueryFilter(d => !d.IsDeprecated);
+
+            modelBuilder.Entity<AuditLog>(entity =>
+            {
+                entity.Property(x => x.OldData)
+                      .HasColumnType("nvarchar(max)");
+
+                entity.Property(x => x.NewData)
+                      .HasColumnType("nvarchar(max)");
+            });
         }
     }
 }

@@ -51,7 +51,7 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                     donation.SettlementTimeDate = DateTime.Now; 
                     donation.DateUpdated = DateTime.Now;
                     _iVoluntiaDataContext.Donations.Update(donation);
-                    await _iVoluntiaDataContext.SaveChangesAsync();
+                    var response = await _iVoluntiaDataContext.SaveChangesAsync();
                     return $"{donation.Program.CreatedBy} {donation.DonorEmail}";//program admin email
                 }
                 return "no data found";

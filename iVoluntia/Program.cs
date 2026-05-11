@@ -2,6 +2,7 @@ using CloudinaryDotNet;
 using MapsterMapper;
 using Microsoft.Extensions.Options;
 using Trustesse.Ivoluntia.API.Extensions;
+using Trustesse.Ivoluntia.API.Middlewares;
 using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
 using Trustesse.Ivoluntia.Data.Repositories;
 using Trustesse.Ivoluntia.Domain.IRepositories;
@@ -64,11 +65,10 @@ var app = builder.Build();
 // Seed roles and superadmin
 await app.SeedDefaultDataAsync();
 
-if (app.Environment.IsDevelopment())
-{
+
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+
 
 app.MapGet("/", context =>
 {
@@ -82,7 +82,7 @@ else app.UseCors("AllowAll");
 app.UseHsts();
 app.UseHttpsRedirection();
 app.UseRouting();
-//app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

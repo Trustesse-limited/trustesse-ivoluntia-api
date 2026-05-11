@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Trustesse.Ivoluntia.Data.DataContext;
 
@@ -11,9 +12,11 @@ using Trustesse.Ivoluntia.Data.DataContext;
 namespace Trustesse.Ivoluntia.Data.Migrations
 {
     [DbContext(typeof(iVoluntiaDataContext))]
-    partial class iVoluntiaDataContextModelSnapshot : ModelSnapshot
+    [Migration("20260402213319_UserProgramMigration")]
+    partial class UserProgramMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1018,9 +1021,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Property<Guid>("CountryId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("IsDeprecated")
-                        .HasColumnType("bit");
-
                     b.Property<string>("StateName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -1198,9 +1198,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeprecated")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");

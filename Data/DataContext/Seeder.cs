@@ -39,7 +39,6 @@ namespace Trustesse.Ivoluntia.Data.DataContext
             }
         }
 
-
         public static async Task SeedSuperAdminUserAsync(UserManager<User> userManager, RoleManager<Role> roleManager)
         {
             const string superAdminEmail = "admin@ivoluntia.com";
@@ -122,6 +121,34 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                 };
 
                 var result = await userManager.CreateAsync(user, userPassword);
+
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(user, UserRolesEnum.Volunteer.ToString());
+                }
+                else
+                {
+                    throw new Exception("Failed to create FoundationAdmin user");
+                }
+            }
+            const string userEmailTwo = "joseph@yopmail.com";
+            const string userPasswordTwo = "Joseph12345#";
+
+            var UserTwo = await userManager.FindByEmailAsync(userEmailTwo);
+
+            if (UserTwo == null)
+            {
+                var user = new User
+                {
+                    UserName = userEmailTwo,
+                    Email = userEmailTwo,
+                    EmailConfirmed = true,
+                    FirstName = "Joseph",
+                    LastName = "Peter",
+                    IsActive = true,
+                };
+
+                var result = await userManager.CreateAsync(user, userPasswordTwo);
 
                 if (result.Succeeded)
                 {

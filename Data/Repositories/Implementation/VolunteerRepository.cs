@@ -31,9 +31,7 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
                                            .Where(ur => volunteerRoleIds.Contains(ur.RoleId))
                                            .Select(ur => ur.UserId);
 
-            var query = _context.Users
-                                .Where(u => volunteerUserIds.Contains(u.Id)
-                                         && u.FoundationId == foundationId);
+            var query = _context.Users.Where(u => volunteerUserIds.Contains(u.Id) && u.FoundationId == foundationId);
 
             if (isActive.HasValue)
             {

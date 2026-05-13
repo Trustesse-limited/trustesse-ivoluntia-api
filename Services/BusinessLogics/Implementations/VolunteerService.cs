@@ -34,31 +34,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             _mapper = mapper;
         }
 
-        //public async Task<ApiResponse<IEnumerable<VolunteerDto>>> GetVolunteers(string foundationId)
-        //{
-        //    try
-        //    {
-        //        var foundationResult = _foundationRepository.GetFoundation(foundationId);
-
-        //        if (foundationResult == null)
-        //            return ApiResponse<IEnumerable<VolunteerDto>>.Failure(StatusCodes.Status404NotFound, "No foundation found for this id");
-
-        //        var query = _volunteerRepository.GetVolunteers(foundationId);
-
-        //        var response = await query.ToListAsync();
-
-        //        var resultDto = _mapper.Map<IEnumerable<VolunteerDto>>(response);
-
-        //        return ApiResponse<IEnumerable<VolunteerDto>>.Success("Volunteers retrieved successfully", resultDto);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex.Message);
-
-        //        return ApiResponse<IEnumerable<VolunteerDto>>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred");
-        //    }
-        //}
-
         public async Task<ApiResponse<IEnumerable<VolunteerDto>>> GetVolunteers(string foundationId, bool? isActive)
         {
             try

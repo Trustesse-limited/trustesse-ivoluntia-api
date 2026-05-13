@@ -11,6 +11,10 @@ namespace Trustesse.Ivoluntia.Domain.Enums
         Donation,
         ProgramStatusUpdate,
         ProgramEnded,
-        DonationMade
+        DonationMade,
+        JoinProgram,
+        RequestToJoinProgram,
+        LeaveProgram,
+        RequestToLeaveProgram
     }
 }

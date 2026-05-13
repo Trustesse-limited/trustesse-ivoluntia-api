@@ -1,13 +1,16 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
 using Trustesse.Ivoluntia.Domain.Entities;
 
 namespace Trustesse.Ivoluntia.Data.DataContext
 {
     public class iVoluntiaDataContext : IdentityDbContext<User, Role, string>
     {
-        public iVoluntiaDataContext(DbContextOptions<iVoluntiaDataContext> options) : base(options)
+        private readonly ICurrentUserRepository _currentUserRepository;
+        public iVoluntiaDataContext(DbContextOptions<iVoluntiaDataContext> options, ICurrentUserRepository currentUserRepository) : base(options)
         {
+            _currentUserRepository = currentUserRepository; 
         }
 
         public DbSet<Foundation> Foundations { get; set; }
@@ -36,6 +39,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<Otp> Otps { get; set; }
         public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
         public DbSet<Donation> Donations { get; set; }
+        public DbSet<UserProgram> userPrograms { get; set; } 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -68,6 +72,8 @@ namespace Trustesse.Ivoluntia.Data.DataContext
 
                 entity.Property(u => u.Bio)
                       .HasMaxLength(500);
+
+                entity.HasQueryFilter(u => !u.IsDeprecated);
             });
 
             modelBuilder.Entity<Foundation>(entity =>
@@ -91,6 +97,8 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                       .WithMany(c => c.Foundations)
                       .HasForeignKey(f => f.CategoryId)
                       .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasQueryFilter(f => !f.IsDeprecated);
             });
 
             modelBuilder.Entity<Interest>(entity =>
@@ -99,6 +107,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                       .HasMaxLength(50);
                 entity.Property(u => u.Description)
                       .HasMaxLength(500);
+                entity.HasQueryFilter(u => !u.IsDeprecated);
             });
             modelBuilder.Entity<Skill>(entity =>
             {
@@ -106,6 +115,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                       .HasMaxLength(50);
                 entity.Property(u => u.Description)
                       .HasMaxLength(500);
+                entity.HasQueryFilter(u => !u.IsDeprecated);
             });
 
             modelBuilder.Entity<Location>(entity =>
@@ -122,6 +132,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                       .WithMany()
                       .HasForeignKey(l => l.StateId)
                       .OnDelete(DeleteBehavior.NoAction);
+                entity.HasQueryFilter(u => !u.IsDeprecated);
             });
 
             modelBuilder.Entity<Notification>(entity =>
@@ -129,6 +140,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                 entity.HasOne(n => n.User)
                       .WithMany(u => u.Notifications)
                       .HasForeignKey(n => n.UserId);
+                entity.HasQueryFilter(u => !u.IsDeprecated);
             });
 
             modelBuilder.Entity<NotificationChannelSettings>(entity =>
@@ -136,6 +148,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                 entity.HasOne(s => s.NotificationChannel)
                       .WithMany(c => c.ChannelSettings)
                       .HasForeignKey(s => s.NotificationChannelId);
+                entity.HasQueryFilter(u => !u.IsDeprecated);
             });
 
             modelBuilder.Entity<UserSkillLink>()
@@ -150,6 +163,8 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                   .HasOne(us => us.Skill)
                   .WithMany(s => s.UserSkillLinks)
                   .HasForeignKey(us => us.SkillId);
+            modelBuilder.Entity<UserSkillLink>()
+                  .HasQueryFilter(us => !us.IsDeprecated);
 
             modelBuilder.Entity<UserInterestLink>()
                   .HasKey(us => new { us.UserId, us.InterestId });
@@ -163,6 +178,8 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                   .HasOne(us => us.Interest)
                   .WithMany(s => s.UserInterestLinks)
                   .HasForeignKey(us => us.InterestId);
+            modelBuilder.Entity<UserInterestLink>()
+                  .HasQueryFilter(us => !us.IsDeprecated);
 
             modelBuilder.Entity<ProgramSkill>()
                 .HasKey(ps => new { ps.ProgramId, ps.SkillId });
@@ -178,6 +195,8 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                 .WithMany(s => s.ProgramSkills)
                 .HasForeignKey(ps => ps.SkillId)
                 .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<ProgramSkill>()
+                .HasQueryFilter(ps => !ps.IsDeprecated);
 
             modelBuilder.Entity<Program>() 
                 .HasMany(p => p.ProgramGoals)
@@ -192,22 +211,25 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Program>()
-                .HasMany(p => p.Users)
-                .WithOne(pg => pg.Program)
-                .HasForeignKey(pg => pg.ProgramId)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            modelBuilder.Entity<Program>()
                 .HasOne(p => p.Location)
                 .WithMany()
                 .HasForeignKey(p => p.LocationId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            modelBuilder.Entity<Program>()
+               .HasMany(p => p.Users)
+               .WithMany(u => u.Programs)
+               .UsingEntity<UserProgram>();
+            modelBuilder.Entity<Program>()
+               .HasQueryFilter(p => !p.IsDeprecated & p.FoundationId == _currentUserRepository.GetUserFoundationId());
+
+
             modelBuilder.Entity<Foundation>()
                .HasMany(f => f.Programs)
                .WithOne(p => p.Foundation)
                .HasForeignKey(p => p.FoundationId)
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.Cascade)
+               .IsRequired(false);
 
             modelBuilder.Entity<Donation>()
               .HasOne(d => d.Program)
@@ -220,6 +242,8 @@ namespace Trustesse.Ivoluntia.Data.DataContext
              .WithMany(u => u.Donations)
              .HasForeignKey(d => d.UserId)
              .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Donation>()
+              .HasQueryFilter(d => !d.IsDeprecated);
         }
     }
 }

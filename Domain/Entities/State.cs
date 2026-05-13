@@ -10,5 +10,6 @@ public class State
     public string StateName { get; set; }
     public Guid CountryId { get; set; }
     [ForeignKey("CountryId")]
+    public bool IsDeprecated { get; set; }
     public virtual Country Country { get; set; }
 }

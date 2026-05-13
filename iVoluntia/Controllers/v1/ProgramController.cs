@@ -17,8 +17,6 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         {
             _programService = programService;
         }
-
-
         [HttpPost("create")]
         public async Task<IActionResult> CreateProgram([FromBody] CreateProgramDto request)
         {
@@ -29,7 +27,6 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 
             return Ok(result);
         }
-
         [HttpGet("get-programs")]
         public async Task<IActionResult> GetPrograms()
         {
@@ -37,7 +34,6 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 
             return Ok(result);
         }
-
         [HttpGet("get-program-by-id")]
         public async Task<IActionResult> GetProgram(string id)
         {
@@ -45,8 +41,6 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 
             return Ok(result);
         }
-
-
         [HttpPut("update")]
         public async Task<IActionResult> UpdateProgram([FromBody] UpdateProgramDTO request)
         {
@@ -57,8 +51,6 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 
             return Ok(result);
         }
-
-
         [HttpDelete("delete-program-goal")]
         public async Task<IActionResult> DeleteProgram(string programGoalId)
         {
@@ -69,7 +61,6 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 
             return Ok(result);
         }
-
         [HttpPut("updateprogramstatus")]
         [Authorize(Roles = "SuperAdmin, FoundationAdmin")]
         public async Task<IActionResult> UpdateProgramStatusAsync([FromBody] UpdateProgramStatusDto updateProgramStatusDto)
@@ -98,6 +89,44 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+        [HttpPost("join-program")]
+        public async Task<IActionResult> JoinProgram(string programId)
+        {
+            try
+            {
+                if (programId != null)
+                {
+                    var response = await _programService.JoinProgram(programId);        
+                    if(response.StatusCode == StatusCodes.Status200OK)
+                    {
+                        return Ok(response);    
+                    }
+                    return BadRequest(response);
+                }
+                return BadRequest("program id cannot be null");
+            }
+            catch (Exception ex) 
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+        [HttpPost("leave-program")]
+        public async Task<IActionResult> LeaveProgram(string programId)
+        {
+            try
+            {
+                var response = await _programService.LeaveProgram(programId);
+                if(response.StatusCode == StatusCodes.Status200OK)
+                {
+                    return Ok(response);
+                }
+                return BadRequest(response);
+            }
+            catch (Exception ex) 
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
     }

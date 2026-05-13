@@ -8,6 +8,10 @@ using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Donation;
 using Trustesse.Ivoluntia.Commons.Models.Request;
 using Trustesse.Ivoluntia.Commons.Models.Response;
+using Trustesse.Ivoluntia.Commons.uitilities;
+using Trustesse.Ivoluntia.Data.Migrations;
+using Trustesse.Ivoluntia.Data.Repositories;
+using Trustesse.Ivoluntia.Data.Repositories.Implementation;
 using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
@@ -23,6 +27,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         private readonly IConfiguration _configuration;
         private readonly HttpClient _client;
         private readonly string _baseUrl;
+        private readonly string _callBackUrl;
         private readonly INotificationService _notificationService;
         private readonly IEmailService _emailService;
 
@@ -32,6 +37,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             _configuration = configuration;
             _client = client;
             _baseUrl = configuration["PaymentGateway:BaseUrl"];
+            _callBackUrl = configuration["PaymentGateway:Callback_Url"];
             _currentUserService = currentUserService;
             _notificationService = notificationService;
             _emailService = emailService;
@@ -40,22 +46,22 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         {
             try
             {
-                if (donationDto != null)
-                {
-                    Donation donation = new Donation
+                    if (donationDto != null)
                     {
-                        Id = Guid.NewGuid().ToString(),
-                        Amount = donationDto.Amount,
-                        ServicePaidFor = PaymentType.Program.ToString(),
-                        StatusOfDonation = DonationStatus.Initiated.ToString(),
-                        PaymentMethod = donationDto.PaymentMethod,
-                        InitializeTimeDate = DateTime.Now,
-                        ProgramId = donationDto.ProgramId,
-                        DonorMessage = donationDto.Message,
-                        UserId = _currentUserService.GetUserId(),
-                        DonorEmail = _currentUserService.GetUserEmail(),
-                        ReferenceNumber = Guid.NewGuid().ToString()
-                    };
+                        Donation donation = new Donation
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            Amount = donationDto.Amount,
+                            ServicePaidFor = PaymentType.Program.ToString(),
+                            StatusOfDonation = DonationStatus.Initiated.ToString(),
+                            PaymentMethod = donationDto.PaymentMethod,
+                            InitializeTimeDate = DateTime.Now,
+                            ProgramId = donationDto.ProgramId,
+                            DonorMessage = donationDto.Message,
+                            UserId = _currentUserService.GetUserId(),
+                            DonorEmail = _currentUserService.GetUserEmail(),
+                            ReferenceNumber = TransactionReferenceGenerator.Reference()
+                        };
 
                     var dbResponse = await _donationRepository.InitializeDonation(donation);
                     if (dbResponse)
@@ -68,13 +74,13 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                             ServiceId = donation.Id,
                             PaymentMethod = donation.PaymentMethod,
                             Reference = donation.ReferenceNumber,
-                            Callback_Url = "https://www.google.com",
+                            Callback_Url = _callBackUrl,
                             UserId = donation.UserId
                         };
 
                         var json = JsonConvert.SerializeObject(initializeDonationDto);
                         var content = new StringContent(json, Encoding.UTF8, "application/json");
-                        using var response = await _client.PostAsync("https://localhost:7175/api/PaystackTransaction/DonationPayment", content);
+                        using var response = await _client.PostAsync($"{_baseUrl}/api/PaystackTransaction/DonationPayment", content);
                         response.EnsureSuccessStatusCode();
                         var result = await response.Content.ReadAsStringAsync();
                         Console.WriteLine(result);
@@ -104,7 +110,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                     //send email to donor 
                     string donorEmail = emails[1];
                     Dictionary<string, string> donorHolder = new Dictionary<string, string>();
-                    donorHolder.Add("FirstName", donorEmail.Split('@')[0]);
+                    donorHolder.Add("FirstName", _currentUserService.GetUserFirstName()); 
                     var donorMessage = await _notificationService.ComposeNotificationAsync(NotificationTypeEnum.Donation.ToString(), NotificationChannelEnum.Email.ToString(), donorHolder);
                     EmailModel donorEmailModel = new EmailModel
                     {
@@ -116,7 +122,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                     //send email to program creator
                     string programAdminEmail = emails[1];
                     Dictionary<string, string> adminHolder = new Dictionary<string, string>();
-                    adminHolder.Add("FirstName", programAdminEmail.Split('@')[0]);
+                    adminHolder.Add("FirstName", "Admin");
                     var adminMessage = await _notificationService.ComposeNotificationAsync(NotificationTypeEnum.DonationMade.ToString(), NotificationChannelEnum.Email.ToString(), adminHolder);
                     EmailModel adminEmailModel = new EmailModel
                     {

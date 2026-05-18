@@ -60,16 +60,5 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
         }
         public bool IsAuthenticated() =>
            _user?.Identity?.IsAuthenticated is true;
-
-        //public async Task<ApiResponse<string>> GetUserFoundationId(string userId)
-        //{
-        //    var foundationId = await _context.Users
-        //        .Where(u => u.Id == userId)
-        //        .Select(u => u.FoundationId)
-        //        .FirstOrDefaultAsync();
-        //    if (foundationId == null)
-        //        return ApiResponse<string>.Failure(StatusCodes.Status404NotFound, "No foundation Id found for user");
-        //    return ApiResponse<string>.Success("user foundation id retrieved successfully", foundationId);
-        //}
     }
 }

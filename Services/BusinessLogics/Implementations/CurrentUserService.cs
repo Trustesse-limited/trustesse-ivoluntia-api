@@ -31,11 +31,5 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             var response = _currentUserRepository.GetUserFoundationId();
             return response;
         }
-
-        //public async Task<ApiResponse<string>> GetUserFoundationId(string userId)
-        //{
-        //    var response = await _currentUserRepository.GetUserFoundationId(userId);
-        //    return ApiResponse<string>.Success("user foundation id retrieved successfully", response.Data);
-        //}
     }
 }

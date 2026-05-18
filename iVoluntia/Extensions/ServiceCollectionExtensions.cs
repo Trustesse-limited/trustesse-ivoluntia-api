@@ -104,13 +104,13 @@ namespace Trustesse.Ivoluntia.API.Extensions
         }
         public static IServiceCollection AddCustomDatabase(this IServiceCollection services, IConfiguration config)
         {
-            services.AddDbContext<iVoluntiaDataContext>(options =>
+            services.AddDbContext<iVoluntiaDataContext>((spt, options) =>
+            {
                 options.UseSqlServer(
-
-                    config.GetConnectionString("DefaultConnection")!,
-                    sqlServerOptions => sqlServerOptions.MigrationsAssembly("Trustesse.Ivoluntia.Data")
-                )
-            );
+                   config.GetConnectionString("DefaultConnection")!,
+                   sqlServerOptions => sqlServerOptions.MigrationsAssembly("Trustesse.Ivoluntia.Data"));
+                options.AddInterceptors(spt.GetRequiredService<AuditSaveChangesInterceptor>());
+            });
 
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -190,6 +190,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
         {
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
+            services.AddScoped<AuditSaveChangesInterceptor>();
 
             return services;
         }

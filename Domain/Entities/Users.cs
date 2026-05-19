@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace Trustesse.Ivoluntia.Domain.Entities
 {
-    public class User : IdentityUser   
+    public class User : IdentityUser
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -31,8 +31,9 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
         public ICollection<UserSkillLink?> UserSkillLinks { get; set; } = new List<UserSkillLink>();
         public ICollection<UserInterestLink?> UserInterestLinks { get; set; } = new List<UserInterestLink>();
-        public ICollection<Donation> Donations { get; set; }   
+        public ICollection<Donation> Donations { get; set; }
         public ICollection<Program> Programs { get; set; }
         public ICollection<UserProgram> UsersPrograms { get; set; }
+        public ICollection<FavoriteProgram> FavoritePrograms { get; set; } = new List<FavoriteProgram>();
     };
 }

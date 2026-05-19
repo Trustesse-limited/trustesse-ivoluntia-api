@@ -41,7 +41,7 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Program
         [Required]
         public string FoundationId { get; set; }
         [Required]
-        public string CreatorEmail { get; set; }    
+        public string CreatorEmail { get; set; }
 
         public long DonationTarget { get; set; }
 
@@ -92,5 +92,11 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Program
         public string Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+    }
+
+    public class AddFavoriteProgramRequest
+    {
+        [Required]
+        public string ProgramId { get; set; }
     }
 }

@@ -10,7 +10,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         private readonly ICurrentUserRepository _currentUserRepository;
         public iVoluntiaDataContext(DbContextOptions<iVoluntiaDataContext> options, ICurrentUserRepository currentUserRepository) : base(options)
         {
-            _currentUserRepository = currentUserRepository; 
+            _currentUserRepository = currentUserRepository;
         }
 
         public DbSet<Foundation> Foundations { get; set; }
@@ -35,11 +35,12 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<ProgramSkill> ProgramSkills { get; set; }
         public DbSet<ProgramGoal> ProgramGoals { get; set; }
         public DbSet<Program> Programs { get; set; }
-        public DbSet<ProgramRejectionReason> ProgramRejectionReasons{ get; set;}
+        public DbSet<ProgramRejectionReason> ProgramRejectionReasons { get; set; }
         public DbSet<Otp> Otps { get; set; }
         public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
         public DbSet<Donation> Donations { get; set; }
-        public DbSet<UserProgram> userPrograms { get; set; } 
+        public DbSet<UserProgram> userPrograms { get; set; }
+        public DbSet<FavoriteProgram> FavoritePrograms { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -198,7 +199,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
             modelBuilder.Entity<ProgramSkill>()
                 .HasQueryFilter(ps => !ps.IsDeprecated);
 
-            modelBuilder.Entity<Program>() 
+            modelBuilder.Entity<Program>()
                 .HasMany(p => p.ProgramGoals)
                 .WithOne(pg => pg.Program)
                 .HasForeignKey(pg => pg.ProgramId)
@@ -244,6 +245,27 @@ namespace Trustesse.Ivoluntia.Data.DataContext
              .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<Donation>()
               .HasQueryFilter(d => !d.IsDeprecated);
+
+
+            modelBuilder.Entity<FavoriteProgram>(entity =>
+            {
+                entity.HasOne(fp => fp.User)
+                    .WithMany(u => u.FavoritePrograms)
+                    .HasForeignKey(fp => fp.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(fp => fp.Program)
+                    .WithMany()
+                    .HasForeignKey(fp => fp.ProgramId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(fp => new
+                {
+                    fp.UserId,
+                    fp.ProgramId
+                })
+                .IsUnique();
+            });
         }
     }
 }

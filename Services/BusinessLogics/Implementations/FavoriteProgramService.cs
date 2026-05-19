@@ -32,17 +32,12 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             var program = await _programRepository.GetPrograms().FirstOrDefaultAsync(x => x.Id == request.ProgramId);
 
             if (program == null)
-
-            {
                 return ApiResponse<ProgramDto>.Failure(StatusCodes.Status404NotFound, "Program not found");
-            }
 
             var exists = await _context.FavoritePrograms.AnyAsync(x => x.UserId == userId && x.ProgramId == request.ProgramId);
 
             if (exists)
-            {
                 return ApiResponse<ProgramDto>.Failure(StatusCodes.Status400BadRequest, "Program already in favorites");
-            }
 
             var favorite = new FavoriteProgram
             {

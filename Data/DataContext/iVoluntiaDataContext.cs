@@ -41,7 +41,6 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<Donation> Donations { get; set; }
         public DbSet<UserProgram> userPrograms { get; set; }
         public DbSet<FavoriteProgram> FavoritePrograms { get; set; }
-        public DbSet<UserProgram> userPrograms { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

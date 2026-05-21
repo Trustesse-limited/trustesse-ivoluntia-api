@@ -1,24 +1,25 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
+using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 
 namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class FavoriteProgramsController : ControllerBase
     {
-        private readonly IProgramService _programService;
         private readonly IFavoriteProgramService _favoriteProgramService;
 
-        public FavoriteProgramsController(IProgramService programService, IFavoriteProgramService favoriteProgramService)
+        public FavoriteProgramsController(IFavoriteProgramService favoriteProgramService)
         {
-            _programService = programService;
             _favoriteProgramService = favoriteProgramService;
         }
 
-        [HttpPost("add")]
+        [HttpPost("add-favorite-program")]
         public async Task<IActionResult> AddFavoriteProgram([FromBody] AddFavoriteProgramRequest request)
         {
             if (request == null)
@@ -44,6 +45,15 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
                 return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid request."));
 
             var result = await _favoriteProgramService.RemoveFavoriteProgram(programId);
+
+            return Ok(result);
+        }
+
+        [HttpGet("get-all-favorite-programs")]
+        [Authorize(Roles = "SuperAdmin,FoundationAdmin")]
+        public async Task<IActionResult> GetAllFavoritePrograms([FromQuery] BaseQuery baseQuery)
+        {
+            var result = await _favoriteProgramService.GetAllFavoritePrograms(baseQuery);
 
             return Ok(result);
         }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Trustesse.Ivoluntia.Domain.Entities;
 
 namespace Trustesse.Ivoluntia.Commons.DTOs.Program
 {
@@ -98,5 +99,13 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Program
     {
         [Required]
         public string ProgramId { get; set; }
+    }
+
+    public class FavoriteProgramDto : AddFavoriteProgramRequest
+    {
+        public ProgramDto Program { get; set; }
+        public string UserId { get; set; }
+        public User User { get; set; }
+        public DateTime DateAdded { get; set; }
     }
 }

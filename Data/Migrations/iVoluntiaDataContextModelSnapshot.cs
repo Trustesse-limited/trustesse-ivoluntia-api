@@ -352,6 +352,9 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("DateAdded")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime2");
 
@@ -362,18 +365,18 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("ProgramId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ProgramId");
 
-                    b.HasIndex("UserId", "ProgramId")
-                        .IsUnique()
-                        .HasFilter("[UserId] IS NOT NULL AND [ProgramId] IS NOT NULL");
+                    b.HasIndex("UserId");
 
                     b.ToTable("FavoritePrograms");
                 });
@@ -1484,12 +1487,14 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Program", "Program")
                         .WithMany()
                         .HasForeignKey("ProgramId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.User", "User")
                         .WithMany("FavoritePrograms")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Program");
 

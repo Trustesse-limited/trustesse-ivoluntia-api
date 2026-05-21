@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -16,10 +15,11 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    ProgramId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProgramId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DateAdded = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DateUpdated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsDeprecated = table.Column<bool>(type: "bit", nullable: false)
                 },
@@ -46,11 +46,9 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                 column: "ProgramId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FavoritePrograms_UserId_ProgramId",
+                name: "IX_FavoritePrograms_UserId",
                 table: "FavoritePrograms",
-                columns: new[] { "UserId", "ProgramId" },
-                unique: true,
-                filter: "[UserId] IS NOT NULL AND [ProgramId] IS NOT NULL");
+                column: "UserId");
         }
 
         /// <inheritdoc />

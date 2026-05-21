@@ -42,6 +42,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<UserProgram> userPrograms { get; set; }
         public DbSet<FavoriteProgram> FavoritePrograms { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

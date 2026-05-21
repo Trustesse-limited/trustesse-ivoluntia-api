@@ -15,20 +15,23 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
     {
         private readonly IMapper _mapper;
         private readonly ILogger<ProgramService> _logger;
+        private readonly IFavoriteProgramRepository _favoriteProgramRepository;
         private readonly IProgramRepository _programRepository;
         private readonly iVoluntiaDataContext _context;
         private readonly ICurrentUserService _currentUserService;
-        public FavoriteProgramService(IProgramRepository programRepository, iVoluntiaDataContext context, ICurrentUserService currentUserService, ILogger<ProgramService> logger, IMapper mapper)
+        public FavoriteProgramService(IFavoriteProgramRepository favoriteProgramRepository, IProgramRepository programRepository, iVoluntiaDataContext context, ICurrentUserService currentUserService, ILogger<ProgramService> logger, IMapper mapper)
         {
+            _favoriteProgramRepository = favoriteProgramRepository;
             _programRepository = programRepository;
             _context = context;
             _currentUserService = currentUserService;
             _mapper = mapper;
             _logger = logger;
         }
-        public async Task<ApiResponse<ProgramDto>> AddFavoriteProgramAsync(AddFavoriteProgramRequest request)
+        public async Task<ApiResponse<ProgramDto>> AddFavoriteProgram(AddFavoriteProgramRequest request)
         {
             var userId = _currentUserService.GetUserId();
+
             var program = await _programRepository.GetPrograms().FirstOrDefaultAsync(x => x.Id == request.ProgramId);
 
             if (program == null)
@@ -45,7 +48,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 ProgramId = request.ProgramId
             };
 
-            await _context.FavoritePrograms.AddAsync(favorite);
+            await _favoriteProgramRepository.AddFavoriteProgram(favorite);
 
             await _context.SaveChangesAsync();
 
@@ -61,7 +64,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             {
                 var userId = _currentUserService.GetUserId();
 
-                var query = _context.FavoritePrograms
+                var query = _favoriteProgramRepository.GetFavoritePrograms()
                     .Where(x => x.UserId == userId)
                     .Include(x => x.Program)
                     .Select(x => x.Program);
@@ -80,20 +83,20 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             }
         }
 
-        public async Task<ApiResponse<bool>> RemoveFavoriteProgramAsync(string programId)
+        public async Task<ApiResponse<bool>> RemoveFavoriteProgram(string programId)
         {
             try
             {
                 var userId = _currentUserService.GetUserId();
 
-                var favorite = await _context.FavoritePrograms.FirstOrDefaultAsync(x => x.UserId == userId && x.ProgramId == programId);
+                var favorite = await _favoriteProgramRepository.GetFavoritePrograms().FirstOrDefaultAsync(x => x.UserId == userId && x.ProgramId == programId);
 
                 if (favorite == null)
                 {
                     return ApiResponse<bool>.Failure(StatusCodes.Status404NotFound, "Program not found");
                 }
 
-                _context.FavoritePrograms.Remove(favorite);
+                await _favoriteProgramRepository.RemoveFavoriteProgram(favorite.ProgramId);
 
                 await _context.SaveChangesAsync();
 

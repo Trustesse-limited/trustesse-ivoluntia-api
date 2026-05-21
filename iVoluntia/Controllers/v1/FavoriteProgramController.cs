@@ -24,7 +24,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             if (request == null)
                 return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid request."));
 
-            var result = await _favoriteProgramService.AddFavoriteProgramAsync(request);
+            var result = await _favoriteProgramService.AddFavoriteProgram(request);
 
             return Ok(result);
         }
@@ -43,7 +43,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             if (programId == null)
                 return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid request."));
 
-            var result = await _favoriteProgramService.RemoveFavoriteProgramAsync(programId);
+            var result = await _favoriteProgramService.RemoveFavoriteProgram(programId);
 
             return Ok(result);
         }

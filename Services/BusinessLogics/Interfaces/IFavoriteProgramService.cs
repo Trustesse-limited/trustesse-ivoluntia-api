@@ -5,8 +5,8 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces
 {
     public interface IFavoriteProgramService
     {
-        Task<ApiResponse<ProgramDto>> AddFavoriteProgramAsync(AddFavoriteProgramRequest request);
-        Task<ApiResponse<bool>> RemoveFavoriteProgramAsync(string programId);
+        Task<ApiResponse<ProgramDto>> AddFavoriteProgram(AddFavoriteProgramRequest request);
+        Task<ApiResponse<bool>> RemoveFavoriteProgram(string programId);
         Task<ApiResponse<IEnumerable<ProgramDto>>> GetFavoritePrograms();
     }
 }

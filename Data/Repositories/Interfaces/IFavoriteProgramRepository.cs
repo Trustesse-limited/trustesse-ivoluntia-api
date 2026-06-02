@@ -7,5 +7,6 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Interfaces
         Task<FavoriteProgram> AddFavoriteProgram(FavoriteProgram data);
         Task<bool> RemoveFavoriteProgram(string programId);
         IQueryable<FavoriteProgram> GetFavoritePrograms();
+        IQueryable<FavoriteProgram> GetFavoriteProgramsByUserId(string userId);
     }
 }

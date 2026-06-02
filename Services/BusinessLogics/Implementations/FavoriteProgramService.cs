@@ -68,10 +68,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             {
                 var userId = _currentUserService.GetUserId();
 
-                var query = _favoriteProgramRepository.GetFavoritePrograms()
-                    .Where(x => x.UserId == userId)
-                    .Include(x => x.Program)
-                    .Select(x => x.Program);
+                var query = _favoriteProgramRepository.GetFavoriteProgramsByUserId(userId);
 
                 var response = await query.ToListAsync();
 
@@ -94,8 +91,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 pageNumber = pageNumber < 1 ? 1 : pageNumber;
                 pageSize = pageSize < 1 ? 10 : pageSize;
 
-                var query = _favoriteProgramRepository.GetFavoritePrograms()
-                    .Select(x => x.Program);
+                var query = _favoriteProgramRepository.GetFavoritePrograms();
 
                 var totalCount = await query.CountAsync();
 
@@ -136,7 +132,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 if (favorite == null)
                     return ApiResponse<bool>.Failure(StatusCodes.Status404NotFound, "Program not found");
 
-                await _favoriteProgramRepository.RemoveFavoriteProgram(favorite.ProgramId);
+                await _favoriteProgramRepository.RemoveFavoriteProgram(favorite.Id);
 
                 await _context.SaveChangesAsync();
 

@@ -19,6 +19,7 @@ namespace Trustesse.Ivoluntia.Services
             config.NewConfig<ProgramSkill, ProgramSkillDTO>();
             config.NewConfig<Skill, SkillDto>();
             config.NewConfig<User, VolunteerDto>();
+            config.NewConfig<FavoriteProgram, FavoriteProgramDto>();
 
 
             services.AddSingleton(config);

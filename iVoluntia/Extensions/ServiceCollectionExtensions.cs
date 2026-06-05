@@ -42,6 +42,10 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<ICurrentUserRepository, CurrentUserRepository>();
             services.AddScoped<IFileUploadService, CloudinaryService>();
             services.AddScoped<IFileUploadServiceFactory, FileUploadServiceFactory>();
+            services.AddScoped<IVolunteerService, VolunteerService>();
+            services.AddScoped<IVolunteerRepository, VolunteerRepository>();
+            services.AddScoped<IFavoriteProgramRepository, FavoriteProgramRepository>();
+            services.AddScoped<IFavoriteProgramService, FavoriteProgramService>();
 
             services.AddSwaggerGen(options =>
             {
@@ -94,7 +98,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
                     policyBuilder.WithOrigins(config.GetSection("CORS:AllowedOrigins").Value!.Split(','))
                                 .WithMethods(config.GetSection("CORS:AllowedMethods").Value!.Split(','))
                                 .WithHeaders(config.GetSection("CORS:AllowedHeaders").Value!.Split(','))
-.AllowCredentials();
+                                .AllowCredentials();
                 });
             });
 
@@ -116,7 +120,6 @@ namespace Trustesse.Ivoluntia.API.Extensions
 
             return services;
         }
-
         public static IServiceCollection AddCustomIdentity(this IServiceCollection services, IConfiguration configuration)
         {
             var identityConfig = new IdentityConfiguration();
@@ -149,7 +152,6 @@ namespace Trustesse.Ivoluntia.API.Extensions
 
             return services;
         }
-
         public static IServiceCollection RegisterJwtServices(this IServiceCollection services, IConfiguration configuration)
         {
             var jwtOptions = configuration.GetSection("JwtOptions");
@@ -182,7 +184,6 @@ namespace Trustesse.Ivoluntia.API.Extensions
 
             return services;
         }
-
 
         public static IServiceCollection AddCustomServices(this IServiceCollection services)
         {

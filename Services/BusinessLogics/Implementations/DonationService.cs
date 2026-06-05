@@ -1,14 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Donation;
@@ -23,14 +17,13 @@ using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
-using Trustesse.Ivoluntia.Services.BusinessLogics.Service;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
 {
-    public class DonationService: IDonationService
+    public class DonationService : IDonationService
     {
         private readonly IDonationRepository _donationRepository;
-        public readonly ICurrentUserService _currentUserService; 
+        public readonly ICurrentUserService _currentUserService;
         private readonly IConfiguration _configuration;
         private readonly HttpClient _client;
         private readonly string _baseUrl;
@@ -71,7 +64,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                         };
 
                     var dbResponse = await _donationRepository.InitializeDonation(donation);
-                    if(dbResponse)
+                    if (dbResponse)
                     {
                         InitializeDonationDto initializeDonationDto = new InitializeDonationDto
                         {
@@ -84,7 +77,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                             Callback_Url = _callBackUrl,
                             UserId = donation.UserId
                         };
-                        
+
                         var json = JsonConvert.SerializeObject(initializeDonationDto);
                         var content = new StringContent(json, Encoding.UTF8, "application/json");
                         using var response = await _client.PostAsync($"{_baseUrl}/api/PaystackTransaction/DonationPayment", content);
@@ -96,11 +89,11 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                         {
                             return ApiResponse<PaymentInitializeResponse>.Success("success", initializeResponse);
                         }
-                    }  
                     }
+                }
                 return ApiResponse<PaymentInitializeResponse>.Failure(StatusCodes.Status404NotFound, "data not found");
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return ApiResponse<PaymentInitializeResponse>.Failure(StatusCodes.Status500InternalServerError, ex.Message);
             }
@@ -121,7 +114,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                     var donorMessage = await _notificationService.ComposeNotificationAsync(NotificationTypeEnum.Donation.ToString(), NotificationChannelEnum.Email.ToString(), donorHolder);
                     EmailModel donorEmailModel = new EmailModel
                     {
-                        Receivers = donorEmail.Trim().Split().ToList(),   
+                        Receivers = donorEmail.Trim().Split().ToList(),
                         Subject = "program donation",
                         Message = HttpUtility.HtmlDecode(donorMessage.Data)
                     };

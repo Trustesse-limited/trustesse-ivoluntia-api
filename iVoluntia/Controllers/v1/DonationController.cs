@@ -1,4 +1,5 @@
 ﻿using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         {
            _donationService = donationService;
         }
+        [Authorize]
         [HttpPost("donate")]
         public async Task<IActionResult> Donation(DonationDto donationDto)
         {

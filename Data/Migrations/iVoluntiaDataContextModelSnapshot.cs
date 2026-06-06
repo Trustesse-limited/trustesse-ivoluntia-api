@@ -173,6 +173,43 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.ToTable("UserSkills", (string)null);
                 });
 
+            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.AuditLog", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Event")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("EventDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeprecated")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NewData")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldData")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PerformedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AuditLogs");
+                });
+
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Cause", b =>
                 {
                     b.Property<string>("Id")
@@ -305,6 +342,43 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Donations");
+                });
+
+            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.FavoriteProgram", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateAdded")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeprecated")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ProgramId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProgramId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("FavoritePrograms");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Foundation", b =>
@@ -1018,6 +1092,9 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Property<Guid>("CountryId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool>("IsDeprecated")
+                        .HasColumnType("bit");
+
                     b.Property<string>("StateName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -1124,9 +1201,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("ProgramId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -1151,8 +1225,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
-
-                    b.HasIndex("ProgramId");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -1185,6 +1257,33 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.HasIndex("InterestId");
 
                     b.ToTable("UserInterestLinks");
+                });
+
+            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.UserProgram", b =>
+                {
+                    b.Property<string>("ProgramId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeprecated")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ProgramId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("userPrograms");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.UserRefreshToken", b =>
@@ -1383,6 +1482,25 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.FavoriteProgram", b =>
+                {
+                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Program", "Program")
+                        .WithMany()
+                        .HasForeignKey("ProgramId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.User", "User")
+                        .WithMany("FavoritePrograms")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Program");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Foundation", b =>
                 {
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.FoundationCategory", "Category")
@@ -1528,14 +1646,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .HasForeignKey("FoundationId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Program", "Program")
-                        .WithMany("Users")
-                        .HasForeignKey("ProgramId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.Navigation("Foundation");
-
-                    b.Navigation("Program");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.UserInterestLink", b =>
@@ -1553,6 +1664,25 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Interest");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.UserProgram", b =>
+                {
+                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Program", "Program")
+                        .WithMany("UsersPrograms")
+                        .HasForeignKey("ProgramId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.User", "User")
+                        .WithMany("UsersPrograms")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Program");
 
                     b.Navigation("User");
                 });
@@ -1621,7 +1751,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.Navigation("ProgramSkills");
 
-                    b.Navigation("Users");
+                    b.Navigation("UsersPrograms");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Skill", b =>
@@ -1635,6 +1765,8 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                 {
                     b.Navigation("Donations");
 
+                    b.Navigation("FavoritePrograms");
+
                     b.Navigation("Location");
 
                     b.Navigation("Notifications");
@@ -1644,6 +1776,8 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Navigation("UserInterestLinks");
 
                     b.Navigation("UserSkillLinks");
+
+                    b.Navigation("UsersPrograms");
                 });
 #pragma warning restore 612, 618
         }

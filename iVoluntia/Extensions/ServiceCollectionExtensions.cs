@@ -39,8 +39,13 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddHttpClient<IEmailService, EmailService>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<ICurrentUserRepository, CurrentUserRepository>();
             services.AddScoped<IFileUploadService, CloudinaryService>();
             services.AddScoped<IFileUploadServiceFactory, FileUploadServiceFactory>();
+            services.AddScoped<IVolunteerService, VolunteerService>();
+            services.AddScoped<IVolunteerRepository, VolunteerRepository>();
+            services.AddScoped<IFavoriteProgramRepository, FavoriteProgramRepository>();
+            services.AddScoped<IFavoriteProgramService, FavoriteProgramService>();
 
             services.AddSwaggerGen(options =>
             {
@@ -93,7 +98,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
                     policyBuilder.WithOrigins(config.GetSection("CORS:AllowedOrigins").Value!.Split(','))
                                 .WithMethods(config.GetSection("CORS:AllowedMethods").Value!.Split(','))
                                 .WithHeaders(config.GetSection("CORS:AllowedHeaders").Value!.Split(','))
-.AllowCredentials();
+                                .AllowCredentials();
                 });
             });
 
@@ -101,12 +106,13 @@ namespace Trustesse.Ivoluntia.API.Extensions
         }
         public static IServiceCollection AddCustomDatabase(this IServiceCollection services, IConfiguration config)
         {
-            services.AddDbContext<iVoluntiaDataContext>(options =>
+            services.AddDbContext<iVoluntiaDataContext>((spt, options) =>
+            {
                 options.UseSqlServer(
-                    config.GetConnectionString("DefaultConnection")!,
-                    sqlServerOptions => sqlServerOptions.MigrationsAssembly("Trustesse.Ivoluntia.Data")
-                )
-            );
+                   config.GetConnectionString("DefaultConnection")!,
+                   sqlServerOptions => sqlServerOptions.MigrationsAssembly("Trustesse.Ivoluntia.Data"));
+                options.AddInterceptors(spt.GetRequiredService<AuditSaveChangesInterceptor>());
+            });
 
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -114,7 +120,6 @@ namespace Trustesse.Ivoluntia.API.Extensions
 
             return services;
         }
-
         public static IServiceCollection AddCustomIdentity(this IServiceCollection services, IConfiguration configuration)
         {
             var identityConfig = new IdentityConfiguration();
@@ -147,7 +152,6 @@ namespace Trustesse.Ivoluntia.API.Extensions
 
             return services;
         }
-
         public static IServiceCollection RegisterJwtServices(this IServiceCollection services, IConfiguration configuration)
         {
             var jwtOptions = configuration.GetSection("JwtOptions");
@@ -181,14 +185,13 @@ namespace Trustesse.Ivoluntia.API.Extensions
             return services;
         }
 
-
         public static IServiceCollection AddCustomServices(this IServiceCollection services)
         {
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
+            services.AddScoped<AuditSaveChangesInterceptor>();
 
             return services;
         }
-
     }
 }

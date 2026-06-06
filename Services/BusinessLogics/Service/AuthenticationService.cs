@@ -336,6 +336,7 @@ public class AuthenticationService : IAuthenticationService
             FirstName = user.FirstName,
             LastName = user.LastName,
             OrganizationName = user?.Foundation?.Name ?? string.Empty,
+            FoundationId = user?.FoundationId ?? string.Empty  
         };
 
         var accessToken = _jwtTokenService.GenerateAccessTokenAsync(jwtClaims, primaryRole);

@@ -165,14 +165,14 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         {
             if (!context.FoundationCategories.Any())
             {
-                var category = new FoundationCategory
+                var category1 = new FoundationCategory
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = "Non-Profit Organization",
                     Description = "General non-profit organization",
                     DateCreated = DateTime.UtcNow
                 };
-                context.FoundationCategories.Add(category);
+                context.FoundationCategories.Add(category1);
                 await context.SaveChangesAsync();
             }
 
@@ -180,19 +180,96 @@ namespace Trustesse.Ivoluntia.Data.DataContext
             {
                 var category = context.FoundationCategories.First();
                 var foundation = new Foundation
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Name = "iVoluntia Foundation",
-                    CategoryId = category.Id,
-                    Mission = "Connecting volunteers with meaningful opportunities",
-                    Email = "contact@ivoluntia.com",
-                    YearEstablished = DateTime.UtcNow,
-                    IsActive = true,
-                    HasAgreedToDisclaimer = true,
-                    DateCreated = DateTime.UtcNow
-                };
-                context.Foundations.Add(foundation);
-                await context.SaveChangesAsync();
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "iVoluntia Foundation",
+                CategoryId = category.Id,
+                Mission = "Connecting volunteers with meaningful opportunities",
+                Email = "contact@ivoluntia.com",
+                YearEstablished = DateTime.UtcNow,
+                IsActive = true,
+                HasAgreedToDisclaimer = true,
+                DateCreated = DateTime.UtcNow
+            };
+            context.Foundations.Add(foundation);
+
+            var foundationOne = new Foundation
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Apex Foundation",
+                CategoryId = category.Id,
+                Mission = "Connecting volunteers with meaningful opportunities",
+                Email = "contact@ivoluntia.com",
+                YearEstablished = DateTime.UtcNow,
+                IsActive = true,
+                HasAgreedToDisclaimer = true,
+                DateCreated = DateTime.UtcNow,
+                Status = "Block"
+
+            };
+            context.Foundations.Add(foundationOne);
+
+            var foundationTwo = new Foundation
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Hope Foundation",
+                CategoryId = category.Id,
+                Mission = "Connecting volunteers with meaningful opportunities",
+                Email = "contact@ivoluntia.com",
+                YearEstablished = DateTime.UtcNow,
+                IsActive = true,
+                HasAgreedToDisclaimer = true,
+                DateCreated = DateTime.UtcNow,
+                Status = "Block"
+            };
+            context.Foundations.Add(foundationTwo);
+
+            var foundationThree = new Foundation
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Joy Foundation",
+                CategoryId = category.Id,
+                Mission = "Connecting volunteers with meaningful opportunities",
+                Email = "contact@ivoluntia.com",
+                YearEstablished = DateTime.UtcNow,
+                IsActive = true,
+                HasAgreedToDisclaimer = true,
+                DateCreated = DateTime.UtcNow,
+                Status = "Decline"
+            };
+            context.Foundations.Add(foundationThree);
+
+            var foundationFour = new Foundation
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Faith Foundation",
+                CategoryId = category.Id,
+                Mission = "Connecting volunteers with meaningful opportunities",
+                Email = "contact@ivoluntia.com",
+                YearEstablished = DateTime.UtcNow,
+                IsActive = true,
+                HasAgreedToDisclaimer = true,
+                DateCreated = DateTime.UtcNow,
+                Status = "Decline"
+            };
+            context.Foundations.Add(foundationFour);
+
+            var foundationFive = new Foundation
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Rejoice Foundation",
+                CategoryId = category.Id,
+                Mission = "Connecting volunteers with meaningful opportunities",
+                Email = "contact@ivoluntia.com",
+                YearEstablished = DateTime.UtcNow,
+                IsActive = true,
+                HasAgreedToDisclaimer = true,
+                DateCreated = DateTime.UtcNow,
+                Status = "Pending"
+            };
+            context.Foundations.Add(foundationFive);
+
+            await context.SaveChangesAsync();
             }
         }
 

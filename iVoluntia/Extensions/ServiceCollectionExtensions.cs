@@ -46,6 +46,11 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<IVolunteerRepository, VolunteerRepository>();
             services.AddScoped<IFavoriteProgramRepository, FavoriteProgramRepository>();
             services.AddScoped<IFavoriteProgramService, FavoriteProgramService>();
+            services.AddScoped<ISecurityQuestionRepository, SecurityQuestionRepository>();
+            services.AddScoped<ISecurityQuestionService, SecurityQuestionService>();
+            services.AddScoped<IPasswordHasher<string>, PasswordHasher<string>>();
+
+
 
             services.AddSwaggerGen(options =>
             {

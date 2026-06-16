@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Trustesse.Ivoluntia.Commons.Contants;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
 using Trustesse.Ivoluntia.Domain.Entities;
@@ -50,7 +51,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         }
 
         [HttpGet("get-all-favorite-programs")]
-        [Authorize(Roles = "SuperAdmin,FoundationAdmin")]
+        [Authorize(Roles = AuthenticationConstants.SuperAdmin + "," + AuthenticationConstants.FoundationAdmin)]
         public async Task<IActionResult> GetAllFavoritePrograms([FromQuery] BaseQuery baseQuery)
         {
             var result = await _favoriteProgramService.GetAllFavoritePrograms(baseQuery);

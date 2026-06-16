@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Trustesse.Ivoluntia.Commons.DTOs.Auth;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Domain.Entities;
 
@@ -28,6 +29,8 @@ namespace Trustesse.Ivoluntia.API.Extensions
                 options.IncludeSubDomains = true;
                 options.MaxAge = TimeSpan.FromDays(365);
             });
+
+            builder.Services.Configure<SecurityQuestionPolicy>(builder.Configuration.GetSection("SecurityQuestionsPolicy"));
         }
     }
 }

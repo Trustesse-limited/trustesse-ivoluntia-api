@@ -26,7 +26,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             if (code.IsUsed)
                 return false;
 
-            if((DateTime.UtcNow - code.CreatedAt).TotalMinutes > 5)
+            if ((DateTime.UtcNow - code.CreatedAt).TotalMinutes > 5)
                 return false;
 
             await _otpRepository.MarkOtpAsUsedAsync(code);
@@ -37,6 +37,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
         public async Task<string> GenerateOtpAsync(string userId, OtpPurpose purpose)
         {
             var user = await _userManager.FindByIdAsync(userId);
+
             if (user == null)
                 throw new Exception("User not found");
 
@@ -46,8 +47,9 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             {
                 UserId = userId,
                 OtpCode = otpCode,
-                Purpose = purpose,
+                Purpose = purpose.ToString(),
                 CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(10),
                 IsUsed = false
             };
 

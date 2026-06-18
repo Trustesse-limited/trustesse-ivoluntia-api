@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using System.Collections;
 using Trustesse.Ivoluntia.Data.DataContext;
+using Trustesse.Ivoluntia.Data.Repositories.Implementation;
+using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
 using Trustesse.Ivoluntia.Domain.IRepositories;
 
 namespace Trustesse.Ivoluntia.Data.Repositories;
@@ -21,6 +23,7 @@ public class UnitOfWork : IUnitOfWork
     public IInterestRepository interestRepo { get; set; }
     public ISkillRepository skillRepo { get; set; }
     public IRefreshTokenRepository refreshTokenRepo { get; set; }
+    public IOrganizationRepository OrganizationRepository { get; set; } 
 
     public UnitOfWork(iVoluntiaDataContext dbContext)
     {
@@ -35,6 +38,7 @@ public class UnitOfWork : IUnitOfWork
         skillRepo = new SkillRepository(dbContext);
         onboardingProgressRepo = new OnboardingProgressRepository(dbContext);
         refreshTokenRepo = new RefreshTokenRepository(dbContext);
+        OrganizationRepository = new OrganizationRepository(dbContext);    
     }
     public IGenericRepository<TEntity> repository<TEntity>() where TEntity : class
     {

@@ -207,7 +207,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AuditLogs");
+                    b.ToTable("AuditLogs", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Cause", b =>
@@ -235,7 +235,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Causes");
+                    b.ToTable("Causes", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.ContactInfo", b =>
@@ -266,7 +266,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ContactInfos");
+                    b.ToTable("ContactInfos", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Country", b =>
@@ -282,7 +282,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Countries");
+                    b.ToTable("Countries", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Donation", b =>
@@ -341,7 +341,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Donations");
+                    b.ToTable("Donations", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.FavoriteProgram", b =>
@@ -378,7 +378,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("FavoritePrograms");
+                    b.ToTable("FavoritePrograms", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Foundation", b =>
@@ -437,7 +437,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Foundations");
+                    b.ToTable("Foundations", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.FoundationCategory", b =>
@@ -465,7 +465,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FoundationCategories");
+                    b.ToTable("FoundationCategories", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Interest", b =>
@@ -495,7 +495,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Interests");
+                    b.ToTable("Interests", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Location", b =>
@@ -551,7 +551,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .IsUnique()
                         .HasFilter("[UserId] IS NOT NULL");
 
-                    b.ToTable("Locations");
+                    b.ToTable("Locations", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Notification", b =>
@@ -611,7 +611,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.NotificationChannel", b =>
@@ -636,7 +636,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationChannels");
+                    b.ToTable("NotificationChannels", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.NotificationChannelSettings", b =>
@@ -672,7 +672,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("NotificationChannelId");
 
-                    b.ToTable("NotificationChannelSettings");
+                    b.ToTable("NotificationChannelSettings", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.NotificationPriority", b =>
@@ -700,7 +700,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationPriorities");
+                    b.ToTable("NotificationPriorities", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.NotificationTemplate", b =>
@@ -731,7 +731,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationTemplates");
+                    b.ToTable("NotificationTemplates", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.NotificationType", b =>
@@ -756,7 +756,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationTypes");
+                    b.ToTable("NotificationTypes", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.NotificationTypePriority", b =>
@@ -784,7 +784,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationTypePriorities");
+                    b.ToTable("NotificationTypePriorities", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.OnboardingProgress", b =>
@@ -822,7 +822,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .IsUnique()
                         .HasFilter("[UserId] IS NOT NULL");
 
-                    b.ToTable("OnboardingProgress");
+                    b.ToTable("OnboardingProgress", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Otp", b =>
@@ -850,7 +850,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Otps");
+                    b.ToTable("Otps", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Program", b =>
@@ -912,7 +912,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("LocationId");
 
-                    b.ToTable("Programs");
+                    b.ToTable("Programs", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.ProgramGoal", b =>
@@ -945,7 +945,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("ProgramId");
 
-                    b.ToTable("ProgramGoals");
+                    b.ToTable("ProgramGoals", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.ProgramRejectionReason", b =>
@@ -981,7 +981,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("ProgramId");
 
-                    b.ToTable("ProgramRejectionReasons");
+                    b.ToTable("ProgramRejectionReasons", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.ProgramSkill", b =>
@@ -1011,7 +1011,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("SkillId");
 
-                    b.ToTable("ProgramSkills");
+                    b.ToTable("ProgramSkills", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Role", b =>
@@ -1083,7 +1083,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Skills");
+                    b.ToTable("Skills", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.State", b =>
@@ -1107,7 +1107,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("CountryId");
 
-                    b.ToTable("States");
+                    b.ToTable("States", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.User", b =>
@@ -1259,7 +1259,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("InterestId");
 
-                    b.ToTable("UserInterestLinks");
+                    b.ToTable("UserInterestLinks", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.UserProgram", b =>
@@ -1286,7 +1286,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("userPrograms");
+                    b.ToTable("userPrograms", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.UserRefreshToken", b =>
@@ -1339,7 +1339,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserRefreshTokens");
+                    b.ToTable("UserRefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.UserSkillLink", b =>
@@ -1369,7 +1369,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasIndex("SkillId");
 
-                    b.ToTable("UserSkillLinks");
+                    b.ToTable("UserSkillLinks", (string)null);
                 });
 
             modelBuilder.Entity("CauseFoundation", b =>

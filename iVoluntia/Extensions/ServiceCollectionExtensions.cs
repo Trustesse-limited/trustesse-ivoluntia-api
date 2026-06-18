@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using Trustesse.Ivoluntia.Commons.Configurations;
+using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Commons.Validators;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Data.Repositories;
@@ -49,8 +50,6 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<IFavoriteProgramService, FavoriteProgramService>();
             services.AddScoped<IOrganizationService, OrganizationService>();
             services.AddScoped<IOrganizationRepository, OrganizationRepository>();
-            services.AddScoped<GetByIdDtoValidator>();
-            services.AddScoped<GetOrganizationDtoValidator>();
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo

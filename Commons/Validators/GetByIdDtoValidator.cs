@@ -12,7 +12,7 @@ namespace Trustesse.Ivoluntia.Commons.Validators
     {
         public GetByIdDtoValidator()
         {
-            RuleFor(x => x.Id)
+            RuleFor(x => x.Id.ToString())   
            .Matches(@"^[A-Za-z0-9-]+$").WithMessage("id should contain only letters, number and -");
         }
     }

@@ -42,14 +42,16 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         return await query.CountAsync();
     }
 
-    public void Delete(T entity)
+    public Task DeleteAsync(T entity)
     {
         _dbContext.Set<T>().Remove(entity);
+        return Task.CompletedTask;
     }
 
-    public async Task DeleteAsync(T entity)
+    public Task DeleteManyAsync(IEnumerable<T> entities)
     {
-        await Task.Run(() => _dbContext.Set<T>().Remove(entity));
+        _dbContext.Set<T>().RemoveRange(entities);
+        return Task.CompletedTask;
     }
 
     public async Task ExecuteSqlAsync(string sql, object[] parameters)
@@ -105,6 +107,18 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         return await _dbContext.Set<T>().FirstOrDefaultAsync(expression);
     }
 
+    public async Task<List<T>> GetListByExpressionAsync(Expression<Func<T, bool>> expression, params Expression<Func<T, object>>[] includes)
+    {
+        IQueryable<T> query = _dbContext.Set<T>();
+
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+
+        return await query.Where(expression).ToListAsync();
+    }
+
     public IQueryable<T> GetByExpression(Expression<Func<T, bool>> expression)
     {
         return _dbContext.Set<T>()
@@ -148,6 +162,29 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         }
 
         return query;
+    }
+
+    public async Task<(List<T> Items, int TotalCount)> GetPagedAsync(Expression<Func<T, bool>> expression = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, int pageNumber = 1, int pageSize = 10)
+    {
+        pageNumber = pageNumber < 1 ? 1 : pageNumber;
+        pageSize = pageSize < 1 ? 10 : pageSize;
+
+        IQueryable<T> query = _dbContext.Set<T>().AsNoTracking();
+
+        if (expression != null)
+            query = query.Where(expression);
+
+        var totalCount = await query.CountAsync();
+
+        if (orderBy != null)
+            query = orderBy(query);
+
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
     }
 
     public async Task<IReadOnlyList<T>> ListAsync(ISpecification<T> specification)

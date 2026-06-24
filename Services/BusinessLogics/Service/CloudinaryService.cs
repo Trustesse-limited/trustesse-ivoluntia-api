@@ -2,9 +2,9 @@
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
 using Trustesse.Ivoluntia.Commons.DTOs;
-using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
+using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
-namespace Infrastructure.Implementation
+namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 {
     public class CloudinaryService : IFileUploadService
     {

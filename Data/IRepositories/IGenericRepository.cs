@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 
 namespace Trustesse.Ivoluntia.Domain.IRepositories;
+
 public interface ISpecification<T>
 {
     Expression<Func<T, bool>> Criteria { get; }
@@ -47,9 +48,10 @@ public interface IGenericRepository<T> where T : class
 
     void Update(T entity);
 
-    void Delete(T entity);
-
     int Count(Expression<Func<T, bool>> expression);
     IQueryable<T> GetByExpression(Expression<Func<T, bool>> expression);
     Task<int> BulkUpdateAsync(Expression<Func<T, bool>> predicate, Expression<Func<Microsoft.EntityFrameworkCore.Query.SetPropertyCalls<T>, Microsoft.EntityFrameworkCore.Query.SetPropertyCalls<T>>> setPropertyCalls, CancellationToken cancellationToken = default);
+    Task<List<T>> GetListByExpressionAsync(Expression<Func<T, bool>> expression, params Expression<Func<T, object>>[] includes);
+    Task<(List<T> Items, int TotalCount)> GetPagedAsync(Expression<Func<T, bool>> expression = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, int pageNumber = 1, int pageSize = 10);
+    Task DeleteManyAsync(IEnumerable<T> entities);
 }

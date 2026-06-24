@@ -1,33 +1,31 @@
 ﻿using MapsterMapper;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
 using Trustesse.Ivoluntia.Data.DataContext;
-using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
 using Trustesse.Ivoluntia.Domain.Entities;
+using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
+using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
-namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
+namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 {
     public class FavoriteProgramService : IFavoriteProgramService
     {
         private readonly IMapper _mapper;
-        private readonly IFavoriteProgramRepository _favoriteProgramRepository;
-        private readonly IProgramRepository _programRepository;
+        private readonly IUnitOfWork _uow;
         private readonly iVoluntiaDataContext _context;
         private readonly ICurrentUserService _currentUserService;
-        public FavoriteProgramService(IFavoriteProgramRepository favoriteProgramRepository,
-            IProgramRepository programRepository,
+        public FavoriteProgramService(
             iVoluntiaDataContext context,
             ICurrentUserService currentUserService,
-            IMapper mapper)
+            IMapper mapper,
+            IUnitOfWork uow)
         {
-            _favoriteProgramRepository = favoriteProgramRepository;
-            _programRepository = programRepository;
             _context = context;
             _currentUserService = currentUserService;
             _mapper = mapper;
+            _uow = uow;
         }
         public async Task<ApiResponse<FavoriteProgramDto>> AddFavoriteProgram(AddFavoriteProgramRequest request)
         {
@@ -36,14 +34,14 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             if (userId == null)
                 return ApiResponse<FavoriteProgramDto>.Failure(StatusCodes.Status400BadRequest, "Invalid user");
 
-            var program = await _programRepository.GetPrograms().FirstOrDefaultAsync(x => x.Id == request.ProgramId);
+            var program = await _uow.favoriteProgramRepo.GetByExpressionAsync(x => x.Id == request.ProgramId);
 
             if (program == null)
                 return ApiResponse<FavoriteProgramDto>.Failure(StatusCodes.Status404NotFound, "Program not found");
 
-            var exists = await _context.FavoritePrograms.AnyAsync(x => x.UserId == userId && x.ProgramId == request.ProgramId);
+            var exists = await _uow.favoriteProgramRepo.GetByExpressionAsync(x => x.UserId == userId && x.ProgramId == request.ProgramId);
 
-            if (exists)
+            if (exists != null)
                 return ApiResponse<FavoriteProgramDto>.Failure(StatusCodes.Status400BadRequest, "Program already in favorites");
 
             var favorite = new FavoriteProgram
@@ -53,9 +51,9 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 DateAdded = DateTime.UtcNow
             };
 
-            await _favoriteProgramRepository.AddFavoriteProgram(favorite);
+            await _uow.favoriteProgramRepo.AddAsync(favorite);
 
-            await _context.SaveChangesAsync();
+            await _uow.CompleteAsync();
 
             var resultDto = _mapper.Map<FavoriteProgramDto>(favorite);
 
@@ -68,9 +66,9 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             {
                 var userId = _currentUserService.GetUserId();
 
-                var query = _favoriteProgramRepository.GetFavoriteProgramsByUserId(userId);
+                var query = _uow.favoriteProgramRepo.GetListByExpressionAsync(x => x.UserId == userId);
 
-                var response = await query.ToListAsync();
+                var response = await query;
 
                 var resultDto = _mapper.Map<IEnumerable<FavoriteProgramDto>>(response);
 
@@ -85,39 +83,26 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         {
             try
             {
-                var pageNumber = baseQuery.PageNumber;
-                var pageSize = baseQuery.PageSize;
-
-                pageNumber = pageNumber < 1 ? 1 : pageNumber;
-                pageSize = pageSize < 1 ? 10 : pageSize;
-
-                var query = _favoriteProgramRepository.GetFavoritePrograms();
-
-                var totalCount = await query.CountAsync();
-
-                var programs = await query
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync();
+                var (programs, totalCount) = await _uow.favoriteProgramRepo.GetPagedAsync(pageNumber: baseQuery.PageNumber, pageSize: baseQuery.PageSize);
 
                 var resultDto = _mapper.Map<IEnumerable<FavoriteProgramDto>>(programs);
 
                 var pagedResult = new PagedResponse<FavoriteProgramDto>
                 {
-                    PageNumber = pageNumber,
-                    PageSize = pageSize,
+                    PageNumber = baseQuery.PageNumber,
+                    PageSize = baseQuery.PageSize,
                     TotalCount = totalCount,
-                    TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+                    TotalPages = (int)Math.Ceiling((double)totalCount / baseQuery.PageSize),
                     Data = resultDto
                 };
 
                 return ApiResponse<PagedResponse<FavoriteProgramDto>>
                     .Success("Favorite programs retrieved successfully", pagedResult);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return ApiResponse<PagedResponse<FavoriteProgramDto>>
-                    .Failure(StatusCodes.Status500InternalServerError, "An error occurred");
+                    .Failure(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
@@ -127,14 +112,14 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             {
                 var userId = _currentUserService.GetUserId();
 
-                var favorite = await _favoriteProgramRepository.GetFavoritePrograms().FirstOrDefaultAsync(x => x.UserId == userId && x.ProgramId == programId);
+                var favorite = await _uow.favoriteProgramRepo.GetByExpressionAsync(x => x.UserId == userId && x.ProgramId == programId);
 
                 if (favorite == null)
                     return ApiResponse<bool>.Failure(StatusCodes.Status404NotFound, "Program not found");
 
-                await _favoriteProgramRepository.RemoveFavoriteProgram(favorite.Id);
+                await _uow.favoriteProgramRepo.DeleteAsync(favorite);
 
-                await _context.SaveChangesAsync();
+                await _uow.CompleteAsync();
 
                 return ApiResponse<bool>.Success("Program removed successfully", true);
             }

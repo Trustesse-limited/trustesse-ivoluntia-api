@@ -1,6 +1,5 @@
 ﻿using MapsterMapper;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Web;
@@ -8,25 +7,24 @@ using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
 using Trustesse.Ivoluntia.Commons.Models.Request;
 using Trustesse.Ivoluntia.Data.DataContext;
-using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
+using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
-namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
+namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 {
     public class ProgramService : IProgramService
     {
         private readonly ILogger<ProgramService> _logger;
         private readonly iVoluntiaDataContext _context;
-        private readonly IProgramRepository _programRepository;
-        private readonly IFoundationRepository _foundationRepository;
         private readonly IEmailService _emailService;
         private readonly ICurrentUserService _currentUserService;
-        private readonly INotificationService _notificationService;     
+        private readonly INotificationService _notificationService;
         private readonly IMapper _mapper;
         private readonly IFileUploadService _fileUploadService;
+        private readonly IUnitOfWork _uow;
         public ProgramService(
             ILogger<ProgramService> logger,
             iVoluntiaDataContext context,
@@ -36,23 +34,24 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             ICurrentUserService currentUserService,
             IMapper mapper,
             IFileUploadService fileUploadService,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IUnitOfWork uow)
         {
             _logger = logger;
             _context = context;
-            _programRepository = programRepository;
-            _foundationRepository = foundationRepository;
             _currentUserService = currentUserService;
             _mapper = mapper;
             _emailService = emailService;
             _fileUploadService = fileUploadService;
             _notificationService = notificationService;
+            _uow = uow;
         }
         public async Task<ApiResponse<ProgramDto>> CreateProgram(CreateProgramDto data)
         {
             try
             {
-                var foundation = _foundationRepository.GetFoundation(data.FoundationId).FirstOrDefault();
+
+                var foundation = await _uow.foundationRepo.GetByExpressionAsync(f => f.Id == data.FoundationId);
 
                 if (foundation == null)
                     return ApiResponse<ProgramDto>.Failure(StatusCodes.Status404NotFound, "Foundation not found");
@@ -60,11 +59,13 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 if (!foundation.IsActive)
                     return ApiResponse<ProgramDto>.Failure(StatusCodes.Status403Forbidden, "You cannot create a program for an inactive foundation");
 
-                var programWithSameTitle = _programRepository.GetPrograms().FirstOrDefault(p => p.Title.ToLower() == data.Title.ToLower());
+                var programWithSameTitle = await _uow.programRepo.GetByExpressionAsync(p => p.Title.ToLower() == data.Title.ToLower());
 
                 if (programWithSameTitle != null)
                     return ApiResponse<ProgramDto>.Failure(StatusCodes.Status409Conflict, "A program with the same title already exists");
+
                 var newData = _mapper.Map<Program>(data);
+
                 if (!string.IsNullOrWhiteSpace(data.BannerImage))
                 {
                     string fileName = Guid.NewGuid().ToString();
@@ -96,11 +97,13 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 newData.IsActive = false;
                 newData.CreatedBy = data.CreatorEmail;
                 newData.Status = (int)ProgramStatus.Pending;
-                var response = _programRepository.CreateProgram(newData);
-                await _context.SaveChangesAsync();
-                if (response == null)
-                    return ApiResponse<ProgramDto>.Failure(StatusCodes.Status400BadRequest, "Failed to create program");
+
+                await _uow.programRepo.AddAsync(newData);
+
+                await _uow.CompleteAsync();
+
                 var resutlDto = _mapper.Map<ProgramDto>(newData);
+
                 return ApiResponse<ProgramDto>.Success("Program created successfully", resutlDto);
             }
             catch (Exception ex)
@@ -113,7 +116,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         {
             try
             {
-                var query = _programRepository.GetPrograms();
+                var query = _uow.programRepo.GetQueryable();
 
                 var response = await query.ToListAsync();
 
@@ -132,7 +135,10 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         {
             try
             {
-                var query = _programRepository.GetProgram(id);
+                var query = _uow.programRepo.GetQueryable().Where(p => p.Id == id)
+                     .Include(p => p.ProgramGoals)
+                     .Include(p => p.ProgramSkills)
+                        .ThenInclude(ps => ps.Skill);
 
                 var response = await query.ToListAsync();
 
@@ -151,17 +157,14 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         {
             try
             {
-                var data = _programRepository.GetProgram(dataId);
+                var data = await _uow.programRepo.GetByExpressionAsync(p => p.Id == dataId);
 
                 if (data == null)
                     return ApiResponse<bool>.Failure(StatusCodes.Status404NotFound, "Program not found");
 
-                var response = await _programRepository.RemoveProgram(dataId);
+                await _uow.programRepo.DeleteAsync(data);
 
-                if (!response)
-                    return ApiResponse<bool>.Failure(StatusCodes.Status400BadRequest, "Failed to delete program");
-
-                await _context.SaveChangesAsync();
+                await _uow.CompleteAsync();
 
                 return ApiResponse<bool>.Success("Program deleted successfully", true);
             }
@@ -175,7 +178,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         {
             try
             {
-                var existingData = await _programRepository.GetProgram(data.Id).FirstOrDefaultAsync();
+                var existingData = await _uow.programRepo.GetByExpressionAsync(p => p.Id == data.Id);
 
                 if (existingData == null)
                     return ApiResponse<bool>.Failure(StatusCodes.Status404NotFound, "Program not found");
@@ -220,7 +223,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         {
             try
             {
-                var response = await _programRepository.UpdateProgramStatusAsync(updateProgramStatusDto);
+                var response = await _uow.programRepo.UpdateProgramStatusAsync(updateProgramStatusDto);
                 var responsesplit = response.Split('&');
                 if (responsesplit[0] == "foundationAdmin" || responsesplit[0] == "superAdmin")
                 {
@@ -270,7 +273,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 if (userId == null)
                     return ApiResponse<bool>.Failure(StatusCodes.Status401Unauthorized, "You must log in first");
 
-                var userFoundationId =  _currentUserService.GetUserFoundationId();
+                var userFoundationId = _currentUserService.GetUserFoundationId();
 
                 var goal = await _context.ProgramGoals.Include(g => g.Program).FirstOrDefaultAsync(g => g.Id == programGoalId);
 
@@ -300,14 +303,14 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         }
         public async Task<ApiResponse<string>> JoinProgram(string programId)
         {
-            var response = await _programRepository.JoinProgram(programId, _currentUserService.GetUserId());
-            if(response == "user already in this program")
+            var response = await _uow.programRepo.JoinProgram(programId, _currentUserService.GetUserId());
+            if (response == "user already in this program")
                 return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, response);
-            if(response == "this program has ended")
+            if (response == "this program has ended")
                 return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, response);
             if (response == "program not found")
                 return ApiResponse<string>.Failure(StatusCodes.Status404NotFound, response);
-            
+
             //send email to volunteer
             var userEmail = _currentUserService.GetUserEmail();
             string name = _currentUserService.GetUserFirstName();
@@ -337,14 +340,14 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         }
         public async Task<ApiResponse<string>> LeaveProgram(string programId)
         {
-            var response = await _programRepository.LeaveProgram(programId, _currentUserService.GetUserId());
-            if(response == "program not found")
+            var response = await _uow.programRepo.LeaveProgram(programId, _currentUserService.GetUserId());
+            if (response == "program not found")
                 return ApiResponse<string>.Failure(StatusCodes.Status404NotFound, response);
             if (response == "user not found")
                 return ApiResponse<string>.Failure(StatusCodes.Status404NotFound, response);
             var userEmail = _currentUserService.GetUserEmail();
             //send email to volunteer
-            string name = _currentUserService.GetUserFirstName();   
+            string name = _currentUserService.GetUserFirstName();
             Dictionary<string, string> placeHolder = new Dictionary<string, string>();
             placeHolder.Add("Name", name);
             var notificationCompose = await _notificationService.ComposeNotificationAsync(NotificationTypeEnum.LeaveProgram.ToString(), NotificationChannelEnum.Email.ToString(), placeHolder);

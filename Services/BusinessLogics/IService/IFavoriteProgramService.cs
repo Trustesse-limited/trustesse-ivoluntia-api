@@ -2,7 +2,7 @@
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
 using Trustesse.Ivoluntia.Domain.Entities;
 
-namespace Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces
+namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService
 {
     public interface IFavoriteProgramService
     {

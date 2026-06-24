@@ -8,18 +8,17 @@ using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Auth;
 using Trustesse.Ivoluntia.Commons.Models.Request;
 using Trustesse.Ivoluntia.Data.DataContext;
-using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
+using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
-namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
+namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 {
     public class SecurityQuestionService : ISecurityQuestionService
     {
         private readonly IMapper _mapper;
-        private readonly ISecurityQuestionRepository _securityQuestionRepository;
         private readonly iVoluntiaDataContext _context;
         private readonly ICurrentUserService _currentUserService;
         private readonly IOtpService _otpService;
@@ -27,8 +26,8 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         private readonly INotificationService _notificationService;
         private readonly IPasswordHasher<string> _passwordHasher;
         private readonly SecurityQuestionPolicy _policy;
+        private readonly IUnitOfWork _uow;
         public SecurityQuestionService(
-            ISecurityQuestionRepository securityQuestionRepository,
             iVoluntiaDataContext context,
             ICurrentUserService currentUserService,
             IOtpService otpService,
@@ -36,9 +35,9 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             INotificationService notificationService,
             IPasswordHasher<string> passwordHasher,
             IOptions<SecurityQuestionPolicy> options,
+            IUnitOfWork uow,
             IMapper mapper)
         {
-            _securityQuestionRepository = securityQuestionRepository;
             _context = context;
             _currentUserService = currentUserService;
             _otpService = otpService;
@@ -46,6 +45,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             _notificationService = notificationService;
             _passwordHasher = passwordHasher;
             _policy = options.Value;
+            _uow = uow;
             _mapper = mapper;
         }
 
@@ -60,10 +60,9 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
 
                 var normalizedQuestion = request.Question.Trim().ToUpper();
 
-                var exists = await _context.SecurityQuestions
-                    .AnyAsync(x => x.Question.Trim().ToUpper() == normalizedQuestion);
+                var exists = await _uow.securityQuestionRepo.GetByExpressionAsync(x => x.Question.Trim().ToUpper() == normalizedQuestion);
 
-                if (exists)
+                if (exists != null)
                     return ApiResponse<SecurityQuestionDto>.Failure(StatusCodes.Status400BadRequest, "Security question already exists");
 
                 var question = new SecurityQuestion
@@ -73,9 +72,9 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                     IsActive = true,
                 };
 
-                await _securityQuestionRepository.AddSecurityQuestion(question);
+                await _uow.securityQuestionRepo.AddAsync(question);
 
-                await _context.SaveChangesAsync();
+                await _uow.CompleteAsync();
 
                 var resultDto = _mapper.Map<SecurityQuestionDto>(question);
 
@@ -91,7 +90,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         {
             try
             {
-                var query = _securityQuestionRepository.GetSecurityQuestions();
+                var query = _uow.securityQuestionRepo.GetQueryable();
 
                 var response = await query.ToListAsync();
 
@@ -109,19 +108,19 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         {
             try
             {
-                var question = await _securityQuestionRepository.GetSecurityQuestions().FirstOrDefaultAsync(x => x.Id == questionId);
+                var question = await _uow.securityQuestionRepo.GetByExpressionAsync(x => x.Id == questionId);
 
                 if (question == null)
                     return ApiResponse<bool>.Failure(StatusCodes.Status404NotFound, "Security question not found");
 
-                var isUsed = await _context.UserSecurityQuestions.AnyAsync(x => x.SecurityQuestionId == questionId);
+                var isUsed = await _uow.userSecurityQuestionRepo.GetByExpressionAsync(x => x.SecurityQuestionId == questionId);
 
-                if (isUsed)
+                if (isUsed != null)
                     return ApiResponse<bool>.Failure(StatusCodes.Status400BadRequest, "Security question is in use and cannot be removed");
 
                 question.IsActive = false;
 
-                await _context.SaveChangesAsync();
+                await _uow.CompleteAsync();
 
                 return ApiResponse<bool>.Success("Security question removed successfully", true);
             }
@@ -148,9 +147,9 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 if (request.Questions.Any(x => string.IsNullOrWhiteSpace(x.Answer)))
                     return ApiResponse<SetupSecurityQuestionsResponse>.Failure(StatusCodes.Status400BadRequest, "Answers cannot be empty.");
 
-                var alreadyConfigured = await _context.UserSecurityQuestions.AnyAsync(x => x.UserId == userId);
+                var alreadyConfigured = await _uow.userSecurityQuestionRepo.GetByExpressionAsync(x => x.UserId == userId);
 
-                if (alreadyConfigured)
+                if (alreadyConfigured != null)
                     return ApiResponse<SetupSecurityQuestionsResponse>.Failure(StatusCodes.Status400BadRequest, "Security questions have already been configured.");
 
                 var questionIds = request.Questions.Select(x => x.QuestionId).ToList();
@@ -158,17 +157,16 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 if (questionIds.Count != questionIds.Distinct().Count())
                     return ApiResponse<SetupSecurityQuestionsResponse>.Failure(StatusCodes.Status400BadRequest, "Duplicate security questions are not allowed.");
 
-                var validQuestionCount = await _context.SecurityQuestions
-                   .CountAsync(x => x.IsActive && questionIds.Contains(x.Id));
+                var validQuestionCount = await _uow.securityQuestionRepo.CountAsync(x => x.IsActive && questionIds.Contains(x.Id));
 
                 if (validQuestionCount != questionIds.Count)
                     return ApiResponse<SetupSecurityQuestionsResponse>.Failure(StatusCodes.Status400BadRequest, "One or more selected security questions are invalid.");
 
                 var userQuestions = request.Questions.Select(q => CreateUserSecurityQuestion(userId, q)).ToList();
 
-                await _context.UserSecurityQuestions.AddRangeAsync(userQuestions);
+                await _uow.userSecurityQuestionRepo.AddManyAsync(userQuestions);
 
-                await _context.SaveChangesAsync();
+                await _uow.CompleteAsync();
 
                 var resultDto = new SetupSecurityQuestionsResponse { Configured = true };
 
@@ -213,7 +211,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 if (!_policy.Rules.TryGetValue(request.Operation.ToString(), out var rule))
                     return ApiResponse<ValidateSecurityQuestionsResponse>.Failure(StatusCodes.Status400BadRequest, "No security policy configured for this operation.");
 
-                var attempt = await _context.UserSecurityValidationAttempts.FirstOrDefaultAsync(x => x.UserId == userId);
+                var attempt = await _uow.userSecurityValidationAttemptRepo.GetByExpressionAsync(x => x.UserId == userId);
 
                 if (attempt?.LockedUntil > now)
                     return ApiResponse<ValidateSecurityQuestionsResponse>.Failure(StatusCodes.Status423Locked, $"Too many failed attempts. Try again after {attempt.LockedUntil:yyyy-MM-dd HH:mm:ss} UTC.");
@@ -227,10 +225,10 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                         LastAttemptDate = now
                     };
 
-                    await _context.UserSecurityValidationAttempts.AddAsync(attempt);
+                    await _uow.userSecurityValidationAttemptRepo.AddAsync(attempt);
                 }
 
-                var userSecurityQuestions = await _context.UserSecurityQuestions.Where(x => x.UserId == userId).ToListAsync();
+                var userSecurityQuestions = await _uow.userSecurityQuestionRepo.GetListByExpressionAsync(x => x.UserId == userId);
 
                 if (!userSecurityQuestions.Any())
                     return ApiResponse<ValidateSecurityQuestionsResponse>.Failure(StatusCodes.Status400BadRequest, "Security questions have not been configured.");
@@ -255,7 +253,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                     if (attempt.AttemptCount >= maxAttempts)
                         attempt.LockedUntil = now.AddMinutes(lockoutMinutes);
 
-                    await _context.SaveChangesAsync();
+                    await _uow.CompleteAsync();
 
                     return ApiResponse<ValidateSecurityQuestionsResponse>.Success("Insufficient security answers provided.",
                         new ValidateSecurityQuestionsResponse
@@ -288,7 +286,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                     attempt.LockedUntil = null;
                     attempt.LastAttemptDate = now;
 
-                    await _context.SaveChangesAsync();
+                    await _uow.CompleteAsync();
 
                     return ApiResponse<ValidateSecurityQuestionsResponse>.Success("Security questions validated successfully.",
                         new ValidateSecurityQuestionsResponse
@@ -305,7 +303,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 if (attempt.AttemptCount >= maxAttempts)
                     attempt.LockedUntil = now.AddMinutes(lockoutMinutes);
 
-                await _context.SaveChangesAsync();
+                await _uow.CompleteAsync();
 
                 return ApiResponse<ValidateSecurityQuestionsResponse>.Success("Security question validation failed.",
                     new ValidateSecurityQuestionsResponse
@@ -325,7 +323,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         {
             var userId = _currentUserService.GetUserId();
 
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+            var user = await _uow.userRepo.GetByExpressionAsync(x => x.Id == userId);
 
             if (user == null)
                 return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid user.");
@@ -370,30 +368,30 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 if (questionIds.Count != questionIds.Distinct().Count())
                     return ApiResponse<ResetSecurityQuestionsResponse>.Failure(StatusCodes.Status400BadRequest, "Duplicate security questions are not allowed.");
 
-                var validQuestionCount = await _context.SecurityQuestions.CountAsync(x => x.IsActive && questionIds.Contains(x.Id));
+                var validQuestionCount = await _uow.securityQuestionRepo.CountAsync(x => x.IsActive && questionIds.Contains(x.Id));
 
                 if (validQuestionCount != questionIds.Count)
                     return ApiResponse<ResetSecurityQuestionsResponse>.Failure(StatusCodes.Status400BadRequest, "One or more security questions are invalid.");
 
-                var otp = await _context.Otps.
-                    FirstOrDefaultAsync(x => x.UserId == userId && x.OtpCode == request.Verification.Otp && !x.IsUsed && x.ExpiresAt > now && x.Purpose == OtpPurpose.ResetSecurityQuestion.ToString());
+                var otp = await _uow.otpRepo
+                    .GetByExpressionAsync(x => x.UserId == userId && x.OtpCode == request.Verification.Otp && !x.IsUsed && x.ExpiresAt > now && x.Purpose == OtpPurpose.ResetSecurityQuestion.ToString());
 
                 if (otp == null)
                     return ApiResponse<ResetSecurityQuestionsResponse>.Failure(StatusCodes.Status400BadRequest, "Invalid or expired OTP.");
 
                 await using var transaction = await _context.Database.BeginTransactionAsync();
 
-                var existingQuestions = await _context.UserSecurityQuestions.Where(x => x.UserId == userId).ToListAsync();
+                var existingQuestions = await _uow.userSecurityQuestionRepo.GetListByExpressionAsync(x => x.UserId == userId);
 
-                _context.UserSecurityQuestions.RemoveRange(existingQuestions);
+                await _uow.userSecurityQuestionRepo.DeleteManyAsync(existingQuestions);
 
                 var newQuestions = request.Questions.Select(q => CreateUserSecurityQuestion(userId, q)).ToList();
 
-                await _context.UserSecurityQuestions.AddRangeAsync(newQuestions);
+                await _uow.userSecurityQuestionRepo.AddManyAsync(newQuestions);
 
                 otp.IsUsed = true;
 
-                await _context.SaveChangesAsync();
+                await _uow.CompleteAsync();
 
                 await transaction.CommitAsync();
 

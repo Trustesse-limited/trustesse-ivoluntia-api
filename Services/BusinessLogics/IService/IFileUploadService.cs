@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Trustesse.Ivoluntia.Commons.DTOs;
 
-namespace Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces
+namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService
 {
     public interface IFileUploadService
     {

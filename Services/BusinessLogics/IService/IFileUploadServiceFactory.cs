@@ -1,6 +1,4 @@
-﻿
-
-namespace Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces
+﻿namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService
 {
     public interface IFileUploadServiceFactory
     {

@@ -1,59 +1,50 @@
 ﻿using MapsterMapper;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Volunteer;
 using Trustesse.Ivoluntia.Data.DataContext;
-using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
+using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
+using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
-namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
+namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 {
     public class VolunteerService : IVolunteerService
     {
         private readonly ILogger<VolunteerService> _logger;
         private readonly iVoluntiaDataContext _context;
-        private readonly IVolunteerRepository _volunteerRepository;
-        private readonly IFoundationRepository _foundationRepository;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMapper _mapper;
+        private readonly IUnitOfWork _uow;
         public VolunteerService(
             ILogger<VolunteerService> logger,
             iVoluntiaDataContext context,
-            IVolunteerRepository volunteerRepository,
-            IFoundationRepository foundationRepository,
             ICurrentUserService currentUserService,
-            IMapper mapper)
+            IMapper mapper,
+            IUnitOfWork uow)
         {
             _logger = logger;
             _context = context;
-            _volunteerRepository = volunteerRepository;
-            _foundationRepository = foundationRepository;
             _currentUserService = currentUserService;
             _mapper = mapper;
+            _uow = uow;
         }
 
         public async Task<ApiResponse<IEnumerable<VolunteerDto>>> GetVolunteers(string foundationId, bool? isActive)
         {
             try
             {
-                var foundationResult = _foundationRepository.GetFoundation(foundationId);
+                var foundationResult = await _uow.foundationRepo.GetByExpressionAsync(f => f.Id == foundationId);
 
                 if (foundationResult == null)
-                    return ApiResponse<IEnumerable<VolunteerDto>>.Failure(
-                        StatusCodes.Status404NotFound,
-                        "No foundation found for this id");
+                    return ApiResponse<IEnumerable<VolunteerDto>>.Failure(StatusCodes.Status404NotFound, "No foundation found for this id");
 
-                var query = _volunteerRepository.GetVolunteers(foundationId, isActive);
+                var query = await _uow.volunteerRepo.GetListByExpressionAsync(f => f.FoundationId == foundationId && (!isActive.HasValue || f.IsActive == isActive.Value));
 
-                var response = await query.ToListAsync();
+                var resultDto = _mapper.Map<IEnumerable<VolunteerDto>>(query);
 
-                var resultDto = _mapper.Map<IEnumerable<VolunteerDto>>(response);
-
-                return ApiResponse<IEnumerable<VolunteerDto>>.Success(
-                    "Volunteers retrieved successfully",
-                    resultDto);
+                return ApiResponse<IEnumerable<VolunteerDto>>.Success("Volunteers retrieved successfully", resultDto);
             }
             catch (Exception ex)
             {

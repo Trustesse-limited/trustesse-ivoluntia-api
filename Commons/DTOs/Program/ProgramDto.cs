@@ -68,23 +68,21 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Program
     public class CreateProgramGoalDTO
     {
         public string Goal { get; set; }
-        public bool IsAchieved { get; set; } = false;
+
     }
 
     public class UpdateProgramGoalDTO : CreateProgramGoalDTO
     {
         public string Id { get; set; }
+        public bool IsAchieved { get; set; }
     }
 
-    public class ProgramGoalDTO
+    public class ProgramGoalDTO : UpdateProgramGoalDTO
     {
-        public string Id { get; set; }
-        public string Goal { get; set; } = string.Empty;
-        public bool IsAchieved { get; set; }
+
     }
     public class ProgramSkillDTO
     {
-        public string SkillId { get; set; }
         public SkillDto Skill { get; set; }
     }
 

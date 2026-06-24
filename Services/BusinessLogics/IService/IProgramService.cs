@@ -1,7 +1,7 @@
 ﻿using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
 
-namespace Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces
+namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService
 {
     public interface IProgramService
     {

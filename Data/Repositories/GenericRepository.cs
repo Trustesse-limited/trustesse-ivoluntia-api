@@ -1,6 +1,7 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
+using System.Reflection;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Domain.IRepositories;
 
@@ -185,5 +186,69 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
             .ExecuteUpdateAsync(setPropertyCalls, cancellationToken);
     }
 
+    public IQueryable<T> SearchAndOrder(
+       
+        Expression<Func<T, bool>>? filterExpression = null,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string searchQuery = null,
+        string orderByColumn = null,
+        string orderBy = "ASC")
+    {
+        IQueryable<T> source = _dbContext.Set<T>().AsNoTracking();
+   
+        if (filterExpression != null)
+        {
+            source = source.Where(filterExpression);
+        }
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            var parameter = Expression.Parameter(typeof(T), "x");
+            Expression? orExpression = null;
 
+            foreach (var prop in typeof(T).GetProperties()
+           .Where(p => p.PropertyType == typeof(string)))
+            {
+                var propertyAccess = Expression.Property(parameter, prop);
+                var searchConst = Expression.Constant(searchQuery, typeof(string));
+                var notNull = Expression.NotEqual(propertyAccess, Expression.Constant(null, typeof(string)));
+                var containsMethod = typeof(string).GetMethod("Contains", new[] { typeof(string) })!;
+                var containsCall = Expression.Call(propertyAccess, containsMethod, searchConst);
+                var andExpression = Expression.AndAlso(notNull, containsCall);
+
+                orExpression = orExpression == null
+                    ? andExpression
+                    : Expression.OrElse(orExpression, andExpression);
+            }
+
+            if (orExpression != null)
+            {
+                var lambda = Expression.Lambda<Func<T, bool>>(orExpression, parameter);
+                source = source.Where(lambda);
+            }
+        }
+        if (!string.IsNullOrWhiteSpace(orderByColumn))
+        {
+            var parameter = Expression.Parameter(typeof(T), "x");
+            var property = typeof(T).GetProperty(orderByColumn,
+                BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+            var propertyAccess = Expression.Property(parameter, property);
+            var orderByLambda = Expression.Lambda(propertyAccess, parameter);
+
+            string orderDirection = string.Equals(orderBy, "DESC", StringComparison.OrdinalIgnoreCase)
+                ? "OrderByDescending"
+                : "OrderBy";
+
+            var resultExp = Expression.Call(
+                typeof(Queryable),
+                orderDirection,
+                new Type[] { typeof(T), property.PropertyType },
+                source.Expression,
+                Expression.Quote(orderByLambda));
+
+            source = source.Provider.CreateQuery<T>(resultExp);
+        }
+        source = source.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+        return source;
+    }
 }

@@ -20,7 +20,7 @@ namespace Trustesse.Ivoluntia.Commons.Models.Response
     }
     public class ErrorItem
     {
-        public string Message { get; set; }
-        public int ErrorCode { get; set; }     
+        public string Key { get; set; }
+        public List<string> ErrorMessages { get; set; }     
     }
 }

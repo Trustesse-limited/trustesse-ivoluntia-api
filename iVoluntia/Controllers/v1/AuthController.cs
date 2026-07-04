@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using Trustesse.Ivoluntia.API.Extensions;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Auth;
+using Trustesse.Ivoluntia.Commons.DTOs.Foundation;
 using Trustesse.Ivoluntia.Commons.Models.Request;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
@@ -9,7 +11,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
     [Route("api/v1/[Controller]")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController : BaseController
     {
         private readonly IAuthenticationService _authenticationService;
 
@@ -43,6 +45,10 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             return Ok(result);
         }
 
+        [HttpPost("organization-signup")]
+        public async Task<IActionResult> CreateOrganization([FromForm] CreateFoundationRequestDto createFoundationRequestDto)
+            => BuildHttpResponse<string>(await _authenticationService.CreateOrganization(createFoundationRequestDto.Validate()));
+       
         [HttpPost("resetpassword")]
         public async Task<IActionResult> ResetPassword(string email)
         {

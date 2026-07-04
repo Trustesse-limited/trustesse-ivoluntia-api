@@ -15,6 +15,7 @@ namespace Trustesse.Ivoluntia.Domain.Enums
         JoinProgram,
         RequestToJoinProgram,
         LeaveProgram,
-        RequestToLeaveProgram
+        RequestToLeaveProgram,
+        OtpRequest,
     }
 }

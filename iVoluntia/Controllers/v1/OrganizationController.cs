@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Trustesse.Ivoluntia.Commons.Contants;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Foundation;
+using Trustesse.Ivoluntia.Commons.DTOs.GlobalRequest;
 using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Commons.Validators;
 using Trustesse.Ivoluntia.Domain.Enums;
@@ -22,20 +23,14 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         {
             _organizationService = organizationService;
         }
-        [Authorize(Roles = AuthenticationConstants.SuperAdmin)]
-        [HttpGet("get")]
-        public async Task<IActionResult> GetOrganization([FromQuery]GetOrganizationDto getOrganizationDto)
-        {
-            var response = await _organizationService.GetOrganization(getOrganizationDto);
-            return BuildHttpResponse<List<OrganizationDto>>(response);
-        }
 
         [Authorize(Roles = AuthenticationConstants.SuperAdmin)]
+        [HttpGet("get")]
+        public async Task<IActionResult> GetOrganization([FromQuery] PagedRequestDTO pagedRequestDTO)
+            => BuildHttpResponse<List<OrganizationResponseDto>>(await _organizationService.GetOrganization(pagedRequestDTO.Validate()));
+
         [HttpGet("get-by-id")]
-        public async Task<IActionResult> GetOrganizationById([FromQuery]GetByIdDto getByIdDto)
-        {
-            var response = await _organizationService.GetOrganizationByID(getByIdDto.Id);
-            return BuildHttpResponse<OrganizationDto>(response);
-        }          
+        public async Task<IActionResult> GetOrganizationById([FromQuery] string id)
+            => BuildHttpResponse<OrganizationResponseDto>(await _organizationService.GetOrganizationByID(id));
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Trustesse.Ivoluntia.Data.DataContext;
 
@@ -11,9 +12,11 @@ using Trustesse.Ivoluntia.Data.DataContext;
 namespace Trustesse.Ivoluntia.Data.Migrations
 {
     [DbContext(typeof(iVoluntiaDataContext))]
-    partial class iVoluntiaDataContextModelSnapshot : ModelSnapshot
+    [Migration("20260630225947_AddFoundationCauses")]
+    partial class AddFoundationCauses
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -851,8 +854,8 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Property<string>("OtpCode")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Purpose")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Purpose")
+                        .HasColumnType("int");
 
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(max)");

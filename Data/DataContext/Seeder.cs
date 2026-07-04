@@ -363,5 +363,48 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                 await context.SaveChangesAsync();
             }
         }
+
+        public static async Task SeedCauseAsync(iVoluntiaDataContext context)
+        {
+            if (!context.Causes.Any())
+            {
+                var causeOne = new Cause
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Child Health",
+                    Description = "Child Treatment",
+                    DateCreated = DateTime.UtcNow,
+                    CreatedBy = "superAdmin",
+                    DateUpdated = DateTime.UtcNow,
+                    IsDeprecated = false 
+                };
+                await context.AddAsync(causeOne);
+
+                var causeTwo = new Cause
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Feed The Nation",
+                    Description = "Global Feed",
+                    DateCreated = DateTime.UtcNow,
+                    IsDeprecated = false,
+                    CreatedBy = "superAdmin",
+                    DateUpdated = DateTime.UtcNow
+                };
+                await context.AddAsync(causeTwo);
+
+                var causeThree = new Cause
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Education Promotion",
+                    Description = "child education",
+                    DateCreated = DateTime.UtcNow,
+                    IsDeprecated = false,
+                    CreatedBy = "superAdmin",
+                    DateUpdated = DateTime.UtcNow
+                };
+                await context.AddAsync(causeThree);
+            }
+            await context.SaveChangesAsync();
+        }
     }
 }

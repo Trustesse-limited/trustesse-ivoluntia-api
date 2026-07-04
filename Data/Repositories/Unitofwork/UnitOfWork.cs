@@ -24,6 +24,10 @@ public class UnitOfWork : IUnitOfWork
     public ISkillRepository skillRepo { get; set; }
     public IRefreshTokenRepository refreshTokenRepo { get; set; }
     public IOrganizationRepository OrganizationRepository { get; set; } 
+    public ICauseFoundationRepository CauseFoundationRepository { get; set; } 
+    public ICauseRepository CauseRepository { get; set; }   
+    public ICategoryRepository CategoryRepository { get; set; }
+    public IOtpRepo OtpRepo { get; set; }
 
     public UnitOfWork(iVoluntiaDataContext dbContext)
     {
@@ -38,7 +42,11 @@ public class UnitOfWork : IUnitOfWork
         skillRepo = new SkillRepository(dbContext);
         onboardingProgressRepo = new OnboardingProgressRepository(dbContext);
         refreshTokenRepo = new RefreshTokenRepository(dbContext);
-        OrganizationRepository = new OrganizationRepository(dbContext);    
+        OrganizationRepository = new OrganizationRepository(dbContext);
+        CauseFoundationRepository = new CauseFoundationRepository(dbContext);
+        CauseRepository = new CauseRepository(dbContext);
+        CategoryRepository = new CategoryRepository(dbContext);
+        OtpRepo = new OtpRepo(dbContext);   
     }
     public IGenericRepository<TEntity> repository<TEntity>() where TEntity : class
     {

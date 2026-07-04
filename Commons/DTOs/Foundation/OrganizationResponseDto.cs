@@ -7,7 +7,7 @@ using Trustesse.Ivoluntia.Domain.Entities;
 
 namespace Trustesse.Ivoluntia.Commons.DTOs.Foundation
 {
-    public class OrganizationDto
+    public class OrganizationResponseDto
     {
         public string Id { get; set; }  
         public string Name { get; set; }

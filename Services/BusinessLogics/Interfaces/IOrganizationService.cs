@@ -6,14 +6,15 @@ using System.Text;
 using System.Threading.Tasks;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Foundation;
+using Trustesse.Ivoluntia.Commons.DTOs.GlobalRequest;
 using Trustesse.Ivoluntia.Commons.Models.Response;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces
 {
     public interface IOrganizationService
     {
-        Task<GlobalRequestReponse<List<OrganizationDto>>> GetOrganization(GetOrganizationDto getOrganizationDto);
+        Task<GlobalRequestReponse<List<OrganizationResponseDto>>> GetOrganization(PagedRequestDTO pagedRequestDTO);
      
-        Task<GlobalRequestReponse<OrganizationDto>> GetOrganizationByID(string id);
+        Task<GlobalRequestReponse<OrganizationResponseDto>> GetOrganizationByID(string id);
     }
 }

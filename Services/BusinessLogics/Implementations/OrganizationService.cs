@@ -1,18 +1,26 @@
 ﻿using MapsterMapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Trustesse.Ivoluntia.Commons.DTOs;
+using Trustesse.Ivoluntia.Commons.DTOs.Auth;
 using Trustesse.Ivoluntia.Commons.DTOs.Foundation;
 using Trustesse.Ivoluntia.Commons.DTOs.GenericResponse;
+using Trustesse.Ivoluntia.Commons.DTOs.GlobalRequest;
+using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
 using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
+using Trustesse.Ivoluntia.Domain.Entities;
+using Trustesse.Ivoluntia.Domain.Enums;
 using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
+using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
 {
@@ -20,82 +28,57 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
     {
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly GlobalRequestReponse<List<OrganizationDto>> globalRequestReponse;
-        public OrganizationService(IMapper mapper, IUnitOfWork unitOfWork)
+        private readonly IAuthenticationService _authenticationService;
+        public OrganizationService(IMapper mapper, IUnitOfWork unitOfWork, IAuthenticationService authenticationService)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            _authenticationService = authenticationService;
         }
-        public async Task<GlobalRequestReponse<List<OrganizationDto>>> GetOrganization(GetOrganizationDto getOrganizationDto)
+
+        public async Task<GlobalRequestReponse<List<OrganizationResponseDto>>> GetOrganization(PagedRequestDTO pagedRequestDTO)
         {
-            var globalRequestReponse = new GlobalRequestReponse<List<OrganizationDto>>();
-            if (getOrganizationDto.All == false & getOrganizationDto.Status != null)
+            if (pagedRequestDTO.All == false && pagedRequestDTO.Status != null)
             {
-                if (getOrganizationDto.PageSize > 20)
-                {
-                    getOrganizationDto.PageSize = 20;
-                }
-                var organization = await _unitOfWork.OrganizationRepository.GetAsync(f => f.Status == getOrganizationDto.Status, null, getOrganizationDto.Page, getOrganizationDto.PageSize);
-                var organizationDto = _mapper.Map<List<OrganizationDto>>(organization);
-                globalRequestReponse.isSuccessfull = true;
-                globalRequestReponse.Message = "success";
-                globalRequestReponse.ResponseCode = StatusCodes.Status200OK;
-                globalRequestReponse.Data = organizationDto;   
-                return globalRequestReponse;    
+                var organization = await _unitOfWork.OrganizationRepository.GetAsync(f => f.Status == pagedRequestDTO.Status, null, pagedRequestDTO.Page, pagedRequestDTO.PageSize);
+                var organizationResponseDto = _mapper.Map<List<OrganizationResponseDto>>(organization);
+                if (organizationResponseDto.Count == 0)
+                    return ResponseHelper.BuildResponse("organizations not found", StatusCodes.Status404NotFound, organizationResponseDto, false);
+                return ResponseHelper.BuildResponse("success", StatusCodes.Status200OK, organizationResponseDto, true); 
             }
-            else if (getOrganizationDto.All == false & getOrganizationDto.Status == null)
+            else if (pagedRequestDTO.OrderByColumn != null && pagedRequestDTO.OrderBy != null && pagedRequestDTO.SearchQuery != null)
             {
-                if (getOrganizationDto.PageSize > 20)
-                {
-                    getOrganizationDto.PageSize = 20;
-                }
-                var organization = await _unitOfWork.OrganizationRepository.GetAsync(null, null, getOrganizationDto.Page, getOrganizationDto.PageSize);
-                var organizationDto = _mapper.Map<List<OrganizationDto>>(organization);
-                globalRequestReponse.isSuccessfull = true;
-                globalRequestReponse.Message = "success";
-                globalRequestReponse.ResponseCode = StatusCodes.Status200OK;
-                globalRequestReponse.Data = organizationDto;
-                return globalRequestReponse;
+                var organizations = await _unitOfWork.OrganizationRepository.SearchAndOrder(null, pagedRequestDTO.Page, pagedRequestDTO.PageSize, pagedRequestDTO.SearchQuery, pagedRequestDTO.OrderByColumn, pagedRequestDTO.OrderBy).ToListAsync();
+                var organizationResponseDto = _mapper.Map<List<OrganizationResponseDto>>(organizations);
+                if (organizationResponseDto.Count == 0)
+                    return ResponseHelper.BuildResponse("organizations not found", StatusCodes.Status404NotFound, organizationResponseDto, false);
+                return ResponseHelper.BuildResponse("success", StatusCodes.Status200OK, organizationResponseDto, true);
+            }
+            else if (pagedRequestDTO.All == false && pagedRequestDTO.Status == null)
+            {
+                var organization = await _unitOfWork.OrganizationRepository.GetAsync(null, null, pagedRequestDTO.Page, pagedRequestDTO.PageSize);
+                var organizationResponseDto = _mapper.Map<List<OrganizationResponseDto>>(organization);
+                if (organizationResponseDto.Count == 0)
+                    return ResponseHelper.BuildResponse("organizations not found", StatusCodes.Status404NotFound, organizationResponseDto, false);
+                return ResponseHelper.BuildResponse("success", StatusCodes.Status200OK, organizationResponseDto, true);
             }
             else
             {
                 //no pagination 
                 var organization = await _unitOfWork.OrganizationRepository.GetAllAsync();
-                if (organization != null)
-                {
-                    var organizationDto = _mapper.Map<List<OrganizationDto>>(organization);
-                    globalRequestReponse.isSuccessfull = true;
-                    globalRequestReponse.ResponseCode = StatusCodes.Status200OK;
-                    globalRequestReponse.Message = "success";
-                    globalRequestReponse.Data = organizationDto;
-                    return globalRequestReponse;
-                }
-                else
-                {
-                    globalRequestReponse.isSuccessfull = false;
-                    globalRequestReponse.ResponseCode = StatusCodes.Status400BadRequest;
-                    globalRequestReponse.Message = "unsuccessful";
-                    return globalRequestReponse;    
-                }   
+                var organizationResponseDto = _mapper.Map<List<OrganizationResponseDto>>(organization);
+                if(organizationResponseDto.Count == 0)
+                    return ResponseHelper.BuildResponse("success", StatusCodes.Status200OK, organizationResponseDto, true);
+                return ResponseHelper.BuildResponse("organizations not found", StatusCodes.Status404NotFound, organizationResponseDto, false);
             }                      
         }
-        public async Task<GlobalRequestReponse<OrganizationDto>> GetOrganizationByID(string id)
+        public async Task<GlobalRequestReponse<OrganizationResponseDto>> GetOrganizationByID(string id)
         {
-            var globalRequestReponse = new GlobalRequestReponse<OrganizationDto>();
             var response = await _unitOfWork.OrganizationRepository.GetByExpressionAsync(f => f.Id == id);
+            var organizationResponseDto = _mapper.Map<OrganizationResponseDto>(response);
             if (response != null)
-            {
-                var organizationDto = _mapper.Map<OrganizationDto>(response);
-                globalRequestReponse.isSuccessfull = true;
-                globalRequestReponse.Message = "successful";  
-                globalRequestReponse.Data = organizationDto;
-                globalRequestReponse.ResponseCode = StatusCodes.Status200OK;
-                return globalRequestReponse;
-            }
-            globalRequestReponse.isSuccessfull = false;
-            globalRequestReponse.Message = "no user found";
-            globalRequestReponse.ResponseCode = StatusCodes.Status404NotFound;
-            return globalRequestReponse;
+                return ResponseHelper.BuildResponse("success", StatusCodes.Status200OK, organizationResponseDto, true);
+            return ResponseHelper.BuildResponse("organizations not found", StatusCodes.Status404NotFound, organizationResponseDto, false);
         }
     }
 }

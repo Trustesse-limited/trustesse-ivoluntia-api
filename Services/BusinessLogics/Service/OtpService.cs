@@ -10,7 +10,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
     public class OtpService : IOtpService
     {
         readonly IOtpRepository _otpRepository;
-        private readonly UserManager<User> _userManager;
+        private readonly UserManager<User> _userManager;  
         public OtpService(IOtpRepository otpRepository, UserManager<User> userManager)
         {
             _otpRepository = otpRepository;
@@ -46,7 +46,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             {
                 UserId = userId,
                 OtpCode = otpCode,
-                Purpose = purpose,
+                Purpose = purpose.ToString(),
                 CreatedAt = DateTime.UtcNow,
                 IsUsed = false
             };

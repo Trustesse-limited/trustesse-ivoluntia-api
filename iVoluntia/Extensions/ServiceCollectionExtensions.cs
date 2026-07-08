@@ -7,6 +7,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using Trustesse.Ivoluntia.Commons.Configurations;
+using Trustesse.Ivoluntia.Commons.Models.Response;
+using Trustesse.Ivoluntia.Commons.Validators;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Data.Repositories;
 using Trustesse.Ivoluntia.Data.Repositories.Implementation;
@@ -46,7 +48,8 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<IVolunteerRepository, VolunteerRepository>();
             services.AddScoped<IFavoriteProgramRepository, FavoriteProgramRepository>();
             services.AddScoped<IFavoriteProgramService, FavoriteProgramService>();
-
+            services.AddScoped<IOrganizationService, OrganizationService>();
+            services.AddScoped<IOrganizationRepository, OrganizationRepository>();
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo
@@ -113,7 +116,6 @@ namespace Trustesse.Ivoluntia.API.Extensions
                    sqlServerOptions => sqlServerOptions.MigrationsAssembly("Trustesse.Ivoluntia.Data"));
                 options.AddInterceptors(spt.GetRequiredService<AuditSaveChangesInterceptor>());
             });
-
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IUserRepository, UserRepository>();
@@ -188,6 +190,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
         public static IServiceCollection AddCustomServices(this IServiceCollection services)
         {
             services.AddScoped<INotificationService, NotificationService>();
+           
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<AuditSaveChangesInterceptor>();
 

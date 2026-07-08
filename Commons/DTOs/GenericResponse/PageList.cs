@@ -24,8 +24,6 @@ public class PageList<T> : List<T>
         var items = source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
         return new PageList<T>(items, count, pageNumber, pageSize);
     }
-
-
 }
 
 public class MetaData

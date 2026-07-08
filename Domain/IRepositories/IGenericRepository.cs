@@ -52,4 +52,11 @@ public interface IGenericRepository<T> where T : class
     int Count(Expression<Func<T, bool>> expression);
     IQueryable<T> GetByExpression(Expression<Func<T, bool>> expression);
     Task<int> BulkUpdateAsync(Expression<Func<T, bool>> predicate, Expression<Func<Microsoft.EntityFrameworkCore.Query.SetPropertyCalls<T>, Microsoft.EntityFrameworkCore.Query.SetPropertyCalls<T>>> setPropertyCalls, CancellationToken cancellationToken = default);
+    IQueryable<T> SearchAndOrder(
+        Expression<Func<T, bool>>? filterExpression = null,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string? searchQuery = null,
+        string? orderByColumn = null,
+        string? orderBy = "ASC");
 }

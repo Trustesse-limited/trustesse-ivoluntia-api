@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System.Net.Http.Json;
@@ -140,5 +142,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 return ApiResponse<string>.Failure(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
+        
     }
 }

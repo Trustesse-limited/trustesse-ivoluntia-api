@@ -14,4 +14,9 @@ public interface IUnitOfWork
     IInterestRepository interestRepo { get; }
     ISkillRepository skillRepo { get; }
     IRefreshTokenRepository refreshTokenRepo { get; set; }
+    IOrganizationRepository OrganizationRepository { get; set; }
+    ICauseFoundationRepository CauseFoundationRepository {  get; set; }
+    ICauseRepository CauseRepository { get; set; }
+    ICategoryRepository CategoryRepository { get; set; }
+    IOtpRepo OtpRepo { get; set; }  
 }

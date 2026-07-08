@@ -18,12 +18,10 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
     {
         private readonly IHttpContextAccessor _http;
         private ClaimsPrincipal? _user;
-        //private readonly iVoluntiaDataContext _context;
         public CurrentUserRepository(IHttpContextAccessor http)
         {
             _http = http;
             _user = _http.HttpContext?.User;
-            //_context = context;
         }
         public string? Name => _user?.Identity?.Name;
         private string _userId = string.Empty;

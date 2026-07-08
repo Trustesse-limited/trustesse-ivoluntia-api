@@ -42,6 +42,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<UserProgram> userPrograms { get; set; }
         public DbSet<FavoriteProgram> FavoritePrograms { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<FoundationCauses> FoundationCauses{ get; set; }  
         public DbSet<SecurityQuestion> SecurityQuestions { get; set; }
         public DbSet<UserSecurityQuestion> UserSecurityQuestions { get; set; }
         public DbSet<UserSecurityValidationAttempt> UserSecurityValidationAttempts { get; set; }
@@ -97,7 +98,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
 
                 entity.HasMany(u => u.Causes)
                        .WithMany(i => i.Foundations)
-                       .UsingEntity(j => j.ToTable("FoundationCauses"));
+                       .UsingEntity<FoundationCauses>();
 
                 entity.HasOne(f => f.Category)
                       .WithMany(c => c.Foundations)
@@ -251,6 +252,15 @@ namespace Trustesse.Ivoluntia.Data.DataContext
 
             modelBuilder.Entity<Donation>()
               .HasQueryFilter(d => !d.IsDeprecated);
+
+            modelBuilder.Entity<UserProgram>()
+                .HasQueryFilter(up => !up.IsDeprecated);
+
+            modelBuilder.Entity<FoundationCauses>()
+                .HasQueryFilter(fc => !fc.IsDeprecated);
+
+            modelBuilder.Entity<Cause>()
+                .HasQueryFilter(c => !c.IsDeprecated);
         }
     }
 }

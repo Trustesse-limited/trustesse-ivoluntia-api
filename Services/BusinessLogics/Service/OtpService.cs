@@ -10,6 +10,8 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
     public class OtpService : IOtpService
     {
         readonly IOtpRepository _otpRepository;
+        private readonly UserManager<User> _userManager;  
+        public OtpService(IOtpRepository otpRepository, UserManager<User> userManager)
         private readonly UserManager<User> _userManager;
         private readonly IUnitOfWork _uow;
         public OtpService(IOtpRepository otpRepository, UserManager<User> userManager, IUnitOfWork uow)

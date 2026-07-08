@@ -1,15 +1,23 @@
 using MapsterMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics.Eventing.Reader;
+using System.Web;
 using Trustesse.Ivoluntia.Commons.Contants;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Auth;
+using Trustesse.Ivoluntia.Commons.DTOs.Foundation;
+using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
 using Trustesse.Ivoluntia.Commons.Models.Request;
+using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
 using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.Abstractions;
+using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
+using static System.Net.WebRequestMethods;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service;
 
@@ -24,6 +32,8 @@ public class AuthenticationService : IAuthenticationService
     private readonly IOtpService _otp;
     private readonly INotificationService _notify;
     private readonly IEmailService _email;
+    private readonly IFileUploadService _fileUploadService;
+    private readonly ICurrentUserService _currentUserService;
     public AuthenticationService(IUnitOfWork uow,
         IMapper mapper,
         UserManager<User> userManager,
@@ -32,7 +42,9 @@ public class AuthenticationService : IAuthenticationService
         IOtpService otp,
         INotificationService notify,
         IEmailService email,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IFileUploadService fileUploadService,
+        ICurrentUserService currentUserService)
     {
         _uow = uow;
         _mapper = mapper;
@@ -43,7 +55,8 @@ public class AuthenticationService : IAuthenticationService
         _jwtTokenService = jwtTokenService;
         _userRepository = userRepository;
         _logger = logger;
-
+        _fileUploadService = fileUploadService;
+        _currentUserService = currentUserService;
     }
     public async Task<ApiResponse<string>> CreateVolunteer(VolunteerSignUpDto model)
     {
@@ -294,6 +307,176 @@ public class AuthenticationService : IAuthenticationService
         return ApiResponse<string>.Success("OnboardingProgress has been updated successfully.", null);
     }
 
+    public async Task<ApiResponse<string>> AddOnBoardingProgress(string userId, int lastCompletedPage, bool hasCompleteOnboarding, int totalPages)
+    {
+        var onboardingPorgress = new OnboardingProgress
+        {
+            UserId = userId, 
+            TotalPages = totalPages,
+            LastCompletedPage = lastCompletedPage,
+            HasCompletedOnboarding = hasCompleteOnboarding
+        };
+        await _uow.onboardingProgressRepo.AddAsync(onboardingPorgress);
+        var succeed = await _uow.CompleteAsync();
+        if (succeed > 0)
+            return ApiResponse<string>.Success("onboarding progress added", "success");
+        return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "unable to add onboarding");
+    }
+    public async Task<ApiResponse<string>> AddFoundationCause(List<string> causeName,string foundationId, string foundationAdminEmail)
+    {
+            var causes = await _uow.CauseRepository
+                .GetAsync(c => causeName.Contains(c.Name));
+            if (causes == null || !causes.Any())
+            {
+                return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest,"No matching causes found");
+            }
+            var foundationCauses = causes.Select(cause => new FoundationCauses
+            {
+                CauseId = cause.Id,
+                FoundationId = foundationId,
+                CreatedBy = foundationAdminEmail
+            }).ToList();
+
+            await _uow.CauseFoundationRepository.AddManyAsync(foundationCauses);
+            await _uow.CompleteAsync();
+            return ApiResponse<string>.Success("foundation causes added successfully", "foundation cause added");
+    }
+
+    public async Task<string> AddLocation(FoundationLocationDto foundationLocationDto, string foundationId)
+    {
+        var country = await _uow.countryRepo.GetByExpressionAsync(c => c.CountryName == foundationLocationDto.FoundationCountry);
+        if (country == null)
+            return($"Country doesn't exist.");
+        var state = await _uow.stateRepo.GetByExpressionAsync(s => s.StateName == foundationLocationDto.FoundationState);
+        if (state == null)
+            return("State doesn't exist.");
+        foundationLocationDto.StateId = state.Id;
+        foundationLocationDto.CountryId = country.Id;
+        var mapLocation = _mapper.Map<Location>(foundationLocationDto);
+        mapLocation.FoundationId = foundationId;    
+        await _uow.locationRepo.AddAsync(mapLocation);
+        var rowchange = await _uow.CompleteAsync();
+        return mapLocation.Id;
+    }
+
+    public async Task<GlobalRequestReponse<string>> CreateOrganization(CreateFoundationRequestDto createFoundationRequestDto)
+    {
+        if (createFoundationRequestDto.MetaData.CurrentPage == (int)OrganizationOnboardingEnum.AuthInfoPage)
+        {
+            var mapFoundationAdmin = _mapper.Map<User>(createFoundationRequestDto.FoundationAdminInfo);
+            var foundationAdminCheck = await _uow.userRepo.GetByExpressionAsync(x =>
+            x.Email == createFoundationRequestDto.FoundationAdminInfo.Email);
+            if (foundationAdminCheck != null)
+                return ResponseHelper.BuildResponse("user already exist", StatusCodes.Status400BadRequest, "user exist", false);
+            mapFoundationAdmin.UserName = createFoundationRequestDto.FoundationAdminInfo.Email;
+            mapFoundationAdmin.PasswordHash = createFoundationRequestDto.FoundationAdminInfo.Password;
+            mapFoundationAdmin.Email = createFoundationRequestDto.FoundationAdminInfo.Email.Trim();
+            mapFoundationAdmin.DateCreated = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+            mapFoundationAdmin.IsActive = false;
+            mapFoundationAdmin.HasAgreedToTermsAndCondition = createFoundationRequestDto.FoundationAdminInfo.HasAgreedToTermsAndCondition;
+            mapFoundationAdmin.OTP = GenerateOTP();
+            mapFoundationAdmin.OtpSubmittedTime = Convert.ToDateTime(DateTime.Now.ToShortTimeString());
+            var result = await _userManager.CreateAsync(mapFoundationAdmin, createFoundationRequestDto.FoundationAdminInfo.Password.Trim());
+            await _userManager.AddToRoleAsync(mapFoundationAdmin, UserRolesEnum.FoundationAdmin.ToString());
+            if (result.Succeeded)
+            {
+                // emailService 
+                var dictionary = new Dictionary<string, string>()
+             {
+                {"firstname", mapFoundationAdmin.Email},
+                { "otp", mapFoundationAdmin.OTP}
+             };
+                var notificationTemplate = await _notify.ComposeNotificationAsync(NotificationTypeEnum.OtpRequest.ToString(), NotificationChannelEnum.Email.ToString(), dictionary);
+                if (notificationTemplate != null)
+                {
+                    var message = new EmailModel
+                    {
+                        Receivers = new List<string> {mapFoundationAdmin.Email},
+                        Subject = "OTP",
+                        Message = HttpUtility.HtmlDecode(notificationTemplate.Data)
+                    };
+                    var emailResponse = await _email.SendEmailASync(message);
+                }
+                var otpDto = _mapper.Map<OtpDto>(mapFoundationAdmin);
+                otpDto.IsUsed = false;
+                otpDto.Purpose = OtpPurpose.Signup.ToString();
+                otpDto.OtpCode = mapFoundationAdmin.OTP;
+                otpDto.Channel = NotificationChannelEnum.Email.ToString();
+                otpDto.UserId = mapFoundationAdmin.Id;
+                var otp = _mapper.Map<Otp>(otpDto);
+                await _uow.OtpRepo.AddAsync(otp);
+                var response = await AddOnBoardingProgress(mapFoundationAdmin.Id, createFoundationRequestDto.MetaData.CurrentPage,false,6);
+                if(response.StatusCode == StatusCodes.Status200OK)
+                    return ResponseHelper.BuildResponse("foundation admin created", StatusCodes.Status200OK, "created successfully", true);
+                return ResponseHelper.BuildResponse("unsuccessful", StatusCodes.Status400BadRequest, "not successful", false);
+            }
+        }
+        else if (createFoundationRequestDto.MetaData.CurrentPage == (int)OrganizationOnboardingEnum.BioDataPage)
+        {
+            var mapOrganization = _mapper.Map<Foundation>(createFoundationRequestDto.foundationBioData);
+            mapOrganization.Email = _currentUserService.GetUserEmail();
+            var category = await _uow.CategoryRepository.GetByExpressionAsync(c => c.Name == createFoundationRequestDto.foundationBioData.FoundationCategory);
+            mapOrganization.CategoryId = category.Id;
+            var foundationAdmin = await _userManager.FindByEmailAsync(_currentUserService.GetUserEmail());
+            foundationAdmin.FoundationId = mapOrganization.Id;
+            await _uow.OrganizationRepository.AddAsync(mapOrganization);
+            await _uow.CompleteAsync();
+            var response = await _userManager.UpdateAsync(foundationAdmin);
+            if(response.Succeeded)
+                return ResponseHelper.BuildResponse("foundation created", StatusCodes.Status200OK, "created successfully", true);
+            return ResponseHelper.BuildResponse("unsuccessful", StatusCodes.Status400BadRequest, "not successful", false);
+        }
+        else if (createFoundationRequestDto.MetaData.CurrentPage == (int)OrganizationOnboardingEnum.Location)
+        {
+            var foundation = await _uow.OrganizationRepository.GetByExpressionAsync(f => f.Email == _currentUserService.GetUserEmail());
+            createFoundationRequestDto.FoundationLocationDto.UserId = _currentUserService.GetUserId();
+            var locationId = await AddLocation(createFoundationRequestDto.FoundationLocationDto, foundation.Id);
+            foundation.LocationId = locationId;    
+            _uow.OrganizationRepository.Update(foundation);
+            var response = await _uow.CompleteAsync();
+            if(response > 0)
+                return ResponseHelper.BuildResponse("foundation location added", StatusCodes.Status200OK, "created successfully", true);
+            return ResponseHelper.BuildResponse("unsuccessful", StatusCodes.Status400BadRequest, "not successful", false);
+
+        }
+        else if (createFoundationRequestDto.MetaData.CurrentPage == (int)OrganizationOnboardingEnum.Cause)
+        {
+            var foundation = await _uow.OrganizationRepository.GetByExpressionAsync(f => f.Email == _currentUserService.GetUserEmail());
+            var response = await AddFoundationCause(createFoundationRequestDto.CauseDto.Names, foundation.Id, _currentUserService.GetUserEmail()); 
+            if(response.StatusCode == StatusCodes.Status200OK)
+                return ResponseHelper.BuildResponse("foundation cause added", StatusCodes.Status200OK, "created successfully", true);
+            return ResponseHelper.BuildResponse("unsuccessful", StatusCodes.Status400BadRequest, "not successful", false);
+        }
+
+        else if (createFoundationRequestDto.MetaData.CurrentPage == (int)OrganizationOnboardingEnum.Profile)
+        {
+            var imageUrl = await _fileUploadService.UploadFilesAsync(createFoundationRequestDto.ProfileLogo.Logo);
+            var foundation = await _uow.OrganizationRepository.GetByExpressionAsync(f => f.Email == _currentUserService.GetUserEmail());
+            foundation.Logo = imageUrl.Data[0];
+            _uow.OrganizationRepository.Update(foundation);
+            var response = await _uow.CompleteAsync();
+            if(response > 0)
+                return ResponseHelper.BuildResponse("foundation logo added", StatusCodes.Status200OK, "created successfully", true);
+            return ResponseHelper.BuildResponse("unsuccessful", StatusCodes.Status400BadRequest, "not successful", false);
+
+        }
+
+        else  if(createFoundationRequestDto.MetaData.CurrentPage == (int)OrganizationOnboardingEnum.Disclaimer)
+        {
+            var foundation = await _uow.OrganizationRepository.GetByExpressionAsync(f => f.Email == _currentUserService.GetUserEmail());
+            foundation.HasAgreedToDisclaimer = createFoundationRequestDto.Disclaimer.HasAgreedToDisclaimer;
+            foundation.HasAgreedToDisclaimer = createFoundationRequestDto.Disclaimer.HasAgreedToDisclaimer;
+            foundation.IsActive = true;
+            _uow.OrganizationRepository.Update(foundation);
+            await _uow.CompleteAsync();
+            var response = await UpdateOnBoardingProgress(_currentUserService.GetUserId(), createFoundationRequestDto.MetaData.CurrentPage, true);
+            if(response.StatusCode == StatusCodes.Status200OK)
+                return ResponseHelper.BuildResponse("foundation disclaimer updated", StatusCodes.Status200OK, "created successfully", true);
+            return ResponseHelper.BuildResponse("unsuccessful", StatusCodes.Status400BadRequest, "not successful", false);
+        }
+        return ResponseHelper.BuildResponse("unexpected result", StatusCodes.Status400BadRequest, "not successful", false);
+    }
+
     public async Task<ApiResponse<LoginResponseModel>> LoginAsync(LoginRequestModel request, CancellationToken cancellationToken)
     {
         var user = await _userRepository.GetUserByEmailWithFoundationAsync(request.Email, cancellationToken);
@@ -486,9 +669,10 @@ public class AuthenticationService : IAuthenticationService
             return ApiResponse<string>.Failure(404, "User not found.");
         }
         var confirmOtp = await _otp.ConfirmOtpAsync(user.Id, model.OtpCode, model.purpose);
-        if (confirmOtp = true)
+        if (confirmOtp == true)
         {
             user.EmailConfirmed = true;
+            user.IsActive = true;
             var result = await _userManager.UpdateAsync(user);
             if (result.Succeeded)
             {

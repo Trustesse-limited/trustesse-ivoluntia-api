@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using System.Collections;
 using Trustesse.Ivoluntia.Data.DataContext;
+using Trustesse.Ivoluntia.Data.Repositories.Implementation;
+using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
 using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
 using Trustesse.Ivoluntia.Domain.IRepositories;
 
@@ -23,6 +25,11 @@ public class UnitOfWork : IUnitOfWork
     public IInterestRepository interestRepo { get; set; }
     public ISkillRepository skillRepo { get; set; }
     public IRefreshTokenRepository refreshTokenRepo { get; set; }
+    public IOrganizationRepository OrganizationRepository { get; set; } 
+    public ICauseFoundationRepository CauseFoundationRepository { get; set; } 
+    public ICauseRepository CauseRepository { get; set; }   
+    public ICategoryRepository CategoryRepository { get; set; }
+    public IOtpRepo OtpRepo { get; set; }
     public IFavoriteProgramRepository favoriteProgramRepo { get; set; }
     public IFoundationRepository foundationRepo { get; set; }
     public IProgramRepository programRepo { get; set; }
@@ -48,6 +55,11 @@ public class UnitOfWork : IUnitOfWork
         skillRepo = new SkillRepository(dbContext);
         onboardingProgressRepo = new OnboardingProgressRepository(dbContext);
         refreshTokenRepo = new RefreshTokenRepository(dbContext);
+        OrganizationRepository = new OrganizationRepository(dbContext);
+        CauseFoundationRepository = new CauseFoundationRepository(dbContext);
+        CauseRepository = new CauseRepository(dbContext);
+        CategoryRepository = new CategoryRepository(dbContext);
+        OtpRepo = new OtpRepo(dbContext);   
         favoriteProgramRepo = new FavoriteProgramRepository(dbContext);
         foundationRepo = new FoundationRepository(dbContext);
         programRepo = new ProgramRepository(dbContext, currentUserRepository);

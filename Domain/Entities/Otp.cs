@@ -15,5 +15,8 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public string Purpose { get; set; }
         [MaxLength(100)]
         public string Channel { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public string Purpose { get; set; }
+        public string Channel { get; set; } = "email"; // or "sms"
     }
 }

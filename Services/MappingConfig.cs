@@ -1,6 +1,9 @@
 ﻿using Mapster;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection.PortableExecutable;
+using Trustesse.Ivoluntia.Commons.DTOs.Auth;
+using Trustesse.Ivoluntia.Commons.DTOs.Foundation;
 using Trustesse.Ivoluntia.Commons.DTOs.Auth;
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
 using Trustesse.Ivoluntia.Commons.DTOs.Volunteer;
@@ -21,6 +24,17 @@ namespace Trustesse.Ivoluntia.Services
             config.NewConfig<Skill, SkillDto>();
             config.NewConfig<User, VolunteerDto>();
             config.NewConfig<FavoriteProgram, FavoriteProgramDto>();
+            config.NewConfig<Foundation, OrganizationResponseDto>();
+            config.NewConfig<User, CreateFoundationRequestDto>();
+            config.NewConfig<CreateFoundationRequestDto, Foundation>();
+            config.NewConfig<CreateFoundationRequestDto,FoundationAdminSignUpDto>();
+            config.NewConfig<CreateFoundationRequestDto, Location>();
+            config.NewConfig<Cause,FoundationCauses>();
+            config.NewConfig<FoundationAdminInfo, User>();
+            config.NewConfig<FoundationBioData, Foundation>();
+            config.NewConfig<User, OtpDto>();
+            config.NewConfig<OtpDto, Otp>();
+            
             config.NewConfig<SecurityQuestion, SecurityQuestionDto>();
 
 
@@ -28,5 +42,4 @@ namespace Trustesse.Ivoluntia.Services
             services.AddScoped<IMapper, Mapper>();
         }
     }
-
 }

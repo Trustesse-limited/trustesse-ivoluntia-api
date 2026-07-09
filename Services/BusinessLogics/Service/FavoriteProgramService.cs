@@ -1,7 +1,8 @@
 ﻿using MapsterMapper;
 using Microsoft.AspNetCore.Http;
-using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
+using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
+using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.IRepositories;
@@ -27,22 +28,22 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             _mapper = mapper;
             _uow = uow;
         }
-        public async Task<ApiResponse<FavoriteProgramDto>> AddFavoriteProgram(AddFavoriteProgramRequest request)
+        public async Task<GlobalRequestReponse<FavoriteProgramDto>> AddFavoriteProgram(AddFavoriteProgramRequest request)
         {
             var userId = _currentUserService.GetUserId();
 
             if (userId == null)
-                return ApiResponse<FavoriteProgramDto>.Failure(StatusCodes.Status400BadRequest, "Invalid user");
+                return ResponseHelper.BuildResponse<FavoriteProgramDto>("Invalid user", StatusCodes.Status400BadRequest, null, false);
 
-            var program = await _uow.favoriteProgramRepo.GetByExpressionAsync(x => x.Id == request.ProgramId);
+            var program = await _uow.programRepo.GetByExpressionAsync(x => x.Id == request.ProgramId);
 
             if (program == null)
-                return ApiResponse<FavoriteProgramDto>.Failure(StatusCodes.Status404NotFound, "Program not found");
+                return ResponseHelper.BuildResponse<FavoriteProgramDto>("Program not found", StatusCodes.Status404NotFound, null, false);
 
             var exists = await _uow.favoriteProgramRepo.GetByExpressionAsync(x => x.UserId == userId && x.ProgramId == request.ProgramId);
 
             if (exists != null)
-                return ApiResponse<FavoriteProgramDto>.Failure(StatusCodes.Status400BadRequest, "Program already in favorites");
+                return ResponseHelper.BuildResponse<FavoriteProgramDto>("Program already in favorites", StatusCodes.Status400BadRequest, null, false);
 
             var favorite = new FavoriteProgram
             {
@@ -57,10 +58,10 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 
             var resultDto = _mapper.Map<FavoriteProgramDto>(favorite);
 
-            return ApiResponse<FavoriteProgramDto>.Success("Favorite Program added successfully", resultDto);
+            return ResponseHelper.BuildResponse("Favorite Program added successfully", StatusCodes.Status200OK, resultDto, true);
         }
 
-        public async Task<ApiResponse<IEnumerable<FavoriteProgramDto>>> GetFavoritePrograms()
+        public async Task<GlobalRequestReponse<IEnumerable<FavoriteProgramDto>>> GetFavoritePrograms()
         {
             try
             {
@@ -72,14 +73,14 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 
                 var resultDto = _mapper.Map<IEnumerable<FavoriteProgramDto>>(response);
 
-                return ApiResponse<IEnumerable<FavoriteProgramDto>>.Success("Favorite programs retrieved successfully", resultDto);
+                return ResponseHelper.BuildResponse("Favorite programs retrieved successfully", StatusCodes.Status200OK, resultDto, true);
             }
             catch (Exception)
             {
-                return ApiResponse<IEnumerable<FavoriteProgramDto>>.Failure(StatusCodes.Status500InternalServerError, "An error occurred");
+                return ResponseHelper.BuildResponse<IEnumerable<FavoriteProgramDto>>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
             }
         }
-        public async Task<ApiResponse<PagedResponse<FavoriteProgramDto>>> GetAllFavoritePrograms(BaseQuery baseQuery)
+        public async Task<GlobalRequestReponse<PagedResponse<FavoriteProgramDto>>> GetAllFavoritePrograms(BaseQuery baseQuery)
         {
             try
             {
@@ -96,17 +97,15 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                     Data = resultDto
                 };
 
-                return ApiResponse<PagedResponse<FavoriteProgramDto>>
-                    .Success("Favorite programs retrieved successfully", pagedResult);
+                return ResponseHelper.BuildResponse("Favorite programs retrieved successfully", StatusCodes.Status200OK, pagedResult, true);
             }
             catch (Exception ex)
             {
-                return ApiResponse<PagedResponse<FavoriteProgramDto>>
-                    .Failure(StatusCodes.Status500InternalServerError, ex.Message);
+                return ResponseHelper.BuildResponse<PagedResponse<FavoriteProgramDto>>(ex.Message, StatusCodes.Status500InternalServerError, null, false);
             }
         }
 
-        public async Task<ApiResponse<bool>> RemoveFavoriteProgram(string programId)
+        public async Task<GlobalRequestReponse<bool>> RemoveFavoriteProgram(string programId)
         {
             try
             {
@@ -115,17 +114,17 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 var favorite = await _uow.favoriteProgramRepo.GetByExpressionAsync(x => x.UserId == userId && x.ProgramId == programId);
 
                 if (favorite == null)
-                    return ApiResponse<bool>.Failure(StatusCodes.Status404NotFound, "Program not found");
+                    return ResponseHelper.BuildResponse("Program not found", StatusCodes.Status404NotFound, false, false);
 
                 await _uow.favoriteProgramRepo.DeleteAsync(favorite);
 
                 await _uow.CompleteAsync();
 
-                return ApiResponse<bool>.Success("Program removed successfully", true);
+                return ResponseHelper.BuildResponse("Favorite Program removed successfully", StatusCodes.Status200OK, true, true);
             }
             catch (Exception)
             {
-                return ApiResponse<bool>.Failure(StatusCodes.Status500InternalServerError, "An error occurred");
+                return ResponseHelper.BuildResponse("An error occurred", StatusCodes.Status500InternalServerError, false, false);
             }
         }
     }

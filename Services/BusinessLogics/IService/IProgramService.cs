@@ -1,18 +1,18 @@
-﻿using Trustesse.Ivoluntia.Commons.DTOs;
-using Trustesse.Ivoluntia.Commons.DTOs.Program;
+﻿using Trustesse.Ivoluntia.Commons.DTOs.Program;
+using Trustesse.Ivoluntia.Commons.Models.Response;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService
 {
     public interface IProgramService
     {
-        Task<ApiResponse<ProgramDto>> CreateProgram(CreateProgramDto data);
-        Task<ApiResponse<bool>> RemoveProgram(string dataId);
-        Task<ApiResponse<bool>> UpdateProgram(UpdateProgramDTO data);
-        Task<ApiResponse<IEnumerable<ProgramDto>>> GetPrograms();
-        Task<ApiResponse<IEnumerable<ProgramDto>>> GetProgram(string id);
-        Task<ApiResponse<string>> UpdateProgramStatusAsync(UpdateProgramStatusDto updateProgramStatusDto);
-        Task<ApiResponse<bool>> DeleteProgramGoals(string programGoalId);
-        Task<ApiResponse<string>> JoinProgram(string programId);
-        Task<ApiResponse<string>> LeaveProgram(string programId);
+        Task<GlobalRequestReponse<ProgramDto>> CreateProgram(CreateProgramDto data);
+        Task<GlobalRequestReponse<bool>> RemoveProgram(string dataId);
+        Task<GlobalRequestReponse<bool>> UpdateProgram(UpdateProgramDTO data);
+        Task<GlobalRequestReponse<IEnumerable<ProgramDto>>> GetPrograms();
+        Task<GlobalRequestReponse<IEnumerable<ProgramDto>>> GetProgram(string id);
+        Task<GlobalRequestReponse<string>> UpdateProgramStatusAsync(UpdateProgramStatusDto updateProgramStatusDto);
+        Task<GlobalRequestReponse<bool>> DeleteProgramGoals(string programGoalId);
+        Task<GlobalRequestReponse<string>> JoinProgram(string programId);
+        Task<GlobalRequestReponse<string>> LeaveProgram(string programId);
     }
 }

@@ -5,6 +5,16 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Auth;
 public class CreateSecurityQuestionRequest
 {
     public string Question { get; set; }
+
+    public CreateSecurityQuestionRequest Validate()
+    {
+        if (this == null)
+            throw new Exception("Invalid Request");
+        if (string.IsNullOrWhiteSpace(Question))
+            throw new Exception("Question should not be null");
+
+        return this;
+    }
 }
 
 public class SecurityQuestionDto : CreateSecurityQuestionRequest
@@ -62,6 +72,18 @@ public class ResetSecurityQuestionsRequest
 {
     public List<SecurityQuestionAnswerRequest> Questions { get; set; } = new();
     public Verification Verification { get; set; }
+
+    public ResetSecurityQuestionsRequest Validate()
+    {
+        if (this == null)
+            throw new Exception("Invalid Request");
+        if (Questions == null || !Questions.Any())
+            throw new Exception("Questions should not be null");
+        if (Verification == null || string.IsNullOrWhiteSpace(Verification.Otp))
+            throw new Exception("Verification Otp should not be null");
+
+        return this;
+    }
 }
 
 public class Verification

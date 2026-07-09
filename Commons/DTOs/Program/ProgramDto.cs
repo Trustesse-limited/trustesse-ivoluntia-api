@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Trustesse.Ivoluntia.Domain.Entities;
 
 namespace Trustesse.Ivoluntia.Commons.DTOs.Program
 {
@@ -51,6 +50,30 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Program
         public List<string> SkillIds { get; set; } = new();
 
         public List<CreateProgramGoalDTO> ProgramGoals { get; set; } = new();
+
+        public CreateProgramDto Validate()
+        {
+            if (this == null)
+                throw new Exception("Invalid Request");
+            if (string.IsNullOrWhiteSpace(Title))
+                throw new Exception("Title should not be null");
+            if (string.IsNullOrWhiteSpace(Description))
+                throw new Exception("Description should not be null");
+            if (StartDate == default)
+                throw new Exception("StartDate should not be null");
+            if (EndDate == default)
+                throw new Exception("EndDate should not be null");
+            if (EndDate < StartDate)
+                throw new Exception("EndDate cannot be earlier than StartDate");
+            if (string.IsNullOrWhiteSpace(LocationId))
+                throw new Exception("LocationId should not be null");
+            if (string.IsNullOrWhiteSpace(FoundationId))
+                throw new Exception("FoundationId should not be null");
+            if (string.IsNullOrWhiteSpace(CreatorEmail))
+                throw new Exception("CreatorEmail should not be null");
+
+            return this;
+        }
     }
 
     public class UpdateProgramDTO
@@ -63,6 +86,16 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Program
         public string? LocationId { get; set; }
         public long? DonationTarget { get; set; }
         public string? BannerImage { get; set; }
+
+        public UpdateProgramDTO Validate()
+        {
+            if (this == null)
+                throw new Exception("Invalid Request");
+            if (string.IsNullOrWhiteSpace(Id))
+                throw new Exception("Id should not be null");
+
+            return this;
+        }
     }
 
     public class CreateProgramGoalDTO
@@ -97,13 +130,21 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Program
     {
         [Required]
         public string ProgramId { get; set; }
+
+        public AddFavoriteProgramRequest Validate()
+        {
+            if (ProgramId == null)
+                throw new Exception("ProgramId should not be null");
+            if (this == null)
+                throw new Exception("Invalid Request");
+
+            return this;
+        }
     }
 
     public class FavoriteProgramDto : AddFavoriteProgramRequest
     {
-        public ProgramDto Program { get; set; }
         public string UserId { get; set; }
-        public User User { get; set; }
         public DateTime DateAdded { get; set; }
     }
 }

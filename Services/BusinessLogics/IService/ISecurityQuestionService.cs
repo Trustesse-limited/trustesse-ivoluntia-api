@@ -1,16 +1,16 @@
-﻿using Trustesse.Ivoluntia.Commons.DTOs;
-using Trustesse.Ivoluntia.Commons.DTOs.Auth;
+﻿using Trustesse.Ivoluntia.Commons.DTOs.Auth;
+using Trustesse.Ivoluntia.Commons.Models.Response;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService
 {
     public interface ISecurityQuestionService
     {
-        Task<ApiResponse<SecurityQuestionDto>> AddSecurityQuestion(CreateSecurityQuestionRequest request);
-        Task<ApiResponse<IEnumerable<SecurityQuestionDto>>> GetSecurityQuestions();
-        Task<ApiResponse<bool>> RemoveSecurityQuestion(string questionId);
-        Task<ApiResponse<string>> RequestSecurityQuestionResetAsync();
-        Task<ApiResponse<ResetSecurityQuestionsResponse>> ResetSecurityQuestionsAsync(ResetSecurityQuestionsRequest request);
-        Task<ApiResponse<SetupSecurityQuestionsResponse>> SetupSecurityQuestionsAsync(SetupSecurityQuestionsRequest request);
-        Task<ApiResponse<ValidateSecurityQuestionsResponse>> ValidateSecurityQuestionsAsync(ValidateSecurityQuestionsRequest request);
+        Task<GlobalRequestReponse<SecurityQuestionDto>> AddSecurityQuestion(CreateSecurityQuestionRequest request);
+        Task<GlobalRequestReponse<IEnumerable<SecurityQuestionDto>>> GetSecurityQuestions();
+        Task<GlobalRequestReponse<bool>> RemoveSecurityQuestion(string questionId);
+        Task<GlobalRequestReponse<string>> RequestSecurityQuestionResetAsync();
+        Task<GlobalRequestReponse<ResetSecurityQuestionsResponse>> ResetSecurityQuestionsAsync(ResetSecurityQuestionsRequest request);
+        Task<GlobalRequestReponse<SetupSecurityQuestionsResponse>> SetupSecurityQuestionsAsync(SetupSecurityQuestionsRequest request);
+        Task<GlobalRequestReponse<ValidateSecurityQuestionsResponse>> ValidateSecurityQuestionsAsync(ValidateSecurityQuestionsRequest request);
     }
 }

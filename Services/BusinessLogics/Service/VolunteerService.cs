@@ -1,8 +1,9 @@
 ﻿using MapsterMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Volunteer;
+using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
+using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
@@ -31,28 +32,26 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             _uow = uow;
         }
 
-        public async Task<ApiResponse<IEnumerable<VolunteerDto>>> GetVolunteers(string foundationId, bool? isActive)
+        public async Task<GlobalRequestReponse<IEnumerable<VolunteerDto>>> GetVolunteers(string foundationId, bool? isActive)
         {
             try
             {
                 var foundationResult = await _uow.foundationRepo.GetByExpressionAsync(f => f.Id == foundationId);
 
                 if (foundationResult == null)
-                    return ApiResponse<IEnumerable<VolunteerDto>>.Failure(StatusCodes.Status404NotFound, "No foundation found for this id");
+                    return ResponseHelper.BuildResponse<IEnumerable<VolunteerDto>>("No foundation found for this id", StatusCodes.Status404NotFound, null, false);
 
                 var query = await _uow.volunteerRepo.GetListByExpressionAsync(f => f.FoundationId == foundationId && (!isActive.HasValue || f.IsActive == isActive.Value));
 
                 var resultDto = _mapper.Map<IEnumerable<VolunteerDto>>(query);
 
-                return ApiResponse<IEnumerable<VolunteerDto>>.Success("Volunteers retrieved successfully", resultDto);
+                return ResponseHelper.BuildResponse("Volunteers retrieved successfully", StatusCodes.Status200OK, resultDto, true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
 
-                return ApiResponse<IEnumerable<VolunteerDto>>.Failure(
-                    StatusCodes.Status500InternalServerError,
-                    "An error occurred");
+                return ResponseHelper.BuildResponse<IEnumerable<VolunteerDto>>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
             }
         }
     }

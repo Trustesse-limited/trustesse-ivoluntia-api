@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Trustesse.Ivoluntia.Commons.DTOs;
+using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
+using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
@@ -14,7 +15,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             _context = context;
         }
 
-        public async Task<ApiResponse<string>> ComposeNotificationAsync(string notificationType, string channel, Dictionary<string, string> placeholders)
+        public async Task<GlobalRequestReponse<string>> ComposeNotificationAsync(string notificationType, string channel, Dictionary<string, string> placeholders)
         {
             try
             {
@@ -22,7 +23,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                     .FirstOrDefaultAsync(t => t.NotificationType == notificationType && t.NotificationChannel == channel);
 
                 if (template == null)
-                    return ApiResponse<string>.Failure(StatusCodes.Status404NotFound, "Notification template not found.");
+                    return ResponseHelper.BuildResponse<string>("Notification template not found.", StatusCodes.Status404NotFound, null, false);
 
                 string message = template.Template;
 
@@ -34,11 +35,11 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                         message = message.Replace(placeholder, item.Value ?? string.Empty);
                     }
                 }
-                return ApiResponse<string>.Success("Notification composed successfully.", message);
+                return ResponseHelper.BuildResponse("Notification composed successfully.", StatusCodes.Status200OK, message, true);
             }
             catch (Exception ex)
             {
-                return ApiResponse<string>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
+                return ResponseHelper.BuildResponse<string>($"An error occurred: {ex.Message}", StatusCodes.Status500InternalServerError, null, false);
             }
         }
     }

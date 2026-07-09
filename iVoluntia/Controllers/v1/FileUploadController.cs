@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
 namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
-    [Route("api/[Controller]")]
+    [Route("api/[controller]")]
     [ApiController]
-    public class FileUploadsController : ControllerBase
+    public class FileUploadsController : BaseController
     {
         private readonly IFileUploadService _fileService;
         public FileUploadsController(IFileUploadService fileService)
@@ -14,15 +13,12 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             _fileService = fileService;
         }
 
-        [HttpPost("file-upload")]
+        [HttpPost("file-uploads")]
         public async Task<IActionResult> Upload(List<IFormFile> files)
-        {
-            if (files == null || !files.Any())
-                return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid request."));
+            => BuildHttpResponse(await _fileService.UploadFilesAsync(files));
 
-            var response = await _fileService.UploadFilesAsync(files);
-
-            return Ok(response);
-        }
+        [HttpPost("file-upload")]
+        public async Task<IActionResult> UploadOne(IFormFile file)
+            => BuildHttpResponse(await _fileService.UploadFilesAsync(new List<IFormFile> { file }));
     }
 }

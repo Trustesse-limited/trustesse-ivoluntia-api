@@ -10,8 +10,6 @@
         RequestToJoinProgram,
         LeaveProgram,
         RequestToLeaveProgram,
-        OtpRequest,
-        RequestToLeaveProgram,
         OtpRequest
     }
 }

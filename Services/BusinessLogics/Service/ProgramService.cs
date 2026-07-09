@@ -1,11 +1,12 @@
-﻿using MapsterMapper;
+using MapsterMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Web;
-using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
+using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
 using Trustesse.Ivoluntia.Commons.Models.Request;
+using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
@@ -46,7 +47,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             _notificationService = notificationService;
             _uow = uow;
         }
-        public async Task<ApiResponse<ProgramDto>> CreateProgram(CreateProgramDto data)
+        public async Task<GlobalRequestReponse<ProgramDto>> CreateProgram(CreateProgramDto data)
         {
             try
             {
@@ -54,15 +55,15 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 var foundation = await _uow.foundationRepo.GetByExpressionAsync(f => f.Id == data.FoundationId);
 
                 if (foundation == null)
-                    return ApiResponse<ProgramDto>.Failure(StatusCodes.Status404NotFound, "Foundation not found");
+                    return ResponseHelper.BuildResponse<ProgramDto>("Foundation not found", StatusCodes.Status404NotFound, null, false);
 
                 if (!foundation.IsActive)
-                    return ApiResponse<ProgramDto>.Failure(StatusCodes.Status403Forbidden, "You cannot create a program for an inactive foundation");
+                    return ResponseHelper.BuildResponse<ProgramDto>("You cannot create a program for an inactive foundation", StatusCodes.Status403Forbidden, null, false);
 
                 var programWithSameTitle = await _uow.programRepo.GetByExpressionAsync(p => p.Title.ToLower() == data.Title.ToLower());
 
                 if (programWithSameTitle != null)
-                    return ApiResponse<ProgramDto>.Failure(StatusCodes.Status409Conflict, "A program with the same title already exists");
+                    return ResponseHelper.BuildResponse<ProgramDto>("A program with the same title already exists", StatusCodes.Status409Conflict, null, false);
 
                 var newData = _mapper.Map<Program>(data);
 
@@ -104,15 +105,15 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 
                 var resutlDto = _mapper.Map<ProgramDto>(newData);
 
-                return ApiResponse<ProgramDto>.Success("Program created successfully", resutlDto);
+                return ResponseHelper.BuildResponse("Program created successfully", StatusCodes.Status200OK, resutlDto, true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return ApiResponse<ProgramDto>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred");
+                return ResponseHelper.BuildResponse<ProgramDto>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
             }
         }
-        public async Task<ApiResponse<IEnumerable<ProgramDto>>> GetPrograms()
+        public async Task<GlobalRequestReponse<IEnumerable<ProgramDto>>> GetPrograms()
         {
             try
             {
@@ -122,16 +123,16 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 
                 var resultDto = _mapper.Map<IEnumerable<ProgramDto>>(response);
 
-                return ApiResponse<IEnumerable<ProgramDto>>.Success("Programs retrieved successfully", resultDto);
+                return ResponseHelper.BuildResponse("Programs retrieved successfully", StatusCodes.Status200OK, resultDto, true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
 
-                return ApiResponse<IEnumerable<ProgramDto>>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred");
+                return ResponseHelper.BuildResponse<IEnumerable<ProgramDto>>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
             }
         }
-        public async Task<ApiResponse<IEnumerable<ProgramDto>>> GetProgram(string id)
+        public async Task<GlobalRequestReponse<IEnumerable<ProgramDto>>> GetProgram(string id)
         {
             try
             {
@@ -144,47 +145,47 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 
                 var resultDto = _mapper.Map<IEnumerable<ProgramDto>>(response);
 
-                return ApiResponse<IEnumerable<ProgramDto>>.Success("Program retrieved successfully", resultDto);
+                return ResponseHelper.BuildResponse("Program retrieved successfully", StatusCodes.Status200OK, resultDto, true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
 
-                return ApiResponse<IEnumerable<ProgramDto>>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred");
+                return ResponseHelper.BuildResponse<IEnumerable<ProgramDto>>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
             }
         }
-        public async Task<ApiResponse<bool>> RemoveProgram(string dataId)
+        public async Task<GlobalRequestReponse<bool>> RemoveProgram(string dataId)
         {
             try
             {
                 var data = await _uow.programRepo.GetByExpressionAsync(p => p.Id == dataId);
 
                 if (data == null)
-                    return ApiResponse<bool>.Failure(StatusCodes.Status404NotFound, "Program not found");
+                    return ResponseHelper.BuildResponse("Program not found", StatusCodes.Status404NotFound, false, false);
 
                 await _uow.programRepo.DeleteAsync(data);
 
                 await _uow.CompleteAsync();
 
-                return ApiResponse<bool>.Success("Program deleted successfully", true);
+                return ResponseHelper.BuildResponse("Program deleted successfully", StatusCodes.Status200OK, true, true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return ApiResponse<bool>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred");
+                return ResponseHelper.BuildResponse("An error occurred", StatusCodes.Status500InternalServerError, false, false);
             }
         }
-        public async Task<ApiResponse<bool>> UpdateProgram(UpdateProgramDTO data)
+        public async Task<GlobalRequestReponse<bool>> UpdateProgram(UpdateProgramDTO data)
         {
             try
             {
                 var existingData = await _uow.programRepo.GetByExpressionAsync(p => p.Id == data.Id);
 
                 if (existingData == null)
-                    return ApiResponse<bool>.Failure(StatusCodes.Status404NotFound, "Program not found");
+                    return ResponseHelper.BuildResponse("Program not found", StatusCodes.Status404NotFound, false, false);
 
                 if (data.StartDate < DateTime.Today)
-                    return ApiResponse<bool>.Failure(StatusCodes.Status403Forbidden, "You cannot set Start date to a date in the past");
+                    return ResponseHelper.BuildResponse("You cannot set Start date to a date in the past", StatusCodes.Status403Forbidden, false, false);
 
                 _mapper.Map(data, existingData);
 
@@ -211,15 +212,15 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 }
                 await _context.SaveChangesAsync();
 
-                return ApiResponse<bool>.Success("Program updated successfully", true);
+                return ResponseHelper.BuildResponse("Program updated successfully", StatusCodes.Status200OK, true, true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return ApiResponse<bool>.Failure(StatusCodes.Status500InternalServerError, "An error occurred");
+                return ResponseHelper.BuildResponse("An error occurred", StatusCodes.Status500InternalServerError, false, false);
             }
         }
-        public async Task<ApiResponse<string>> UpdateProgramStatusAsync(UpdateProgramStatusDto updateProgramStatusDto)
+        public async Task<GlobalRequestReponse<string>> UpdateProgramStatusAsync(UpdateProgramStatusDto updateProgramStatusDto)
         {
             try
             {
@@ -239,7 +240,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                         Message = HttpUtility.HtmlDecode(notification.Data)
                     };
                     var emailResponse = await _emailService.SendEmailASync(emailModel);
-                    return ApiResponse<string>.Success($"program status updated and email sent to", $"{responsesplit[0]}");
+                    return ResponseHelper.BuildResponse("program status updated and email sent to", StatusCodes.Status200OK, $"{responsesplit[0]}", true);
                 }
                 if (responsesplit[0] == "volunteers")
                 {
@@ -255,61 +256,61 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                         Message = HttpUtility.HtmlDecode(notification.Data)
                     };
                     var emailResponse = await _emailService.SendEmailASync(emailModel);
-                    return ApiResponse<string>.Success($"program status updated and email sent to volunteers", $"{responsesplit[0]}");
+                    return ResponseHelper.BuildResponse("program status updated and email sent to volunteers", StatusCodes.Status200OK, $"{responsesplit[0]}", true);
                 }
-                return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, response);
+                return ResponseHelper.BuildResponse<string>(response, StatusCodes.Status400BadRequest, null, false);
             }
             catch (Exception ex)
             {
-                return ApiResponse<string>.Failure(StatusCodes.Status500InternalServerError, ex.Message);
+                return ResponseHelper.BuildResponse<string>(ex.Message, StatusCodes.Status500InternalServerError, null, false);
             }
         }
-        public async Task<ApiResponse<bool>> DeleteProgramGoals(string programGoalId)
+        public async Task<GlobalRequestReponse<bool>> DeleteProgramGoals(string programGoalId)
         {
             try
             {
                 var userId = _currentUserService.GetUserId();
 
                 if (userId == null)
-                    return ApiResponse<bool>.Failure(StatusCodes.Status401Unauthorized, "You must log in first");
+                    return ResponseHelper.BuildResponse("You must log in first", StatusCodes.Status401Unauthorized, false, false);
 
                 var userFoundationId = _currentUserService.GetUserFoundationId();
 
                 var goal = await _context.ProgramGoals.Include(g => g.Program).FirstOrDefaultAsync(g => g.Id == programGoalId);
 
                 if (goal == null)
-                    return ApiResponse<bool>.Failure(StatusCodes.Status404NotFound, "Program Goal not found");
+                    return ResponseHelper.BuildResponse("Program Goal not found", StatusCodes.Status404NotFound, false, false);
 
                 if (goal.Program.FoundationId != userFoundationId)
-                    return ApiResponse<bool>.Failure(StatusCodes.Status403Forbidden, "You are not allowed to delete this program goal");
+                    return ResponseHelper.BuildResponse("You are not allowed to delete this program goal", StatusCodes.Status403Forbidden, false, false);
 
                 if (goal.Program.HasProgramEnded())
-                    return ApiResponse<bool>.Failure(StatusCodes.Status403Forbidden, "Program already ended");
+                    return ResponseHelper.BuildResponse("Program already ended", StatusCodes.Status403Forbidden, false, false);
 
                 if (goal.IsAchieved)
-                    return ApiResponse<bool>.Failure(StatusCodes.Status403Forbidden, "You are not allowed to delete achieved goal");
+                    return ResponseHelper.BuildResponse("You are not allowed to delete achieved goal", StatusCodes.Status403Forbidden, false, false);
 
                 _context.ProgramGoals.Remove(goal);
 
                 await _context.SaveChangesAsync();
 
-                return ApiResponse<bool>.Success("Program Goal deleted successfully", true);
+                return ResponseHelper.BuildResponse("Program Goal deleted successfully", StatusCodes.Status200OK, true, true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return ApiResponse<bool>.Failure(StatusCodes.Status500InternalServerError, "An error occurred");
+                return ResponseHelper.BuildResponse("An error occurred", StatusCodes.Status500InternalServerError, false, false);
             }
         }
-        public async Task<ApiResponse<string>> JoinProgram(string programId)
+        public async Task<GlobalRequestReponse<string>> JoinProgram(string programId)
         {
             var response = await _uow.programRepo.JoinProgram(programId, _currentUserService.GetUserId());
             if (response == "user already in this program")
-                return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, response);
+                return ResponseHelper.BuildResponse<string>(response, StatusCodes.Status400BadRequest, null, false);
             if (response == "this program has ended")
-                return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, response);
+                return ResponseHelper.BuildResponse<string>(response, StatusCodes.Status400BadRequest, null, false);
             if (response == "program not found")
-                return ApiResponse<string>.Failure(StatusCodes.Status404NotFound, response);
+                return ResponseHelper.BuildResponse<string>(response, StatusCodes.Status404NotFound, null, false);
 
             //send email to volunteer
             var userEmail = _currentUserService.GetUserEmail();
@@ -336,15 +337,15 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 Message = HttpUtility.HtmlDecode(adminNotificationCompose.Data)
             };
             var adminEmailResponse = await _emailService.SendEmailASync(adminEmailModel);
-            return ApiResponse<string>.Success("email sent to volunteer and program admin", "join program notification");
+            return ResponseHelper.BuildResponse("email sent to volunteer and program admin", StatusCodes.Status200OK, "join program notification", true);
         }
-        public async Task<ApiResponse<string>> LeaveProgram(string programId)
+        public async Task<GlobalRequestReponse<string>> LeaveProgram(string programId)
         {
             var response = await _uow.programRepo.LeaveProgram(programId, _currentUserService.GetUserId());
             if (response == "program not found")
-                return ApiResponse<string>.Failure(StatusCodes.Status404NotFound, response);
+                return ResponseHelper.BuildResponse<string>(response, StatusCodes.Status404NotFound, null, false);
             if (response == "user not found")
-                return ApiResponse<string>.Failure(StatusCodes.Status404NotFound, response);
+                return ResponseHelper.BuildResponse<string>(response, StatusCodes.Status404NotFound, null, false);
             var userEmail = _currentUserService.GetUserEmail();
             //send email to volunteer
             string name = _currentUserService.GetUserFirstName();
@@ -370,7 +371,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 Message = HttpUtility.HtmlDecode(adminNotificationCompose.Data)
             };
             var adminEmailResponse = await _emailService.SendEmailASync(adminEmailModel);
-            return ApiResponse<string>.Success("email sent to volunteer and admin", "leave program notification");
+            return ResponseHelper.BuildResponse("email sent to volunteer and admin", StatusCodes.Status200OK, "leave program notification", true);
         }
     }
 }

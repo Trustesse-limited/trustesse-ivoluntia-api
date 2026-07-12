@@ -1,21 +1,19 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Trustesse.Ivoluntia.Data.DataContext;
-using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
+using Trustesse.Ivoluntia.Domain.IRepositories;
 
-namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
+namespace Trustesse.Ivoluntia.Data.Repositories
 {
-    public class VolunteerRepository : IVolunteerRepository
+    public class VolunteerRepository : GenericRepository<User>, IVolunteerRepository
     {
         private readonly iVoluntiaDataContext _context;
-        private readonly RoleManager<Role> _roleManager;
 
-        public VolunteerRepository(iVoluntiaDataContext context, RoleManager<Role> roleManager)
+        public VolunteerRepository(iVoluntiaDataContext context) : base(context)
         {
             _context = context;
-            _roleManager = roleManager;
         }
 
 

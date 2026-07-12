@@ -1,15 +1,19 @@
 ﻿using Trustesse.Ivoluntia.Data.DataContext;
+using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
 using Trustesse.Ivoluntia.Domain.Entities;
-using Trustesse.Ivoluntia.Domain.IRepositories;
 
 namespace Trustesse.Ivoluntia.Data.Repositories
 {
-    public class OtpRepository : GenericRepository<Otp>, IOtpRepository
+    public class FavoriteProgramRepository : GenericRepository<FavoriteProgram>, IFavoriteProgramRepository
     {
         private readonly iVoluntiaDataContext _context;
-        public OtpRepository(iVoluntiaDataContext context) : base(context)
+
+        public FavoriteProgramRepository(iVoluntiaDataContext context) : base(context)
         {
             _context = context;
         }
     }
 }
+
+
+

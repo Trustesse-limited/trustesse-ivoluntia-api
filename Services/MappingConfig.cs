@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Reflection.PortableExecutable;
 using Trustesse.Ivoluntia.Commons.DTOs.Auth;
 using Trustesse.Ivoluntia.Commons.DTOs.Foundation;
+using Trustesse.Ivoluntia.Commons.DTOs.Auth;
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
 using Trustesse.Ivoluntia.Commons.DTOs.Volunteer;
 using Trustesse.Ivoluntia.Domain.Entities;
@@ -34,6 +35,9 @@ namespace Trustesse.Ivoluntia.Services
             config.NewConfig<User, OtpDto>();
             config.NewConfig<OtpDto, Otp>();
             
+            config.NewConfig<SecurityQuestion, SecurityQuestionDto>();
+
+
             services.AddSingleton(config);
             services.AddScoped<IMapper, Mapper>();
         }

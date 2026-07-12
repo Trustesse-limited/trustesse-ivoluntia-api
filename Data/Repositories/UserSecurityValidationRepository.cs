@@ -4,12 +4,16 @@ using Trustesse.Ivoluntia.Domain.IRepositories;
 
 namespace Trustesse.Ivoluntia.Data.Repositories
 {
-    public class OtpRepository : GenericRepository<Otp>, IOtpRepository
+    public class UserSecurityValidationAttemptRepository : GenericRepository<UserSecurityValidationAttempt>, IUserSecurityValidationAttemptRepository
     {
         private readonly iVoluntiaDataContext _context;
-        public OtpRepository(iVoluntiaDataContext context) : base(context)
+
+        public UserSecurityValidationAttemptRepository(iVoluntiaDataContext context) : base(context)
         {
             _context = context;
         }
     }
 }
+
+
+

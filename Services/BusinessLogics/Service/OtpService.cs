@@ -11,25 +11,28 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
     {
         readonly IOtpRepository _otpRepository;
         private readonly UserManager<User> _userManager;  
-        public OtpService(IOtpRepository otpRepository, UserManager<User> userManager)
+        private readonly IUnitOfWork _uow;
+        public OtpService(IOtpRepository otpRepository, UserManager<User> userManager, IUnitOfWork uow)
         {
             _otpRepository = otpRepository;
             _userManager = userManager;
+            _uow = uow;
         }
 
         public async Task<bool> ConfirmOtpAsync(string userId, string otpCode, OtpPurpose purpose)
         {
-            var code = await _otpRepository.GetOtpByCodeAsync(userId, otpCode, purpose);
-            if (code == null)
+            var otp = await _uow.otpRepo.GetByExpressionAsync(x => x.UserId == userId && x.OtpCode == otpCode && x.Purpose == purpose.ToString());
+
+            if (otp == null)
                 return false;
 
-            if (code.IsUsed)
+            if (otp.IsUsed)
                 return false;
 
-            if((DateTime.UtcNow - code.CreatedAt).TotalMinutes > 5)
+            if ((DateTime.UtcNow - otp.CreatedAt).TotalMinutes > 5)
                 return false;
 
-            await _otpRepository.MarkOtpAsUsedAsync(code);
+            otp.IsUsed = true;
 
             return true;
         }
@@ -37,6 +40,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
         public async Task<string> GenerateOtpAsync(string userId, OtpPurpose purpose)
         {
             var user = await _userManager.FindByIdAsync(userId);
+
             if (user == null)
                 throw new Exception("User not found");
 
@@ -48,10 +52,12 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 OtpCode = otpCode,
                 Purpose = purpose.ToString(),
                 CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(10),
                 IsUsed = false
             };
 
-            await _otpRepository.AddOtpAsync(otp);
+            await _uow.otpRepo.AddAsync(otp);
+            await _uow.CompleteAsync();
             return otpCode;
         }
     }

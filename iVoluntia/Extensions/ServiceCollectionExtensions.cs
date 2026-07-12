@@ -1,6 +1,4 @@
-﻿using Infrastructure.Implementation;
-using Ivoluntia.BackgroudServices.Services.Implementations;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -50,6 +48,12 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<IFavoriteProgramService, FavoriteProgramService>();
             services.AddScoped<IOrganizationService, OrganizationService>();
             services.AddScoped<IOrganizationRepository, OrganizationRepository>();
+            services.AddScoped<ISecurityQuestionRepository, SecurityQuestionRepository>();
+            services.AddScoped<ISecurityQuestionService, SecurityQuestionService>();
+            services.AddScoped<IPasswordHasher<string>, PasswordHasher<string>>();
+
+
+
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo

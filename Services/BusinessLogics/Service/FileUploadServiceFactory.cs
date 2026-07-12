@@ -1,9 +1,8 @@
-﻿using Infrastructure.Implementation;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Trustesse.Ivoluntia.Domain.Enums;
-using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
+using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
-namespace Ivoluntia.BackgroudServices.Services.Implementations
+namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 {
     public class FileUploadServiceFactory : IFileUploadServiceFactory
     {

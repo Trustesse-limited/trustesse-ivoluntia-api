@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Trustesse.Ivoluntia.Data.DataContext;
 
@@ -11,9 +12,11 @@ using Trustesse.Ivoluntia.Data.DataContext;
 namespace Trustesse.Ivoluntia.Data.Migrations
 {
     [DbContext(typeof(iVoluntiaDataContext))]
-    partial class iVoluntiaDataContextModelSnapshot : ModelSnapshot
+    [Migration("20260616095604_AddSecurityQuestions")]
+    partial class AddSecurityQuestions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,6 +24,21 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("CauseFoundation", b =>
+                {
+                    b.Property<string>("CausesId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("FoundationsId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("CausesId", "FoundationsId");
+
+                    b.HasIndex("FoundationsId");
+
+                    b.ToTable("FoundationCauses", (string)null);
+                });
 
             modelBuilder.Entity("InterestUser", b =>
                 {
@@ -409,9 +427,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .HasMaxLength(80)
                         .HasColumnType("nvarchar(80)");
 
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Website")
                         .HasColumnType("nvarchar(max)");
 
@@ -451,30 +466,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("FoundationCategories");
-                });
-
-            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.FoundationCauses", b =>
-                {
-                    b.Property<string>("CauseId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("FoundationId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeprecated")
-                        .HasColumnType("bit");
-
-                    b.HasKey("CauseId", "FoundationId");
-
-                    b.HasIndex("FoundationId");
-
-                    b.ToTable("FoundationCauses");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Interest", b =>
@@ -868,8 +859,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<string>("Purpose")
-                        .HasColumnType("nvarchar(max)");
                     b.Property<string>("Purpose")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
@@ -1508,6 +1497,21 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.ToTable("UserSkillLinks");
                 });
 
+            modelBuilder.Entity("CauseFoundation", b =>
+                {
+                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Cause", null)
+                        .WithMany()
+                        .HasForeignKey("CausesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Foundation", null)
+                        .WithMany()
+                        .HasForeignKey("FoundationsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("InterestUser", b =>
                 {
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Interest", null)
@@ -1633,25 +1637,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.FoundationCauses", b =>
-                {
-                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Cause", "Cause")
-                        .WithMany("CourseFoundations")
-                        .HasForeignKey("CauseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Foundation", "Foundation")
-                        .WithMany("CourseFoundations")
-                        .HasForeignKey("FoundationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Cause");
-
-                    b.Navigation("Foundation");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Location", b =>
@@ -1875,16 +1860,9 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Cause", b =>
-                {
-                    b.Navigation("CourseFoundations");
-                });
-
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Foundation", b =>
                 {
                     b.Navigation("Admins");
-
-                    b.Navigation("CourseFoundations");
 
                     b.Navigation("Location");
 

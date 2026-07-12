@@ -1,10 +1,11 @@
 ﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
-using Trustesse.Ivoluntia.Commons.DTOs;
-using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
+using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
+using Trustesse.Ivoluntia.Commons.Models.Response;
+using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
-namespace Infrastructure.Implementation
+namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 {
     public class CloudinaryService : IFileUploadService
     {
@@ -15,11 +16,10 @@ namespace Infrastructure.Implementation
             _cloudinary = cloudinary;
         }
 
-        public async Task<ApiResponse<IReadOnlyList<string>>> UploadFilesAsync(IEnumerable<IFormFile> files)
+        public async Task<GlobalRequestReponse<IReadOnlyList<string>>> UploadFilesAsync(IEnumerable<IFormFile> files)
         {
             if (files == null || !files.Any())
-                return ApiResponse<IReadOnlyList<string>>
-                    .Failure(StatusCodes.Status400BadRequest, "No files provided.");
+                return ResponseHelper.BuildResponse<IReadOnlyList<string>>("No files provided.", StatusCodes.Status400BadRequest, null, false);
 
             const long maxFileSize = 50 * 1024 * 1024; // 50MB
 
@@ -56,13 +56,11 @@ namespace Infrastructure.Implementation
 
                 var urls = await Task.WhenAll(uploadTasks);
 
-                return ApiResponse<IReadOnlyList<string>>
-                    .Success("Files uploaded successfully", urls);
+                return ResponseHelper.BuildResponse<IReadOnlyList<string>>("Files uploaded successfully", StatusCodes.Status200OK, urls, true);
             }
             catch (Exception ex)
             {
-                return ApiResponse<IReadOnlyList<string>>
-                    .Failure(StatusCodes.Status400BadRequest, ex.Message);
+                return ResponseHelper.BuildResponse<IReadOnlyList<string>>(ex.Message, StatusCodes.Status400BadRequest, null, false);
             }
         }
 

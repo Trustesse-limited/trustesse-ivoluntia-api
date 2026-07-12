@@ -1,8 +1,8 @@
 ﻿using Trustesse.Ivoluntia.Domain.Entities;
 
-namespace Trustesse.Ivoluntia.Data.Repositories.Interfaces
+namespace Trustesse.Ivoluntia.Domain.IRepositories
 {
-    public interface IVolunteerRepository
+    public interface IVolunteerRepository : IGenericRepository<User>
     {
         IQueryable<User> GetVolunteers(string foundationId, bool? isActive = null);
     }

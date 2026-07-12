@@ -159,6 +159,35 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                     throw new Exception("Failed to create FoundationAdmin user");
                 }
             }
+
+            const string userEmailThree = "michaelboiz86@gmail.com";
+            const string userPasswordThree = "Password12345#";
+
+            var UserThree = await userManager.FindByEmailAsync(userEmailThree);
+
+            if (UserThree == null)
+            {
+                var user = new User
+                {
+                    UserName = userEmailThree,
+                    Email = userEmailThree,
+                    EmailConfirmed = true,
+                    FirstName = "Big",
+                    LastName = "Mike",
+                    IsActive = true,
+                };
+
+                var result = await userManager.CreateAsync(user, userPasswordThree);
+
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(user, UserRolesEnum.Volunteer.ToString());
+                }
+                else
+                {
+                    throw new Exception("Failed to create Volunteer user");
+                }
+            }
         }
 
         public static async Task SeedFoundationAsync(iVoluntiaDataContext context)

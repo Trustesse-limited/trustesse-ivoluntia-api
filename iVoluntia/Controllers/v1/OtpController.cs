@@ -38,9 +38,9 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             if (request == null)
                 return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid request."));
 
-            var isValid = await _otpService.ConfirmOtpAsync(request.UserId, request.OtpCode, request.Purpose);
+            var isValid = await _otpService.ConfirmOtpAsync(request.OtpCode, request.Purpose.ToString());
 
-            if (!isValid)
+            if (isValid.StatusCode == StatusCodes.Status400BadRequest)
             {
                 return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid or expired OTP."));
             }

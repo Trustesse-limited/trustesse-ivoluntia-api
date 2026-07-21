@@ -14,7 +14,6 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public byte? Gender { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public bool IsActive { get; set; }
-        [StringLength(6)]
         public string? OTP { get; set; }
         public DateTime? OtpSubmittedTime { get; set; }
         public bool HasAgreedToTermsAndCondition { get; set; }

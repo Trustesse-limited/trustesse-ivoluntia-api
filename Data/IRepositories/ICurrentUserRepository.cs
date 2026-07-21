@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Trustesse.Ivoluntia.Commons.DTOs;
 
-namespace Trustesse.Ivoluntia.Data.Repositories.Interfaces
+namespace Trustesse.Ivoluntia.Data.IRepositories
 {
     public interface ICurrentUserRepository
     {

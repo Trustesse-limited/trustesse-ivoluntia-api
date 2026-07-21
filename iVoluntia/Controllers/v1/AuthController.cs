@@ -5,6 +5,7 @@ using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Auth;
 using Trustesse.Ivoluntia.Commons.DTOs.Foundation;
 using Trustesse.Ivoluntia.Commons.Models.Request;
+using Trustesse.Ivoluntia.Domain.Enums;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
 namespace Trustesse.Ivoluntia.API.Controllers.v1
@@ -18,7 +19,6 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         public AuthController(IAuthenticationService authenticationService)
         {
             _authenticationService = authenticationService;
-
         }
 
         [HttpPost("login")]
@@ -28,23 +28,10 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             return response.ToActionResult();
         }
 
-
-        [HttpPost("volunteer")]
-        public async Task<IActionResult> CreateVolunteer([FromBody] VolunteerSignUpDto request)
-        {
-            if (request == null)
-                return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid request."));
-
-            var result = await _authenticationService.CreateVolunteer(request);
-
-            if (result.StatusCode != 200)
-            {
-                return BadRequest(new { ResponseCode = 500, ResponseMessage = "Internal server error." });
-            }
-
-            return Ok(result);
-        }
-
+        [HttpPost("volunteer-signup")]
+        public async Task<IActionResult> CreateVolunteer([FromForm] VolunteerSignUpDto request)
+            =>BuildHttpResponse<string>(await _authenticationService.CreateVolunteer(request.Validate()));    
+        
         [HttpPost("organization-signup")]
         public async Task<IActionResult> CreateOrganization([FromForm] CreateFoundationRequestDto createFoundationRequestDto)
             => BuildHttpResponse<string>(await _authenticationService.CreateOrganization(createFoundationRequestDto.Validate()));
@@ -78,9 +65,9 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             return Ok(result);
         }
         [HttpPost("confirmuser")]
-        public async Task<IActionResult> ConfirmUser(ConfirmUserModel model)
+        public async Task<IActionResult> ConfirmUser([FromQuery]string otpCode)
         {
-            var result = await _authenticationService.ConfirmUser(model);
+            var result = await _authenticationService.ConfirmUser(otpCode, OtpPurpose.Signup.ToString());
 
             if (result.StatusCode != 200)
             {

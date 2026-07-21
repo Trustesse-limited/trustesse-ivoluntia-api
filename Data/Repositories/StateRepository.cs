@@ -10,11 +10,6 @@ public class StateRepository : GenericRepository<State>, IStateRepository
     private readonly iVoluntiaDataContext _context;
     public StateRepository(iVoluntiaDataContext context) : base(context)
     {
-            _context = context;
+        _context = context;
     }
-    public async Task<IEnumerable<State>> GetStateByCountryId(Guid countryId)
-    {
-        var states = _context.States.Include(x => x.Country).Where(x => x.CountryId == countryId).ToList();
-        return states;
-    }
-} 
+}

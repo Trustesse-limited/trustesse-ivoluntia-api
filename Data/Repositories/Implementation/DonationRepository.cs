@@ -10,7 +10,7 @@ using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Donation;
 using Trustesse.Ivoluntia.Commons.uitilities;
 using Trustesse.Ivoluntia.Data.DataContext;
-using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
+using Trustesse.Ivoluntia.Data.IRepositories;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
 

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.uitilities;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
@@ -9,7 +11,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 {
     public class OtpService : IOtpService
     {
-        readonly IOtpRepository _otpRepository;
+        private readonly IOtpRepository _otpRepository;
         private readonly UserManager<User> _userManager;  
         private readonly IUnitOfWork _uow;
         public OtpService(IOtpRepository otpRepository, UserManager<User> userManager, IUnitOfWork uow)
@@ -19,22 +21,19 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             _uow = uow;
         }
 
-        public async Task<bool> ConfirmOtpAsync(string userId, string otpCode, OtpPurpose purpose)
+        public async Task<ApiResponse<Otp>> ConfirmOtpAsync(string otpCode, string otpPurpose)
         {
-            var otp = await _uow.otpRepo.GetByExpressionAsync(x => x.UserId == userId && x.OtpCode == otpCode && x.Purpose == purpose.ToString());
-
+            var otp = await _otpRepository.GetOtpByCodeAsync(otpCode, otpPurpose);
             if (otp == null)
-                return false;
+                return ApiResponse<Otp>.Failure(StatusCodes.Status404NotFound, "otp not found") ;
 
             if (otp.IsUsed)
-                return false;
+                return ApiResponse<Otp>.Failure(StatusCodes.Status400BadRequest, "otp already used");
 
             if ((DateTime.UtcNow - otp.CreatedAt).TotalMinutes > 5)
-                return false;
-
-            otp.IsUsed = true;
-
-            return true;
+                return ApiResponse<Otp>.Failure(StatusCodes.Status400BadRequest, "already used"); ;
+            await _otpRepository.MarkOtpAsUsedAsync(otp);
+            return ApiResponse<Otp>.Success("success", otp); 
         }
 
         public async Task<string> GenerateOtpAsync(string userId, OtpPurpose purpose)

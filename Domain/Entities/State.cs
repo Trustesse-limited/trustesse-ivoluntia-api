@@ -3,13 +3,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Trustesse.Ivoluntia.Domain.Entities;
 
-public class State
+public class State : BaseEntity
 {
-    public Guid Id { get; set; }
-    [Required, StringLength(100)]
     public string StateName { get; set; }
-    public Guid CountryId { get; set; }
+    public string CountryId { get; set; }
     [ForeignKey("CountryId")]
-    public bool IsDeprecated { get; set; }
     public virtual Country Country { get; set; }
 }

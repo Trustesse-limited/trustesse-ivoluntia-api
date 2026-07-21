@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
 
@@ -327,7 +328,14 @@ namespace Trustesse.Ivoluntia.Data.DataContext
 
                 if (!context.Countries.Any())
                 {
-                    var country = new Country { Id = Guid.NewGuid(), CountryName = "Nigeria" };
+                    var country = new Country 
+                    { Id = Guid.NewGuid().ToString(), 
+                      CountryName = "Nigeria",
+                      CreatedBy = "SuperAdmin",
+                      DateCreated = DateTime.UtcNow,    
+                      DateUpdated = DateTime.UtcNow,    
+                      IsDeprecated = false
+                    };
                     context.Countries.Add(country);
                     await context.SaveChangesAsync();
                 }
@@ -336,7 +344,16 @@ namespace Trustesse.Ivoluntia.Data.DataContext
 
                 if (!context.States.Any())
                 {
-                    var state = new State { Id = Guid.NewGuid(), StateName = "Lagos", CountryId = countryId };
+                    var state = new State 
+                    { 
+                        Id = Guid.NewGuid().ToString(), 
+                        StateName = "Lagos",
+                        CountryId = countryId,
+                        DateCreated = DateTime.UtcNow,
+                        DateUpdated = DateTime.UtcNow,
+                        IsDeprecated = false,
+                        CreatedBy = "SuperAdmin"
+                    };
                     context.States.Add(state);
                     await context.SaveChangesAsync();
                 }
@@ -432,6 +449,49 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                     DateUpdated = DateTime.UtcNow
                 };
                 await context.AddAsync(causeThree);
+            }
+            await context.SaveChangesAsync();
+        }
+
+        public static async Task SeedInterestAsync(iVoluntiaDataContext context)
+        {
+            if (!context.Interests.Any())
+            {
+                var interestFirst = new Interest
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Child Health",
+                    Description = "Child Treatment",
+                    DateCreated = DateTime.UtcNow,
+                    CreatedBy = "superAdmin",
+                    DateUpdated = DateTime.UtcNow,
+                    IsDeprecated = false
+                };
+                await context.AddAsync(interestFirst);
+
+                var interestSecond = new Interest
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Feed The Nation",
+                    Description = "Global Feed",
+                    DateCreated = DateTime.UtcNow,
+                    IsDeprecated = false,
+                    CreatedBy = "superAdmin",
+                    DateUpdated = DateTime.UtcNow
+                };
+                await context.AddAsync(interestSecond);
+
+                var interestThird = new Interest
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Climate Change",
+                    Description = "protect the climate",
+                    DateCreated = DateTime.UtcNow,
+                    IsDeprecated = false,
+                    CreatedBy = "superAdmin",
+                    DateUpdated = DateTime.UtcNow
+                };
+                await context.AddAsync(interestThird);
             }
             await context.SaveChangesAsync();
         }

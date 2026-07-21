@@ -59,8 +59,8 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Foundation
         public string FoundationCountry { get; set; }
         [Required]
         public string FoundationState { get; set; }
-        public Guid? CountryId { get; set; }   
-        public Guid? StateId { get; set; } 
+        public string? CountryId { get; set; }   
+        public string? StateId { get; set; } 
         public string UserId { get; set; }  
     }
     public class CauseDto

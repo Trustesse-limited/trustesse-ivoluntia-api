@@ -22,7 +22,6 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         [HttpPost("donate")]
         public async Task<IActionResult> Donation(DonationDto donationDto)
         {
-           
             var response = await _donationService.InitializeDonation(donationDto);
             try
             {

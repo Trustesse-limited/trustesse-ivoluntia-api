@@ -21,5 +21,6 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public ICollection<Cause> Causes { get; set; } = new List<Cause>(); 
         public ICollection<Program> Programs { get; set; } = new List<Program>();
         public ICollection<FoundationCauses> CourseFoundations { get; set; }
+        public ICollection<OrganizationDeclineStatus> OrganizationDeclineStatus { get; set; } 
     }
 }

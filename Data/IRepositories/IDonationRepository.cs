@@ -7,7 +7,7 @@ using Trustesse.Ivoluntia.Commons.DTOs.Donation;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Domain.Entities;
 
-namespace Trustesse.Ivoluntia.Data.Repositories.Interfaces
+namespace Trustesse.Ivoluntia.Data.IRepositories
 {
     public interface IDonationRepository
     {

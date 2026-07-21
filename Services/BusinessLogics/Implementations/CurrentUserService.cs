@@ -4,7 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Data.DataContext;
-using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
+using Trustesse.Ivoluntia.Data.IRepositories;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 

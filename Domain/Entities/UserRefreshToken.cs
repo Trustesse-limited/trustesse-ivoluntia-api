@@ -5,11 +5,7 @@ namespace Trustesse.Ivoluntia.Domain.Entities;
 
 public class UserRefreshToken : BaseEntity
 {
-
-    [Required]
     public string UserId { get; set; }
-
-    [Required]
     public string Token { get; set; } = string.Empty;
 
     public DateTime ExpiresAt { get; set; }

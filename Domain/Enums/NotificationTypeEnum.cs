@@ -10,6 +10,8 @@
         RequestToJoinProgram,
         LeaveProgram,
         RequestToLeaveProgram,
-        OtpRequest
+        OtpRequest,
+        OrganizationStatusUpdate,
+        OrganizationBlockStatusUpdate
     }
 }

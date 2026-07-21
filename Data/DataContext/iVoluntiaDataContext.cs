@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
+using Trustesse.Ivoluntia.Data.IRepositories;
 using Trustesse.Ivoluntia.Domain.Entities;
 
 namespace Trustesse.Ivoluntia.Data.DataContext
@@ -46,6 +46,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<SecurityQuestion> SecurityQuestions { get; set; }
         public DbSet<UserSecurityQuestion> UserSecurityQuestions { get; set; }
         public DbSet<UserSecurityValidationAttempt> UserSecurityValidationAttempts { get; set; }
+        public DbSet<OrganizationDeclineStatus> organizationDeclineStatuses { get; set; }   
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -238,6 +239,13 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                .OnDelete(DeleteBehavior.Cascade)
                .IsRequired(false);
 
+            modelBuilder.Entity<Foundation>()
+              .HasMany(f => f.OrganizationDeclineStatus)
+              .WithOne(o => o.Foundation)
+              .HasForeignKey(o => o.FoundationId)
+              .OnDelete(DeleteBehavior.Cascade)
+              .IsRequired(false);
+
             modelBuilder.Entity<Donation>()
               .HasOne(d => d.Program)
               .WithMany(p => p.Donations)
@@ -261,6 +269,9 @@ namespace Trustesse.Ivoluntia.Data.DataContext
 
             modelBuilder.Entity<Cause>()
                 .HasQueryFilter(c => !c.IsDeprecated);
+
+            modelBuilder.Entity<OrganizationDeclineStatus>()
+              .HasQueryFilter(d => !d.IsDeprecated);
         }
     }
 }

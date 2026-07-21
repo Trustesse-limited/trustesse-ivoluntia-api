@@ -256,14 +256,23 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Country", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("CountryName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeprecated")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -350,11 +359,9 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("ProgramId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -519,8 +526,8 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Property<string>("City")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("CountryId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("CountryId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -537,8 +544,8 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Property<bool>("IsDeprecated")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("StateId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("StateId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
@@ -834,6 +841,45 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.ToTable("OnboardingProgress");
                 });
 
+            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.OrganizationDeclineStatus", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FoundationId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsDeprecated")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FoundationId");
+
+                    b.ToTable("organizationDeclineStatuses");
+                });
+
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Otp", b =>
                 {
                     b.Property<string>("Id")
@@ -901,7 +947,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("DonationTarget")
@@ -923,7 +968,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("LocationId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("StartDate")
@@ -933,7 +977,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -1148,20 +1191,26 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.State", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<Guid>("CountryId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("CountryId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateUpdated")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsDeprecated")
                         .HasColumnType("bit");
 
                     b.Property<string>("StateName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -1252,8 +1301,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("OTP")
-                        .HasMaxLength(6)
-                        .HasColumnType("nvarchar(6)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("OtpSubmittedTime")
                         .HasColumnType("datetime2");
@@ -1391,11 +1439,9 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Token")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -1610,15 +1656,11 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                 {
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Program", "Program")
                         .WithMany()
-                        .HasForeignKey("ProgramId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProgramId");
 
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.User", "User")
                         .WithMany("FavoritePrograms")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Program");
 
@@ -1659,8 +1701,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Country", "Country")
                         .WithMany()
                         .HasForeignKey("CountryId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Foundation", "Foundation")
                         .WithOne("Location")
@@ -1670,8 +1711,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.State", "State")
                         .WithMany()
                         .HasForeignKey("StateId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.User", "User")
                         .WithOne("Location")
@@ -1714,6 +1754,16 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.OrganizationDeclineStatus", b =>
+                {
+                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Foundation", "Foundation")
+                        .WithMany("OrganizationDeclineStatus")
+                        .HasForeignKey("FoundationId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Foundation");
+                });
+
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Program", b =>
                 {
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Foundation", "Foundation")
@@ -1724,8 +1774,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Location", "Location")
                         .WithMany()
                         .HasForeignKey("LocationId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Foundation");
 
@@ -1774,10 +1823,8 @@ namespace Trustesse.Ivoluntia.Data.Migrations
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.State", b =>
                 {
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Country", "Country")
-                        .WithMany()
-                        .HasForeignKey("CountryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("States")
+                        .HasForeignKey("CountryId");
 
                     b.Navigation("Country");
                 });
@@ -1834,9 +1881,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                 {
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });
@@ -1880,6 +1925,11 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Navigation("CourseFoundations");
                 });
 
+            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Country", b =>
+                {
+                    b.Navigation("States");
+                });
+
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Foundation", b =>
                 {
                     b.Navigation("Admins");
@@ -1887,6 +1937,8 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Navigation("CourseFoundations");
 
                     b.Navigation("Location");
+
+                    b.Navigation("OrganizationDeclineStatus");
 
                     b.Navigation("Programs");
                 });

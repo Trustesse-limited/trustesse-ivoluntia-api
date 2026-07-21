@@ -16,7 +16,7 @@ public interface IGenericRepository<T> where T : class
 {
     Task<IReadOnlyList<T>> GetAllAsync();
 
-    Task<T> GetByIdAsync(Guid id);
+    Task<T> GetByIdAsync(string id);
 
     Task<T> GetByExpressionAsync(Expression<Func<T, bool>> expression);
 
@@ -61,4 +61,5 @@ public interface IGenericRepository<T> where T : class
     Task<List<T>> GetListByExpressionAsync(Expression<Func<T, bool>> expression, params Expression<Func<T, object>>[] includes);
     Task<(List<T> Items, int TotalCount)> GetPagedAsync(Expression<Func<T, bool>> expression = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, int pageNumber = 1, int pageSize = 10);
     Task DeleteManyAsync(IEnumerable<T> entities);
+    Task<T> GetByExpressionIncludeAsync(Expression<Func<T, bool>> expression, params Expression<Func<T, object>>[] includes);
 }

@@ -1,9 +1,8 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using System.Collections;
 using Trustesse.Ivoluntia.Data.DataContext;
+using Trustesse.Ivoluntia.Data.IRepositories;
 using Trustesse.Ivoluntia.Data.Repositories.Implementation;
-using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
-using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
 using Trustesse.Ivoluntia.Domain.IRepositories;
 
 namespace Trustesse.Ivoluntia.Data.Repositories;
@@ -11,7 +10,6 @@ namespace Trustesse.Ivoluntia.Data.Repositories;
 public class UnitOfWork : IUnitOfWork
 {
     public readonly iVoluntiaDataContext _dbContext;
-    private readonly ICurrentUserRepository _currentUserRepository;
     private Hashtable _repositories;
     public DatabaseFacade Database => _dbContext.Database;
 
@@ -38,13 +36,14 @@ public class UnitOfWork : IUnitOfWork
     public IUserSecurityValidationAttemptRepository userSecurityValidationAttemptRepo { get; set; }
     public IOtpRepository otpRepo { get; set; }
     public IVolunteerRepository volunteerRepo { get; set; }
+    public IOrganizationDeclineStatusRepository organizationDeclineStatusRepository { get; set; }   
+    public IProgramRejectionReasonRepository programRejectionReasonRepository { get; set; } 
+    public IUserProgramRepository userProgramRepository { get; set; }
+    public IProgramGoalRepository ProgramGoalRepository { get; set; }   
 
-
-
-    public UnitOfWork(iVoluntiaDataContext dbContext, ICurrentUserRepository currentUserRepository)
+    public UnitOfWork(iVoluntiaDataContext dbContext)
     {
         _dbContext = dbContext;
-        _currentUserRepository = currentUserRepository;
         countryRepo = new CountryRepository(dbContext);
         stateRepo = new StateRepository(dbContext);
         userRepo = new UserRepository(dbContext);
@@ -62,12 +61,16 @@ public class UnitOfWork : IUnitOfWork
         OtpRepo = new OtpRepo(dbContext);   
         favoriteProgramRepo = new FavoriteProgramRepository(dbContext);
         foundationRepo = new FoundationRepository(dbContext);
-        programRepo = new ProgramRepository(dbContext, currentUserRepository);
+        programRepo = new ProgramRepository(dbContext);
         securityQuestionRepo = new SecurityQuestionRepository(dbContext);
         userSecurityQuestionRepo = new UserSecurityQuestionRepository(dbContext);
         userSecurityValidationAttemptRepo = new UserSecurityValidationAttemptRepository(dbContext);
         otpRepo = new OtpRepository(dbContext);
         volunteerRepo = new VolunteerRepository(dbContext);
+        organizationDeclineStatusRepository = new OrganizationDeclineStatusRepository(dbContext);
+        programRejectionReasonRepository = new ProgramRejectionReasonRepository(dbContext);
+        userProgramRepository = new UserProgramRepository(dbContext);
+        ProgramGoalRepository = new ProgramGoalRepository(dbContext);       
     }
     public IGenericRepository<TEntity> repository<TEntity>() where TEntity : class
     {

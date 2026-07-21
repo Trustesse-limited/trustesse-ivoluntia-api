@@ -23,7 +23,6 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         {
             _organizationService = organizationService;
         }
-
         [Authorize(Roles = AuthenticationConstants.SuperAdmin)]
         [HttpGet("get")]
         public async Task<IActionResult> GetOrganization([FromQuery] PagedRequestDTO pagedRequestDTO)
@@ -32,5 +31,10 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         [HttpGet("get-by-id")]
         public async Task<IActionResult> GetOrganizationById([FromQuery] string id)
             => BuildHttpResponse<OrganizationResponseDto>(await _organizationService.GetOrganizationByID(id));
+
+        [Authorize(Roles = AuthenticationConstants.SuperAdmin)]
+        [HttpPatch("/organizations/{id}/status")]
+        public async Task<IActionResult> OrganizationStatusUpdate([FromBody] UpdateOrganizationStatusDto updateOrganizationStatusDto, string id)
+           => BuildHttpResponse<string>(await _organizationService.OrganizationStatusUpdate(updateOrganizationStatusDto.Validate(id), id));
     }
 }

@@ -20,7 +20,8 @@ namespace Trustesse.Ivoluntia.API.Extensions
             await Seeder.SeedFoundationAdminAsync(userManager, context);
             await Seeder.SeedSkillsAsync(context);
             await Seeder.SeedProgramAsync(context);
-            await Seeder.SeedCauseAsync(context);   
+            await Seeder.SeedCauseAsync(context); 
+            await Seeder.SeedInterestAsync(context);    
         }
         public static void ConfigureHsts(this WebApplicationBuilder builder)
         {

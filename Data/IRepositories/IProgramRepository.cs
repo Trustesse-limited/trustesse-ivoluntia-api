@@ -5,8 +5,8 @@ namespace Trustesse.Ivoluntia.Domain.IRepositories
 {
     public interface IProgramRepository : IGenericRepository<Program>
     {
-        Task<string> UpdateProgramStatusAsync(UpdateProgramStatusDto updateProgramStatusDto);
-        Task<string> JoinProgram(string programId, string userId);
-        Task<string> LeaveProgram(string programId, string userId);
+        //Task<string> UpdateProgramStatusAsync(UpdateProgramStatusDto updateProgramStatusDto);
+        //Task<string> JoinProgram(string programId, string userId);
+        //Task<string> LeaveProgram(string programId, string userId);
     }
 }

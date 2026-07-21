@@ -8,9 +8,9 @@ using Trustesse.Ivoluntia.Commons.Configurations;
 using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Commons.Validators;
 using Trustesse.Ivoluntia.Data.DataContext;
+using Trustesse.Ivoluntia.Data.IRepositories;
 using Trustesse.Ivoluntia.Data.Repositories;
 using Trustesse.Ivoluntia.Data.Repositories.Implementation;
-using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.Abstractions;
@@ -51,8 +51,16 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<ISecurityQuestionRepository, SecurityQuestionRepository>();
             services.AddScoped<ISecurityQuestionService, SecurityQuestionService>();
             services.AddScoped<IPasswordHasher<string>, PasswordHasher<string>>();
-
-
+            services.AddScoped<ICountryService, CountryService>();
+            services.AddScoped<IStateRepository, StateRepository>();
+            services.AddScoped<ILocationRepository, LocationRepository>();
+            services.AddScoped<IOnboardingProgressRepository, OnboardingProgressRepository>();
+            services.AddScoped<IInterestRepository, InterestRepository>();
+            services.AddScoped<ISkillRepository, SkillRepository>();
+            services.AddScoped<IUserInterestLinkRepository, UserInterestLinkRepository>();
+            services.AddScoped<IUserSkillLinkRepository, UserSkillLinkRepository>();
+            services.AddScoped<IOtpRepository, OtpRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.AddSwaggerGen(options =>
             {

@@ -16,7 +16,6 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         {
             _volunteerService = volunteerService;
         }
-
         [HttpGet("get-volunteer-by-foundation-id")]
         [Authorize(Roles = AuthenticationConstants.SuperAdmin + "," + AuthenticationConstants.FoundationAdmin)]
         public async Task<IActionResult> GetVolunteers([FromQuery] VolunteerQueryDto query)

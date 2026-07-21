@@ -1,3 +1,4 @@
+using Trustesse.Ivoluntia.Data.IRepositories;
 using Trustesse.Ivoluntia.Data.Repositories;
 
 namespace Trustesse.Ivoluntia.Domain.IRepositories;
@@ -29,4 +30,8 @@ public interface IUnitOfWork
     IUserSecurityValidationAttemptRepository userSecurityValidationAttemptRepo { get; set; }
     IOtpRepository otpRepo { get; set; }
     IVolunteerRepository volunteerRepo { get; set; }
+    IProgramRejectionReasonRepository programRejectionReasonRepository { get; set; }
+    IUserProgramRepository userProgramRepository { get; set; }  
+    IProgramGoalRepository ProgramGoalRepository { get; set; }
+    IOrganizationDeclineStatusRepository organizationDeclineStatusRepository { get; set; }
 }

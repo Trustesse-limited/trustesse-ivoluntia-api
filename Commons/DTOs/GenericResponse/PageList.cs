@@ -13,7 +13,6 @@ public class PageList<T> : List<T>
             PageSize = pageSize,
             CurrentPage = pageNumber,
             TotalPages = (int)Math.Ceiling(count / (double)pageSize)
-
         };
         AddRange(items);
     }

@@ -4,5 +4,5 @@ namespace Trustesse.Ivoluntia.Domain.IRepositories;
 
 public interface ILocationRepository : IGenericRepository<Location>
 {
-    
+
 }

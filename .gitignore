@@ -69,3 +69,4 @@ nunit-*.xml
 
 # Local-only implementation docs (specs/plans) - never pushed to remote
 docs/superpowers/
+.superpowers/

@@ -49,6 +49,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<IOrganizationService, OrganizationService>();
             services.AddScoped<IOrganizationRepository, OrganizationRepository>();
             services.AddScoped<ISecurityQuestionRepository, SecurityQuestionRepository>();
+            services.AddScoped<ITransactionPinRepository, TransactionPinRepository>();
             services.AddScoped<ISecurityQuestionService, SecurityQuestionService>();
             services.AddScoped<IPasswordHasher<string>, PasswordHasher<string>>();
             services.AddScoped<ICountryService, CountryService>();

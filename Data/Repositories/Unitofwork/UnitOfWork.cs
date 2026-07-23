@@ -39,7 +39,8 @@ public class UnitOfWork : IUnitOfWork
     public IOrganizationDeclineStatusRepository organizationDeclineStatusRepository { get; set; }   
     public IProgramRejectionReasonRepository programRejectionReasonRepository { get; set; } 
     public IUserProgramRepository userProgramRepository { get; set; }
-    public IProgramGoalRepository ProgramGoalRepository { get; set; }   
+    public IProgramGoalRepository ProgramGoalRepository { get; set; }
+    public ITransactionPinRepository transactionPinRepo { get; set; }
 
     public UnitOfWork(iVoluntiaDataContext dbContext)
     {
@@ -70,7 +71,8 @@ public class UnitOfWork : IUnitOfWork
         organizationDeclineStatusRepository = new OrganizationDeclineStatusRepository(dbContext);
         programRejectionReasonRepository = new ProgramRejectionReasonRepository(dbContext);
         userProgramRepository = new UserProgramRepository(dbContext);
-        ProgramGoalRepository = new ProgramGoalRepository(dbContext);       
+        ProgramGoalRepository = new ProgramGoalRepository(dbContext);
+        transactionPinRepo = new TransactionPinRepository(dbContext);
     }
     public IGenericRepository<TEntity> repository<TEntity>() where TEntity : class
     {

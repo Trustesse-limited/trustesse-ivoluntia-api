@@ -46,7 +46,8 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<SecurityQuestion> SecurityQuestions { get; set; }
         public DbSet<UserSecurityQuestion> UserSecurityQuestions { get; set; }
         public DbSet<UserSecurityValidationAttempt> UserSecurityValidationAttempts { get; set; }
-        public DbSet<OrganizationDeclineStatus> organizationDeclineStatuses { get; set; }   
+        public DbSet<OrganizationDeclineStatus> organizationDeclineStatuses { get; set; }
+        public DbSet<TransactionPin> TransactionPins { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -82,6 +83,16 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                       .HasMaxLength(500);
 
                 entity.HasQueryFilter(u => !u.IsDeprecated);
+            });
+
+            modelBuilder.Entity<TransactionPin>(entity =>
+            {
+                entity.HasIndex(t => t.UserId).IsUnique();
+
+                entity.HasOne(t => t.User)
+                      .WithOne()
+                      .HasForeignKey<TransactionPin>(t => t.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<Foundation>(entity =>

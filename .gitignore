@@ -66,3 +66,6 @@ TestResult.xml
 nunit-*.xml
 /iVoluntia/appsettings.Development.json
 *.user
+
+# Local-only implementation docs (specs/plans) - never pushed to remote
+docs/superpowers/

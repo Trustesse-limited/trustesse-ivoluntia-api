@@ -18,6 +18,12 @@ using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.Abstractions;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
+using BioData = Trustesse.Ivoluntia.Commons.DTOs.OnboardingDto.BioData;
+using FoundationLocationDto = Trustesse.Ivoluntia.Commons.DTOs.OnboardingDto.FoundationLocationDto;
+using InterestDto = Trustesse.Ivoluntia.Commons.DTOs.OnboardingDto.InterestDto;
+using LocationDto = Trustesse.Ivoluntia.Commons.DTOs.OnboardingDto.LocationDto;
+using ProfileImageAndBio = Trustesse.Ivoluntia.Commons.DTOs.OnboardingDto.ProfileImageAndBio;
+using VolunteerSkillDto = Trustesse.Ivoluntia.Commons.DTOs.OnboardingDto.VolunteerSkillDto;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
 {

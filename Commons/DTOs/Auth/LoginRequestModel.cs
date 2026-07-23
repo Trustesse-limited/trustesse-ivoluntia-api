@@ -16,6 +16,7 @@ public record LoginResponseModel
     public string AccessToken { get; init; } = string.Empty;
     public string RefreshToken { get; init; } = string.Empty;
     public bool HasCompletedOnboarding { get; init; }
+    public bool HasSetUpPin { get; init; }
     public int LastCompletedPage { get; init; }
     public DateTime TokenExpiresAt { get; init; }
     public DateTime RefreshTokenExpiresAt { get; init; }

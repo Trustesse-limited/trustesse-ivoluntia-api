@@ -9,6 +9,7 @@ using Trustesse.Ivoluntia.Commons.DTOs.Auth;
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
 using Trustesse.Ivoluntia.Commons.DTOs.Volunteer;
 using Trustesse.Ivoluntia.Domain.Entities;
+using Trustesse.Ivoluntia.Commons.DTOs.OnboardingDto;
 
 namespace Trustesse.Ivoluntia.Services
 {
@@ -29,17 +30,13 @@ namespace Trustesse.Ivoluntia.Services
             config.NewConfig<User, CreateFoundationRequestDto>();
             config.NewConfig<CreateFoundationRequestDto, Foundation>();
             config.NewConfig<CreateFoundationRequestDto,FoundationAdminSignUpDto>();
-            //config.NewConfig<CreateFoundationRequestDto, Location>();
             config.NewConfig<Cause,FoundationCauses>();
             config.NewConfig<FoundationAdminInfo, User>();
             config.NewConfig<FoundationBioData, Foundation>();
             config.NewConfig<User, OtpDto>();
             config.NewConfig<OtpDto, Otp>();
             config.NewConfig<VolunteerSignUpDto, User>();
-            
             config.NewConfig<SecurityQuestion, SecurityQuestionDto>();
-
-
             services.AddSingleton(config);
             services.AddScoped<IMapper, Mapper>();
         }

@@ -29,11 +29,11 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         }
 
         [HttpPost("volunteer-signup")]
-        public async Task<IActionResult> CreateVolunteer([FromForm] VolunteerSignUpDto request)
+        public async Task<IActionResult> CreateVolunteer([FromBody] VolunteerSignUpDto request)
             =>BuildHttpResponse<string>(await _authenticationService.CreateVolunteer(request.Validate()));    
         
         [HttpPost("organization-signup")]
-        public async Task<IActionResult> CreateOrganization([FromForm] CreateFoundationRequestDto createFoundationRequestDto)
+        public async Task<IActionResult> CreateOrganization([FromBody] CreateFoundationRequestDto createFoundationRequestDto)
             => BuildHttpResponse<string>(await _authenticationService.CreateOrganization(createFoundationRequestDto.Validate()));
        
         [HttpPost("resetpassword")]

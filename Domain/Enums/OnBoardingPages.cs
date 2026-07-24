@@ -2,8 +2,7 @@ namespace Trustesse.Ivoluntia.Domain.Enums;
 
 public enum OnBoardingPages
 {
-    AuthInfoPage = 1,
-    BioDataPage,
+    BioDataPage = 1,
     Location,
     Interest,
     Skill,

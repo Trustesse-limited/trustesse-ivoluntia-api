@@ -1,0 +1,65 @@
+using System.Linq.Expressions;
+
+namespace Trustesse.Ivoluntia.Domain.IRepositories;
+
+public interface ISpecification<T>
+{
+    Expression<Func<T, bool>> Criteria { get; }
+    List<Expression<Func<T, object>>> Includes { get; }
+    Expression<Func<T, object>> OrderBy { get; }
+    Expression<Func<T, object>> OrderByDescending { get; }
+    int Take { get; }
+    int Skip { get; }
+    bool isPagingEnabled { get; }
+}
+public interface IGenericRepository<T> where T : class
+{
+    Task<IReadOnlyList<T>> GetAllAsync();
+
+    Task<T> GetByIdAsync(string id);
+
+    Task<T> GetByExpressionAsync(Expression<Func<T, bool>> expression);
+
+
+    Task<List<T>> GetAsync(Expression<Func<T, bool>> expression = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderby = null,
+        int pageNumber = 0, int pageSize = 0);
+
+    Task ExecuteSqlAsync(string sql, object[] parameters);
+
+    Task<IQueryable<T>> ExecuteSqlAsync(string sql);
+
+    IQueryable<T> GetQueryable(Expression<Func<T, bool>> expression = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderby = null,
+        int pageNumber = 0, int pageSize = 0);
+
+    Task<T> GetEntityWithSpec(ISpecification<T> specification);
+
+    Task<IReadOnlyList<T>> ListAsync(ISpecification<T> specification);
+
+    Task<int> CountAsync(Expression<Func<T, bool>> expression);
+
+    Task DeleteAsync(T entity);
+
+    Task UpdateAsync(T entity);
+
+    Task AddAsync(T entity);
+    Task AddManyAsync(List<T> entities);
+
+    void Add(T entity);
+
+    void Update(T entity);
+
+    int Count(Expression<Func<T, bool>> expression);
+    IQueryable<T> GetByExpression(Expression<Func<T, bool>> expression);
+    Task<int> BulkUpdateAsync(Expression<Func<T, bool>> predicate, Expression<Func<Microsoft.EntityFrameworkCore.Query.SetPropertyCalls<T>, Microsoft.EntityFrameworkCore.Query.SetPropertyCalls<T>>> setPropertyCalls, CancellationToken cancellationToken = default);
+    IQueryable<T> SearchAndOrder(
+        Expression<Func<T, bool>>? filterExpression = null,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string? searchQuery = null,
+        string? orderByColumn = null,
+        string? orderBy = "ASC");
+    Task<List<T>> GetListByExpressionAsync(Expression<Func<T, bool>> expression, params Expression<Func<T, object>>[] includes);
+    Task<(List<T> Items, int TotalCount)> GetPagedAsync(Expression<Func<T, bool>> expression = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, int pageNumber = 1, int pageSize = 10);
+    Task DeleteManyAsync(IEnumerable<T> entities);
+    Task<T> GetByExpressionIncludeAsync(Expression<Func<T, bool>> expression, params Expression<Func<T, object>>[] includes);
+}

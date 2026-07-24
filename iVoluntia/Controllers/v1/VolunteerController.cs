@@ -1,29 +1,24 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Trustesse.Ivoluntia.Commons.Contants;
 using Trustesse.Ivoluntia.Commons.DTOs.Volunteer;
-using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
+using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
 namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
-    [Route("api/[Controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class VolunteersController : ControllerBase
+    public class VolunteersController : BaseController
     {
         private readonly IVolunteerService _volunteerService;
         public VolunteersController(IVolunteerService volunteerService)
         {
             _volunteerService = volunteerService;
         }
-
-
         [HttpGet("get-volunteer-by-foundation-id")]
-        [Authorize(Roles = "SuperAdmin, FoundationAdmin")]
+        [Authorize(Roles = AuthenticationConstants.SuperAdmin + "," + AuthenticationConstants.FoundationAdmin)]
         public async Task<IActionResult> GetVolunteers([FromQuery] VolunteerQueryDto query)
-        {
-            var result = await _volunteerService.GetVolunteers(query.FoundationId, query.IsActive);
-
-            return Ok(result);
-        }
+            => BuildHttpResponse(await _volunteerService.GetVolunteers(query.FoundationId, query.IsActive));
     }
 }

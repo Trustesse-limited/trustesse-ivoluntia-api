@@ -1,16 +1,16 @@
-﻿using Infrastructure.Implementation;
-using Ivoluntia.BackgroudServices.Services.Implementations;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using Trustesse.Ivoluntia.Commons.Configurations;
+using Trustesse.Ivoluntia.Commons.Models.Response;
+using Trustesse.Ivoluntia.Commons.Validators;
 using Trustesse.Ivoluntia.Data.DataContext;
+using Trustesse.Ivoluntia.Data.IRepositories;
 using Trustesse.Ivoluntia.Data.Repositories;
 using Trustesse.Ivoluntia.Data.Repositories.Implementation;
-using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.Abstractions;
@@ -46,6 +46,21 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<IVolunteerRepository, VolunteerRepository>();
             services.AddScoped<IFavoriteProgramRepository, FavoriteProgramRepository>();
             services.AddScoped<IFavoriteProgramService, FavoriteProgramService>();
+            services.AddScoped<IOrganizationService, OrganizationService>();
+            services.AddScoped<IOrganizationRepository, OrganizationRepository>();
+            services.AddScoped<ISecurityQuestionRepository, SecurityQuestionRepository>();
+            services.AddScoped<ISecurityQuestionService, SecurityQuestionService>();
+            services.AddScoped<IPasswordHasher<string>, PasswordHasher<string>>();
+            services.AddScoped<ICountryService, CountryService>();
+            services.AddScoped<IStateRepository, StateRepository>();
+            services.AddScoped<ILocationRepository, LocationRepository>();
+            services.AddScoped<IOnboardingProgressRepository, OnboardingProgressRepository>();
+            services.AddScoped<IInterestRepository, InterestRepository>();
+            services.AddScoped<ISkillRepository, SkillRepository>();
+            services.AddScoped<IUserInterestLinkRepository, UserInterestLinkRepository>();
+            services.AddScoped<IUserSkillLinkRepository, UserSkillLinkRepository>();
+            services.AddScoped<IOtpRepository, OtpRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.AddSwaggerGen(options =>
             {
@@ -113,7 +128,6 @@ namespace Trustesse.Ivoluntia.API.Extensions
                    sqlServerOptions => sqlServerOptions.MigrationsAssembly("Trustesse.Ivoluntia.Data"));
                 options.AddInterceptors(spt.GetRequiredService<AuditSaveChangesInterceptor>());
             });
-
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IUserRepository, UserRepository>();
@@ -188,6 +202,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
         public static IServiceCollection AddCustomServices(this IServiceCollection services)
         {
             services.AddScoped<INotificationService, NotificationService>();
+           
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<AuditSaveChangesInterceptor>();
 

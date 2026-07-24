@@ -1,6 +1,7 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
+using System.Reflection;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Domain.IRepositories;
 
@@ -42,14 +43,16 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         return await query.CountAsync();
     }
 
-    public void Delete(T entity)
+    public Task DeleteAsync(T entity)
     {
         _dbContext.Set<T>().Remove(entity);
+        return Task.CompletedTask;
     }
 
-    public async Task DeleteAsync(T entity)
+    public Task DeleteManyAsync(IEnumerable<T> entities)
     {
-        await Task.Run(() => _dbContext.Set<T>().Remove(entity));
+        _dbContext.Set<T>().RemoveRange(entities);
+        return Task.CompletedTask;
     }
 
     public async Task ExecuteSqlAsync(string sql, object[] parameters)
@@ -105,6 +108,31 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         return await _dbContext.Set<T>().FirstOrDefaultAsync(expression);
     }
 
+    public async Task<List<T>> GetListByExpressionAsync(Expression<Func<T, bool>> expression, params Expression<Func<T, object>>[] includes)
+    {
+        IQueryable<T> query = _dbContext.Set<T>();
+
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+
+        return await query.Where(expression).ToListAsync();
+    }
+
+    public async Task<T> GetByExpressionIncludeAsync(Expression<Func<T, bool>> expression, params Expression<Func<T, object>>[] includes)
+    {
+        IQueryable<T> query = _dbContext.Set<T>();
+
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+
+        var result =  await query.Where(expression).FirstOrDefaultAsync();
+        return result;
+    }
+
     public IQueryable<T> GetByExpression(Expression<Func<T, bool>> expression)
     {
         return _dbContext.Set<T>()
@@ -112,7 +140,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
             .Where(expression);
     }
 
-    public async Task<T> GetByIdAsync(Guid id)
+    public async Task<T> GetByIdAsync(string id)
     {
         return await _dbContext.Set<T>().FindAsync(id);
     }
@@ -150,6 +178,29 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         return query;
     }
 
+    public async Task<(List<T> Items, int TotalCount)> GetPagedAsync(Expression<Func<T, bool>> expression = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, int pageNumber = 1, int pageSize = 10)
+    {
+        pageNumber = pageNumber < 1 ? 1 : pageNumber;
+        pageSize = pageSize < 1 ? 10 : pageSize;
+
+        IQueryable<T> query = _dbContext.Set<T>().AsNoTracking();
+
+        if (expression != null)
+            query = query.Where(expression);
+
+        var totalCount = await query.CountAsync();
+
+        if (orderBy != null)
+            query = orderBy(query);
+
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
+    }
+
     public async Task<IReadOnlyList<T>> ListAsync(ISpecification<T> specification)
     {
         return await ApplySpecification(specification).ToListAsync();
@@ -185,5 +236,69 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
             .ExecuteUpdateAsync(setPropertyCalls, cancellationToken);
     }
 
+    public IQueryable<T> SearchAndOrder(
+       
+        Expression<Func<T, bool>>? filterExpression = null,
+        int pageNumber = 1,
+        int pageSize = 20,
+        string searchQuery = null,
+        string orderByColumn = null,
+        string orderBy = "ASC")
+    {
+        IQueryable<T> source = _dbContext.Set<T>().AsNoTracking();
+   
+        if (filterExpression != null)
+        {
+            source = source.Where(filterExpression);
+        }
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            var parameter = Expression.Parameter(typeof(T), "x");
+            Expression? orExpression = null;
 
+            foreach (var prop in typeof(T).GetProperties()
+           .Where(p => p.PropertyType == typeof(string)))
+            {
+                var propertyAccess = Expression.Property(parameter, prop);
+                var searchConst = Expression.Constant(searchQuery, typeof(string));
+                var notNull = Expression.NotEqual(propertyAccess, Expression.Constant(null, typeof(string)));
+                var containsMethod = typeof(string).GetMethod("Contains", new[] { typeof(string) })!;
+                var containsCall = Expression.Call(propertyAccess, containsMethod, searchConst);
+                var andExpression = Expression.AndAlso(notNull, containsCall);
+
+                orExpression = orExpression == null
+                    ? andExpression
+                    : Expression.OrElse(orExpression, andExpression);
+            }
+
+            if (orExpression != null)
+            {
+                var lambda = Expression.Lambda<Func<T, bool>>(orExpression, parameter);
+                source = source.Where(lambda);
+            }
+        }
+        if (!string.IsNullOrWhiteSpace(orderByColumn))
+        {
+            var parameter = Expression.Parameter(typeof(T), "x");
+            var property = typeof(T).GetProperty(orderByColumn,
+                BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+            var propertyAccess = Expression.Property(parameter, property);
+            var orderByLambda = Expression.Lambda(propertyAccess, parameter);
+
+            string orderDirection = string.Equals(orderBy, "DESC", StringComparison.OrdinalIgnoreCase)
+                ? "OrderByDescending"
+                : "OrderBy";
+
+            var resultExp = Expression.Call(
+                typeof(Queryable),
+                orderDirection,
+                new Type[] { typeof(T), property.PropertyType },
+                source.Expression,
+                Expression.Quote(orderByLambda));
+
+            source = source.Provider.CreateQuery<T>(resultExp);
+        }
+        source = source.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+        return source;
+    }
 }

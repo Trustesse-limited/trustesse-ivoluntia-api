@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.uitilities;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
@@ -9,34 +11,35 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 {
     public class OtpService : IOtpService
     {
-        readonly IOtpRepository _otpRepository;
-        private readonly UserManager<User> _userManager;
-        public OtpService(IOtpRepository otpRepository, UserManager<User> userManager)
+        private readonly IOtpRepository _otpRepository;
+        private readonly UserManager<User> _userManager;  
+        private readonly IUnitOfWork _uow;
+        public OtpService(IOtpRepository otpRepository, UserManager<User> userManager, IUnitOfWork uow)
         {
             _otpRepository = otpRepository;
             _userManager = userManager;
+            _uow = uow;
         }
 
-        public async Task<bool> ConfirmOtpAsync(string userId, string otpCode, OtpPurpose purpose)
+        public async Task<ApiResponse<Otp>> ConfirmOtpAsync(string otpCode, string otpPurpose)
         {
-            var code = await _otpRepository.GetOtpByCodeAsync(userId, otpCode, purpose);
-            if (code == null)
-                return false;
+            var otp = await _otpRepository.GetOtpByCodeAsync(otpCode, otpPurpose);
+            if (otp == null)
+                return ApiResponse<Otp>.Failure(StatusCodes.Status404NotFound, "otp not found") ;
 
-            if (code.IsUsed)
-                return false;
+            if (otp.IsUsed)
+                return ApiResponse<Otp>.Failure(StatusCodes.Status400BadRequest, "otp already used");
 
-            if((DateTime.UtcNow - code.CreatedAt).TotalMinutes > 5)
-                return false;
-
-            await _otpRepository.MarkOtpAsUsedAsync(code);
-
-            return true;
+            if ((DateTime.UtcNow - otp.CreatedAt).TotalMinutes > 5)
+                return ApiResponse<Otp>.Failure(StatusCodes.Status400BadRequest, "already used"); ;
+            await _otpRepository.MarkOtpAsUsedAsync(otp);
+            return ApiResponse<Otp>.Success("success", otp); 
         }
 
         public async Task<string> GenerateOtpAsync(string userId, OtpPurpose purpose)
         {
             var user = await _userManager.FindByIdAsync(userId);
+
             if (user == null)
                 throw new Exception("User not found");
 
@@ -46,12 +49,14 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             {
                 UserId = userId,
                 OtpCode = otpCode,
-                Purpose = purpose,
+                Purpose = purpose.ToString(),
                 CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(10),
                 IsUsed = false
             };
 
-            await _otpRepository.AddOtpAsync(otp);
+            await _uow.otpRepo.AddAsync(otp);
+            await _uow.CompleteAsync();
             return otpCode;
         }
     }

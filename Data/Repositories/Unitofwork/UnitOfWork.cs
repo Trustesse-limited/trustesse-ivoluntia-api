@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using System.Collections;
 using Trustesse.Ivoluntia.Data.DataContext;
+using Trustesse.Ivoluntia.Data.IRepositories;
+using Trustesse.Ivoluntia.Data.Repositories.Implementation;
 using Trustesse.Ivoluntia.Domain.IRepositories;
 
 namespace Trustesse.Ivoluntia.Data.Repositories;
@@ -21,6 +23,23 @@ public class UnitOfWork : IUnitOfWork
     public IInterestRepository interestRepo { get; set; }
     public ISkillRepository skillRepo { get; set; }
     public IRefreshTokenRepository refreshTokenRepo { get; set; }
+    public IOrganizationRepository OrganizationRepository { get; set; } 
+    public ICauseFoundationRepository CauseFoundationRepository { get; set; } 
+    public ICauseRepository CauseRepository { get; set; }   
+    public ICategoryRepository CategoryRepository { get; set; }
+    public IOtpRepo OtpRepo { get; set; }
+    public IFavoriteProgramRepository favoriteProgramRepo { get; set; }
+    public IFoundationRepository foundationRepo { get; set; }
+    public IProgramRepository programRepo { get; set; }
+    public ISecurityQuestionRepository securityQuestionRepo { get; set; }
+    public IUserSecurityQuestionRepository userSecurityQuestionRepo { get; set; }
+    public IUserSecurityValidationAttemptRepository userSecurityValidationAttemptRepo { get; set; }
+    public IOtpRepository otpRepo { get; set; }
+    public IVolunteerRepository volunteerRepo { get; set; }
+    public IOrganizationDeclineStatusRepository organizationDeclineStatusRepository { get; set; }   
+    public IProgramRejectionReasonRepository programRejectionReasonRepository { get; set; } 
+    public IUserProgramRepository userProgramRepository { get; set; }
+    public IProgramGoalRepository ProgramGoalRepository { get; set; }   
 
     public UnitOfWork(iVoluntiaDataContext dbContext)
     {
@@ -35,6 +54,23 @@ public class UnitOfWork : IUnitOfWork
         skillRepo = new SkillRepository(dbContext);
         onboardingProgressRepo = new OnboardingProgressRepository(dbContext);
         refreshTokenRepo = new RefreshTokenRepository(dbContext);
+        OrganizationRepository = new OrganizationRepository(dbContext);
+        CauseFoundationRepository = new CauseFoundationRepository(dbContext);
+        CauseRepository = new CauseRepository(dbContext);
+        CategoryRepository = new CategoryRepository(dbContext);
+        OtpRepo = new OtpRepo(dbContext);   
+        favoriteProgramRepo = new FavoriteProgramRepository(dbContext);
+        foundationRepo = new FoundationRepository(dbContext);
+        programRepo = new ProgramRepository(dbContext);
+        securityQuestionRepo = new SecurityQuestionRepository(dbContext);
+        userSecurityQuestionRepo = new UserSecurityQuestionRepository(dbContext);
+        userSecurityValidationAttemptRepo = new UserSecurityValidationAttemptRepository(dbContext);
+        otpRepo = new OtpRepository(dbContext);
+        volunteerRepo = new VolunteerRepository(dbContext);
+        organizationDeclineStatusRepository = new OrganizationDeclineStatusRepository(dbContext);
+        programRejectionReasonRepository = new ProgramRejectionReasonRepository(dbContext);
+        userProgramRepository = new UserProgramRepository(dbContext);
+        ProgramGoalRepository = new ProgramGoalRepository(dbContext);       
     }
     public IGenericRepository<TEntity> repository<TEntity>() where TEntity : class
     {

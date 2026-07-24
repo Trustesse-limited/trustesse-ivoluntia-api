@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
 
@@ -159,20 +160,49 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                     throw new Exception("Failed to create FoundationAdmin user");
                 }
             }
+
+            const string userEmailThree = "michaelboiz86@gmail.com";
+            const string userPasswordThree = "Password12345#";
+
+            var UserThree = await userManager.FindByEmailAsync(userEmailThree);
+
+            if (UserThree == null)
+            {
+                var user = new User
+                {
+                    UserName = userEmailThree,
+                    Email = userEmailThree,
+                    EmailConfirmed = true,
+                    FirstName = "Big",
+                    LastName = "Mike",
+                    IsActive = true,
+                };
+
+                var result = await userManager.CreateAsync(user, userPasswordThree);
+
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(user, UserRolesEnum.Volunteer.ToString());
+                }
+                else
+                {
+                    throw new Exception("Failed to create Volunteer user");
+                }
+            }
         }
 
         public static async Task SeedFoundationAsync(iVoluntiaDataContext context)
         {
             if (!context.FoundationCategories.Any())
             {
-                var category = new FoundationCategory
+                var category1 = new FoundationCategory
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = "Non-Profit Organization",
                     Description = "General non-profit organization",
                     DateCreated = DateTime.UtcNow
                 };
-                context.FoundationCategories.Add(category);
+                context.FoundationCategories.Add(category1);
                 await context.SaveChangesAsync();
             }
 
@@ -180,19 +210,96 @@ namespace Trustesse.Ivoluntia.Data.DataContext
             {
                 var category = context.FoundationCategories.First();
                 var foundation = new Foundation
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Name = "iVoluntia Foundation",
-                    CategoryId = category.Id,
-                    Mission = "Connecting volunteers with meaningful opportunities",
-                    Email = "contact@ivoluntia.com",
-                    YearEstablished = DateTime.UtcNow,
-                    IsActive = true,
-                    HasAgreedToDisclaimer = true,
-                    DateCreated = DateTime.UtcNow
-                };
-                context.Foundations.Add(foundation);
-                await context.SaveChangesAsync();
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "iVoluntia Foundation",
+                CategoryId = category.Id,
+                Mission = "Connecting volunteers with meaningful opportunities",
+                Email = "contact@ivoluntia.com",
+                YearEstablished = DateTime.UtcNow,
+                IsActive = true,
+                HasAgreedToDisclaimer = true,
+                DateCreated = DateTime.UtcNow
+            };
+            context.Foundations.Add(foundation);
+
+            var foundationOne = new Foundation
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Apex Foundation",
+                CategoryId = category.Id,
+                Mission = "Connecting volunteers with meaningful opportunities",
+                Email = "contact@ivoluntia.com",
+                YearEstablished = DateTime.UtcNow,
+                IsActive = true,
+                HasAgreedToDisclaimer = true,
+                DateCreated = DateTime.UtcNow,
+                Status = "Block"
+
+            };
+            context.Foundations.Add(foundationOne);
+
+            var foundationTwo = new Foundation
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Hope Foundation",
+                CategoryId = category.Id,
+                Mission = "Connecting volunteers with meaningful opportunities",
+                Email = "contact@ivoluntia.com",
+                YearEstablished = DateTime.UtcNow,
+                IsActive = true,
+                HasAgreedToDisclaimer = true,
+                DateCreated = DateTime.UtcNow,
+                Status = "Block"
+            };
+            context.Foundations.Add(foundationTwo);
+
+            var foundationThree = new Foundation
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Joy Foundation",
+                CategoryId = category.Id,
+                Mission = "Connecting volunteers with meaningful opportunities",
+                Email = "contact@ivoluntia.com",
+                YearEstablished = DateTime.UtcNow,
+                IsActive = true,
+                HasAgreedToDisclaimer = true,
+                DateCreated = DateTime.UtcNow,
+                Status = "Decline"
+            };
+            context.Foundations.Add(foundationThree);
+
+            var foundationFour = new Foundation
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Faith Foundation",
+                CategoryId = category.Id,
+                Mission = "Connecting volunteers with meaningful opportunities",
+                Email = "contact@ivoluntia.com",
+                YearEstablished = DateTime.UtcNow,
+                IsActive = true,
+                HasAgreedToDisclaimer = true,
+                DateCreated = DateTime.UtcNow,
+                Status = "Decline"
+            };
+            context.Foundations.Add(foundationFour);
+
+            var foundationFive = new Foundation
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Rejoice Foundation",
+                CategoryId = category.Id,
+                Mission = "Connecting volunteers with meaningful opportunities",
+                Email = "contact@ivoluntia.com",
+                YearEstablished = DateTime.UtcNow,
+                IsActive = true,
+                HasAgreedToDisclaimer = true,
+                DateCreated = DateTime.UtcNow,
+                Status = "Pending"
+            };
+            context.Foundations.Add(foundationFive);
+
+            await context.SaveChangesAsync();
             }
         }
 
@@ -221,7 +328,14 @@ namespace Trustesse.Ivoluntia.Data.DataContext
 
                 if (!context.Countries.Any())
                 {
-                    var country = new Country { Id = Guid.NewGuid(), CountryName = "Nigeria" };
+                    var country = new Country 
+                    { Id = Guid.NewGuid().ToString(), 
+                      CountryName = "Nigeria",
+                      CreatedBy = "SuperAdmin",
+                      DateCreated = DateTime.UtcNow,    
+                      DateUpdated = DateTime.UtcNow,    
+                      IsDeprecated = false
+                    };
                     context.Countries.Add(country);
                     await context.SaveChangesAsync();
                 }
@@ -230,7 +344,16 @@ namespace Trustesse.Ivoluntia.Data.DataContext
 
                 if (!context.States.Any())
                 {
-                    var state = new State { Id = Guid.NewGuid(), StateName = "Lagos", CountryId = countryId };
+                    var state = new State 
+                    { 
+                        Id = Guid.NewGuid().ToString(), 
+                        StateName = "Lagos",
+                        CountryId = countryId,
+                        DateCreated = DateTime.UtcNow,
+                        DateUpdated = DateTime.UtcNow,
+                        IsDeprecated = false,
+                        CreatedBy = "SuperAdmin"
+                    };
                     context.States.Add(state);
                     await context.SaveChangesAsync();
                 }
@@ -285,6 +408,92 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                 context.ProgramGoals.AddRange(goals);
                 await context.SaveChangesAsync();
             }
+        }
+
+        public static async Task SeedCauseAsync(iVoluntiaDataContext context)
+        {
+            if (!context.Causes.Any())
+            {
+                var causeOne = new Cause
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Child Health",
+                    Description = "Child Treatment",
+                    DateCreated = DateTime.UtcNow,
+                    CreatedBy = "superAdmin",
+                    DateUpdated = DateTime.UtcNow,
+                    IsDeprecated = false 
+                };
+                await context.AddAsync(causeOne);
+
+                var causeTwo = new Cause
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Feed The Nation",
+                    Description = "Global Feed",
+                    DateCreated = DateTime.UtcNow,
+                    IsDeprecated = false,
+                    CreatedBy = "superAdmin",
+                    DateUpdated = DateTime.UtcNow
+                };
+                await context.AddAsync(causeTwo);
+
+                var causeThree = new Cause
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Education Promotion",
+                    Description = "child education",
+                    DateCreated = DateTime.UtcNow,
+                    IsDeprecated = false,
+                    CreatedBy = "superAdmin",
+                    DateUpdated = DateTime.UtcNow
+                };
+                await context.AddAsync(causeThree);
+            }
+            await context.SaveChangesAsync();
+        }
+
+        public static async Task SeedInterestAsync(iVoluntiaDataContext context)
+        {
+            if (!context.Interests.Any())
+            {
+                var interestFirst = new Interest
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Child Health",
+                    Description = "Child Treatment",
+                    DateCreated = DateTime.UtcNow,
+                    CreatedBy = "superAdmin",
+                    DateUpdated = DateTime.UtcNow,
+                    IsDeprecated = false
+                };
+                await context.AddAsync(interestFirst);
+
+                var interestSecond = new Interest
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Feed The Nation",
+                    Description = "Global Feed",
+                    DateCreated = DateTime.UtcNow,
+                    IsDeprecated = false,
+                    CreatedBy = "superAdmin",
+                    DateUpdated = DateTime.UtcNow
+                };
+                await context.AddAsync(interestSecond);
+
+                var interestThird = new Interest
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Climate Change",
+                    Description = "protect the climate",
+                    DateCreated = DateTime.UtcNow,
+                    IsDeprecated = false,
+                    CreatedBy = "superAdmin",
+                    DateUpdated = DateTime.UtcNow
+                };
+                await context.AddAsync(interestThird);
+            }
+            await context.SaveChangesAsync();
         }
     }
 }

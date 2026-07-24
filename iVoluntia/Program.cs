@@ -22,7 +22,6 @@ builder.Services.RegisterJwtServices(builder.Configuration);
 builder.Services.AddScoped<NetworkFilter>();
 builder.Services.AddCustomServices();
 builder.ConfigureHsts();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IMapper, Mapper>();
 
 // Add Mapster mappings
@@ -43,21 +42,11 @@ builder.Services.AddSingleton(serviceProvider =>
 
 
 #region Services
-//builder.Services.AddScoped<ICountryService, CountryService>();
-//builder.Services.AddScoped<IAuthService, AuthService>();
+
 #endregion
 
 #region Repository
-builder.Services.AddScoped<ICountryRepository, CountryRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IStateRepository, StateRepository>();
-builder.Services.AddScoped<ILocationRepository, LocationRepository>();
-builder.Services.AddScoped<IOnboardingProgressRepository, OnboardingProgressRepository>();
-builder.Services.AddScoped<IInterestRepository, InterestRepository>();
-builder.Services.AddScoped<ISkillRepository, SkillRepository>();
-builder.Services.AddScoped<IUserInterestLinkRepository, UserInterestLinkRepository>();
-builder.Services.AddScoped<IUserSkillLinkRepository, UserSkillLinkRepository>();
-builder.Services.AddScoped<IOtpRepository, OtpRepository>();
+
 #endregion
 
 var app = builder.Build();

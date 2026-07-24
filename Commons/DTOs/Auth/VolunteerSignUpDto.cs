@@ -10,8 +10,15 @@ public class VolunteerSignUpDto
    public BioData? BioData { get; set; }
    public LocationDto? LocationDto { get; set; }
    public InterestDto? Interest { get; set; }
-   public SkillDto? Skill { get; set; }
+   public VolunteerSkillDto? Skill { get; set; }
    public ProfileImageAndBio? ProfileAndBioData { get; set; }
+
+   public VolunteerSignUpDto Validate()
+    {
+        if (this == null)
+            throw new Exception("invalid request");
+        return this;
+    }
 }
 
 public class OnboardingMetaData
@@ -28,12 +35,11 @@ public class AuthInfo
     public string ConfirmPassword { get; set; }
     [Required]
     [AllowedValues(true, ErrorMessage = "You must agree to the Terms and Conditions.")]
-    public bool HasAcceptedTOC { get; set; }
+    public bool HasAgreedToTermsAndCondition { get; set; }
 }
 
 public class BioData
 {
-    public string UserId { get; set; }
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public byte Gender { get; set; } 
@@ -42,39 +48,25 @@ public class BioData
 
 public class LocationDto
 {
-    public string UserId { get; set; }
     public string Address { get; set; }
     public string City { get; set; }
     public string ZipCode { get; set; }
-    public string CountryId { get; set; }
-    public string StateId { get; set; }
+    public string Country { get; set; }
+    public string State { get; set; }
 }
 
 public class InterestDto
 {
-    public string UserId { get; set; }
-    public List<string> Names { get; set; }
-
-    public InterestDto()
-    {
-        Names = new List<string>();
-    }
+    public List<string> Names { get; set; } 
 }
 
-public class SkillDto
+public class VolunteerSkillDto
 {
-    public string UserId { get; set; }
     public List<string> Names { get; set; }
-
-    public SkillDto()
-    {
-        Names = new List<string>();
-    }
 }
 
 public class ProfileImageAndBio
 {
-    public string UserId { get; set; }
     public string Bio { get; set; }
-    public string ProfileImageurl { get; set; }
+    public List<IFormFile> ProfileImage { get; set; }
 }

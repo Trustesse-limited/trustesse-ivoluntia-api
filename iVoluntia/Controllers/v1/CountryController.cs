@@ -31,7 +31,6 @@ public class CountryController : ControllerBase
 
         return Ok(result);
     }
-    
     [HttpPost("state")]
     public async Task<IActionResult> CreateState([FromBody] CreateStateModel request)
     {
@@ -49,19 +48,17 @@ public class CountryController : ControllerBase
     }
     
      [HttpGet("country")]
-        public async Task<IActionResult> GetCountry(Guid countryId)
+        public async Task<IActionResult> GetCountry([FromQuery]string countryId)
         {
             var result = await _countryService.GetCountryById(countryId);
             if (result is null)
             {
-
-                return BadRequest(new { ResponseCode = (int)HttpStatusCode.BadRequest, ResponseMessage = "record not found" });
+             return BadRequest(new { ResponseCode = (int)HttpStatusCode.BadRequest, ResponseMessage = "record not found" });
             }
             else
             {
                 return Ok(new { ResponseCode = (int)HttpStatusCode.OK, ResponseMessage = "data returned successfully", Data = result });
             }
-
         }
 
         [HttpGet("countries")]
@@ -77,24 +74,23 @@ public class CountryController : ControllerBase
             {
                 return BadRequest(new { ResponseCode = (int)HttpStatusCode.BadRequest, ResponseMessage = result});
             }
-
         }
         [HttpGet("state")]
-        public async Task<IActionResult> GetState(Guid stateId)
+        public async Task<IActionResult> GetState([FromQuery]string stateId)
         {
-            var result = await _countryService.GetStateByIdAsync(stateId);
-            if (result is null)
-            {
-                return BadRequest(result);
-            }
-            else
-            {
-                return Ok(result);
-            }
-
+        //var result = await _countryService.GetStateByIdAsync(stateId);
+        //if (result is null)
+        //{
+        //    return BadRequest(result);
+        //}
+        //else
+        //{
+        //    return Ok(result);
+        //}
+        return Ok();
         }
         [HttpGet("states")]
-        public async Task<IActionResult> GetStates(Guid countryId)
+        public async Task<IActionResult> GetStates([FromQuery] string countryId)
         {
             var result = await _countryService.GetStatesByCountryIdAsync(countryId);
             if (result.StatusCode != 200)
@@ -105,8 +101,5 @@ public class CountryController : ControllerBase
             {
                 return Ok(result);
             }
-
         }
-
-   
 }

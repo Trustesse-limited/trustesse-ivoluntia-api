@@ -9,9 +9,6 @@ namespace Trustesse.Ivoluntia.Commons.Models.Request
 {
     public class ConfirmUserModel
     {
-        public string Email { get; set; }
-        public  string UserId { get; set; }
-      public  string OtpCode { get; set; }
-      public  OtpPurpose purpose { get; set; }
+        public string OtpCode { get; set; }
     }
 }

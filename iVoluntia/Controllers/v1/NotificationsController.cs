@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.Models.Request;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
@@ -7,7 +6,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class NotificationsController : ControllerBase
+    public class NotificationsController : BaseController
     {
         private readonly INotificationService _notificationService;
         public NotificationsController(INotificationService notificationService)
@@ -18,19 +17,12 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         [HttpPost("compose")]
         public async Task<IActionResult> Compose([FromBody] ComposeNotificationDto request)
         {
-            if (request == null)
-                return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid request."));
+            request = request.Validate();
 
-            var response = await _notificationService.ComposeNotificationAsync(
+            return BuildHttpResponse(await _notificationService.ComposeNotificationAsync(
                 request.NotificationType,
                 request.NotificationChannel,
-                request.Placeholders
-            );
-
-            if (response.StatusCode != StatusCodes.Status200OK)
-                return StatusCode(response.StatusCode, response);
-
-            return Ok(response);
+                request.Placeholders));
         }
     }
 }

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Trustesse.Ivoluntia.Domain.Enums
+﻿namespace Trustesse.Ivoluntia.Domain.Enums
 {
     public enum NotificationTypeEnum
     {
@@ -15,6 +9,9 @@ namespace Trustesse.Ivoluntia.Domain.Enums
         JoinProgram,
         RequestToJoinProgram,
         LeaveProgram,
-        RequestToLeaveProgram
+        RequestToLeaveProgram,
+        OtpRequest,
+        OrganizationStatusUpdate,
+        OrganizationBlockStatusUpdate
     }
 }

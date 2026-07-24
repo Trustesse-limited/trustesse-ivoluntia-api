@@ -14,7 +14,6 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public byte? Gender { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public bool IsActive { get; set; }
-        [StringLength(6)]
         public string? OTP { get; set; }
         public DateTime? OtpSubmittedTime { get; set; }
         public bool HasAgreedToTermsAndCondition { get; set; }
@@ -24,6 +23,8 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public DateTime? DateUpdated { get; set; }
         public bool IsDeprecated { get; set; }
         public string? FoundationId { get; set; }
+        public bool HasSecurityQuestionsConfigured { get; set; }
+
         public virtual OnboardingProgress OnboardingProgress { get; set; }
         public Foundation? Foundation { get; set; }
         public ICollection<Skill?> Skills { get; set; } = new List<Skill>();
@@ -35,5 +36,6 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public ICollection<Program> Programs { get; set; }
         public ICollection<UserProgram> UsersPrograms { get; set; }
         public ICollection<FavoriteProgram> FavoritePrograms { get; set; } = new List<FavoriteProgram>();
+        public virtual ICollection<UserSecurityQuestion> UserSecurityQuestions { get; set; } = new List<UserSecurityQuestion>();
     };
 }

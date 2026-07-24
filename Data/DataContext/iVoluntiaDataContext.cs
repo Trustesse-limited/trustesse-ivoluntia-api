@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Trustesse.Ivoluntia.Data.Repositories.Interfaces;
+using Trustesse.Ivoluntia.Data.IRepositories;
 using Trustesse.Ivoluntia.Domain.Entities;
 
 namespace Trustesse.Ivoluntia.Data.DataContext
@@ -42,6 +42,11 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<UserProgram> userPrograms { get; set; }
         public DbSet<FavoriteProgram> FavoritePrograms { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<FoundationCauses> FoundationCauses{ get; set; }  
+        public DbSet<SecurityQuestion> SecurityQuestions { get; set; }
+        public DbSet<UserSecurityQuestion> UserSecurityQuestions { get; set; }
+        public DbSet<UserSecurityValidationAttempt> UserSecurityValidationAttempts { get; set; }
+        public DbSet<OrganizationDeclineStatus> organizationDeclineStatuses { get; set; }   
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -94,7 +99,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
 
                 entity.HasMany(u => u.Causes)
                        .WithMany(i => i.Foundations)
-                       .UsingEntity(j => j.ToTable("FoundationCauses"));
+                       .UsingEntity<FoundationCauses>();
 
                 entity.HasOne(f => f.Category)
                       .WithMany(c => c.Foundations)
@@ -234,6 +239,13 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                .OnDelete(DeleteBehavior.Cascade)
                .IsRequired(false);
 
+            modelBuilder.Entity<Foundation>()
+              .HasMany(f => f.OrganizationDeclineStatus)
+              .WithOne(o => o.Foundation)
+              .HasForeignKey(o => o.FoundationId)
+              .OnDelete(DeleteBehavior.Cascade)
+              .IsRequired(false);
+
             modelBuilder.Entity<Donation>()
               .HasOne(d => d.Program)
               .WithMany(p => p.Donations)
@@ -247,6 +259,18 @@ namespace Trustesse.Ivoluntia.Data.DataContext
              .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Donation>()
+              .HasQueryFilter(d => !d.IsDeprecated);
+
+            modelBuilder.Entity<UserProgram>()
+                .HasQueryFilter(up => !up.IsDeprecated);
+
+            modelBuilder.Entity<FoundationCauses>()
+                .HasQueryFilter(fc => !fc.IsDeprecated);
+
+            modelBuilder.Entity<Cause>()
+                .HasQueryFilter(c => !c.IsDeprecated);
+
+            modelBuilder.Entity<OrganizationDeclineStatus>()
               .HasQueryFilter(d => !d.IsDeprecated);
         }
     }

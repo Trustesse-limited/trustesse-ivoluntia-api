@@ -1,15 +1,19 @@
-﻿using Trustesse.Ivoluntia.Domain.Enums;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Trustesse.Ivoluntia.Domain.Entities
 {
-    public class Otp
+    public class Otp : BaseEntity
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
-        public string UserId { get; set; } = string.Empty;
-        public string OtpCode { get; set; } = string.Empty;
+        [MaxLength(100)]
+        public string UserId { get; set; }
+        [MaxLength(10)]
+        public string OtpCode { get; set; }
         public bool IsUsed { get; set; } = false;
+        public DateTime ExpiresAt { get; set; }
+        [MaxLength(255)]
+        public string Purpose { get; set; }
+        [MaxLength(100)]
+        public string Channel { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public OtpPurpose Purpose { get; set; }
-        public string Channel { get; set; } = "email"; // or "sms"
     }
 }

@@ -60,375 +60,101 @@ public class AuthenticationService : IAuthenticationService
     }
     public async Task<GlobalRequestReponse<string>> CreateVolunteer(VolunteerSignUpDto model)
     {
-        if (_currentUserService.GetUserEmail() == null)
+        var VolunteerExists = await _uow.userRepo.GetByExpressionAsync(x =>
+        x.Email == model.AuthInfo.Email);
+        if (VolunteerExists != null)
+            return ResponseHelper.BuildResponse($"Volunteer with Email -> {model.AuthInfo.Email}  already exist.", StatusCodes.Status400BadRequest, "user already exist", false);
+        var volunteer = _mapper.Map<User>(model);
+        volunteer.UserName = model.AuthInfo.Email;
+        volunteer.Email = model.AuthInfo.Email.Trim();
+        volunteer.DateCreated = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+        volunteer.IsActive = false;
+        volunteer.HasAgreedToTermsAndCondition = model.AuthInfo.HasAgreedToTermsAndCondition;
+        var otp = GenerateOTP();
+        volunteer.OTP = otp;
+        volunteer.OtpSubmittedTime = Convert.ToDateTime(DateTime.Now.ToShortTimeString());
+        var result = await _userManager.CreateAsync(volunteer, model.AuthInfo.Password.Trim());
+        await _userManager.AddToRoleAsync(volunteer, UserRolesEnum.Volunteer.ToString());
+        if (result.Succeeded)
         {
-            var VolunteerExists = await _uow.userRepo.GetByExpressionAsync(x =>
-                x.Email == model.AuthInfo.Email);
-            if (VolunteerExists != null)
-                return ResponseHelper.BuildResponse($"Volunteer with Email -> {model.AuthInfo.Email}  already exist.", StatusCodes.Status400BadRequest, "user already exist", false);
-            var volunteer = _mapper.Map<User>(model);
-            volunteer.UserName = model.AuthInfo.Email;
-            volunteer.Email = model.AuthInfo.Email.Trim();
-            volunteer.DateCreated = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
-            volunteer.IsActive = false;
-            volunteer.HasAgreedToTermsAndCondition = model.AuthInfo.HasAgreedToTermsAndCondition;
-            var otp = GenerateOTP();
-            volunteer.OTP = otp;
-            volunteer.OtpSubmittedTime = Convert.ToDateTime(DateTime.Now.ToShortTimeString());
-            var result = await _userManager.CreateAsync(volunteer, model.AuthInfo.Password.Trim());
-            await _userManager.AddToRoleAsync(volunteer, UserRolesEnum.Volunteer.ToString());
-            if (result.Succeeded)
+            // emailService 
+            var dictionary = new Dictionary<string, string>()
+             {
+               {"Name",volunteer.Email},
+               {"Otp", volunteer.OTP}
+             };
+            var notificationTemplate = await _notify.ComposeNotificationAsync(NotificationTypeEnum.OtpRequest.ToString(), NotificationChannelEnum.Email.ToString(), dictionary);
+            if (notificationTemplate != null)
             {
-                    // emailService 
-                    var dictionary = new Dictionary<string, string>()
+                var message = new EmailModel
                 {
-                {"firstname",volunteer.Email},
-                { "otp", volunteer.OTP}
+                    Receivers = new List<string> { volunteer.Email },
+                    Subject = "OTP",
+                    Message = HttpUtility.HtmlDecode(notificationTemplate.Data)
                 };
-                    var notificationTemplate = await _notify.ComposeNotificationAsync(NotificationTypeEnum.OtpRequest.ToString(), NotificationChannelEnum.Email.ToString(), dictionary);
-                    if (notificationTemplate != null)
-                    {
-                        var message = new EmailModel
-                        {
-                            Receivers = new List<string> { volunteer.Email },
-                            Subject = "OTP",
-                            Message = HttpUtility.HtmlDecode(notificationTemplate.Data)
-                        };
-                        var emailResponse = await _email.SendEmailASync(message);
-                    }
-                    var otpDto = _mapper.Map<OtpDto>(volunteer);
-                    otpDto.IsUsed = false;
-                    otpDto.Purpose = OtpPurpose.Signup.ToString();
-                    otpDto.OtpCode = volunteer.OTP;
-                    otpDto.Channel = NotificationChannelEnum.Email.ToString();
-                    otpDto.UserId = volunteer.Id;
-                    var mapOtp = _mapper.Map<Otp>(otpDto);
-                    await _uow.OtpRepo.AddAsync(mapOtp);
-                    await AddOnBoardingProgress(volunteer.Id, (int)OnBoardingPages.AuthInfoPage, false, 6);
-                return ResponseHelper.BuildResponse("user register and otp sent", StatusCodes.Status200OK, "created successfully", true);
+                var emailResponse = await _email.SendEmailASync(message);
             }
-            return ResponseHelper.BuildResponse("unable to register user", StatusCodes.Status400BadRequest, "not successful", false);
-        }
-        if (model.BioData != null)
-        {
-            await UpdateBioData(model.BioData);
-        }
-        if (model.LocationDto != null)
-        {
-            await UpdateLocation(model.LocationDto);
-        }
-        if (model.Interest != null)
-        {
-            await UpdateUserInterest(model.Interest);
-        }
-
-        if (model.Skill != null)
-        {
-            await UpdateUserSkill(model.Skill);
-        }
-
-        if (model.ProfileAndBioData != null)
-        { 
-            var imageUrl = await _fileUploadService.UploadFilesAsync(model.ProfileAndBioData.ProfileImage);
-            var user = await _uow.userRepo.GetByExpressionAsync(u => u.Email == _currentUserService.GetUserEmail());
-            user.UserImage = imageUrl.Data[0];
-            await _userManager.UpdateAsync(user);
-            await AddOnBoardingProgress(user.Id, (int)OnBoardingPages.ProfileImageAndBio, false, 6);
-            return ResponseHelper.BuildResponse("onboarding completed", StatusCodes.Status200OK, "created successfully", true);
-        }
-        return ResponseHelper.BuildResponse("unexpected result", StatusCodes.Status400BadRequest, "not successful", false);
-    }
-    public async Task<ApiResponse<string>> UpdateBioData(BioData model)
-    {
-        var volunteer = await _uow.userRepo.GetByExpressionAsync(x => x.Id == _currentUserService.GetUserId());
-        if (volunteer == null)
-        {
-            return ApiResponse<string>.Failure(404, "Volunteer not found.");
-        }
-        volunteer.FirstName = model.FirstName;
-        volunteer.LastName = model.LastName;
-        volunteer.Gender = model.Gender;
-        volunteer.DateOfBirth = model.DateOfBirth;
-        var bioUpdate = await _userManager.UpdateAsync(volunteer);
-        if (bioUpdate.Succeeded)
-        {
-            await UpdateOnBoardingProgress(volunteer.Id, 2, false);
-        }
-        return ApiResponse<string>.Success("Volunteer BioData updated successfully.", null);
-    }
-    public async Task<ApiResponse<string>> UpdateLocation(LocationDto model)
-    {
-        var country = await _uow.countryRepo.GetByExpressionAsync(c => c.CountryName == model.Country);     
-        if (country == null)
-            return ApiResponse<string>.Failure(404, $"Country doesn't exist.");
-        var state = await _uow.stateRepo.GetByExpressionAsync(s => s.StateName == model.State);
-        if (state == null)
-            return ApiResponse<string>.Failure(404, $"State doesn't exist.");
-        var location = new Location
-        {
-            CountryId = country.Id,
-            StateId = state.Id,
-            City = model.City,
-            Zipcode = model.ZipCode,
-            Address = model.Address,
-            UserId = _currentUserService.GetUserId()
-        };
-        await _uow.locationRepo.AddAsync(location);
-        var rowchange = await _uow.CompleteAsync();
-        if (rowchange > 0)
-        {
-            await UpdateOnBoardingProgress(_currentUserService.GetUserId(), 3, false);
-        }
-        return ApiResponse<string>.Success("Volunteer Location updated successfully.", null);
-    }
-
-    public async Task<ApiResponse<string>> UpdateUserInterest(InterestDto model)
-    {
-        var volunteer = await _uow.userRepo.GetByExpressionAsync(x => x.Id == _currentUserService.GetUserId());
-        if (volunteer == null)
-        {
-            return ApiResponse<string>.Failure(404, "Volunteer not found.");
-        }
-        if (model.Names.Any())
-        {
-            foreach (var name in model.Names)
-            {
-                var interestExist = await _uow.interestRepo.GetByExpressionAsync(x => x.Name.ToLower() == name.ToLower());
-                var saveUserInterest = new UserInterestLink()
-                {
-                    UserId = volunteer.Id,
-                    InterestId = interestExist.Id
-                };
-                await _uow.userInterestLinkRepo.AddAsync(saveUserInterest);
-                await _uow.CompleteAsync(); 
-            }
-        }
-        var response = await UpdateOnBoardingProgress(volunteer.Id, 4, false);
-        if (response.StatusCode == StatusCodes.Status200OK)
-            return ApiResponse<string>.Success("onboarding updated", response.Data);
-        return ApiResponse<string>.Success("unable to update onboarding.", null);
-    }
-
-    public async Task<ApiResponse<string>> UpdateUserSkill(VolunteerSkillDto model)
-    {
-        var volunteer = await _uow.userRepo.GetByExpressionAsync(x => x.Id == _currentUserService.GetUserId());
-        if (volunteer == null)
-        {
-            return ApiResponse<string>.Failure(404, "Volunteer not found.");
-        }
-        if (model.Names.Any())
-        {
-            foreach (var name in model.Names)
-            {
-                var skill = await _uow.skillRepo.GetByExpressionAsync(x => x.Name.ToLower() == name.ToLower());
-                {
-                   var skillMap = new UserSkillLink()
-                    {
-                       UserId = volunteer.Id,
-                       SkillId = skill.Id
-                    };
-                    await _uow.userSkillLinkRepo.AddAsync(skillMap);
-                    await _uow.CompleteAsync();
-                }
-            }
-        }
-        var response = await UpdateOnBoardingProgress(volunteer.Id, 5, false);
-        if(response.StatusCode == StatusCodes.Status200OK)
-            return ApiResponse<string>.Success("onboarding update", response.Data);
-        return ApiResponse<string>.Success("unable to update onboarding.", null);
-    }
-
-    public async Task<ApiResponse<string>> UpdateProfileImageAndBio(ProfileImageAndBio model)
-    {
-        var volunteer = await _uow.userRepo.GetByExpressionAsync(x => x.Id == _currentUserService.GetUserId());
-        if (volunteer == null)
-        {
-            return ApiResponse<string>.Failure(404, "Volunteer not found.");
-        }
-        volunteer.Bio = model.Bio;
-        var profile = await _userManager.UpdateAsync(volunteer);
-        if (profile.Succeeded)
-        {
-            await UpdateOnBoardingProgress(volunteer.Id, 6, true);
-        }
-        return ApiResponse<string>.Success("Volunteer Bio and Image updated successfully.", null);
-    }
-
-    public async Task<ApiResponse<string>> UpdateOnBoardingProgress(string userId, int lastCompletedPage, bool hasCompletedOnboarding)
-    {
-        var updateProgressTable = await _uow.onboardingProgressRepo.GetByExpressionAsync(x => x.UserId == userId);
-        if (updateProgressTable != null)
-        {
-            updateProgressTable.UserId = userId.ToString();
-            updateProgressTable.LastCompletedPage = lastCompletedPage;
-            updateProgressTable.HasCompletedOnboarding = hasCompletedOnboarding;
-
-            await _uow.onboardingProgressRepo.UpdateAsync(updateProgressTable);
-            if (await _uow.CompleteAsync() > 0)
-            {
-                return ApiResponse<string>.Success("OnboardingProgress has been updated successfully.", null);
-            }
-        }
-        return ApiResponse<string>.Success("OnboardingProgress has been updated successfully.", null);
-    }
-
-    public async Task<ApiResponse<string>> AddOnBoardingProgress(string userId, int lastCompletedPage, bool hasCompleteOnboarding, int totalPages)
-    {
-        var onboardingPorgress = new OnboardingProgress
-        {
-            UserId = userId, 
-            TotalPages = totalPages,
-            LastCompletedPage = lastCompletedPage,
-            HasCompletedOnboarding = hasCompleteOnboarding
-        };
-        await _uow.onboardingProgressRepo.AddAsync(onboardingPorgress);
-        var succeed = await _uow.CompleteAsync();
-        if (succeed > 0)
-            return ApiResponse<string>.Success("onboarding progress added", "success");
-        return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "unable to add onboarding");
-    }
-    public async Task<ApiResponse<string>> AddFoundationCause(List<string> causeName,string foundationId, string foundationAdminEmail)
-    {
-            var causes = await _uow.CauseRepository
-                .GetAsync(c => causeName.Contains(c.Name));
-            if (causes == null || !causes.Any())
-            {
-                return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest,"No matching causes found");
-            }
-            var foundationCauses = causes.Select(cause => new FoundationCauses
-            {
-                CauseId = cause.Id,
-                FoundationId = foundationId,
-                CreatedBy = foundationAdminEmail
-            }).ToList();
-
-            await _uow.CauseFoundationRepository.AddManyAsync(foundationCauses);
+            var otpDto = _mapper.Map<OtpDto>(volunteer);
+            otpDto.IsUsed = false;
+            otpDto.Purpose = OtpPurpose.Signup.ToString();
+            otpDto.OtpCode = volunteer.OTP;
+            otpDto.Channel = NotificationChannelEnum.Email.ToString();
+            otpDto.UserId = volunteer.Id;
+            var mapOtp = _mapper.Map<Otp>(otpDto);
+            await _uow.OtpRepo.AddAsync(mapOtp);
             await _uow.CompleteAsync();
-            return ApiResponse<string>.Success("foundation causes added successfully", "foundation cause added");
+            return ResponseHelper.BuildResponse("account created and otp sent", StatusCodes.Status200OK, "created successfully", true);
+        }
+        return ResponseHelper.BuildResponse("something went wrong", StatusCodes.Status400BadRequest, "not successful", false);
     }
-
-    public async Task<string> AddLocation(FoundationLocationDto foundationLocationDto, string foundationId)
-    {
-        var country = await _uow.countryRepo.GetByExpressionAsync(c => c.CountryName == foundationLocationDto.FoundationCountry);
-        if (country == null)
-            return ($"Country doesn't exist.");
-        var state = await _uow.stateRepo.GetByExpressionAsync(s => s.StateName == foundationLocationDto.FoundationState);
-        if (state == null)
-            return ("State doesn't exist.");
-        foundationLocationDto.StateId = state.Id;
-        foundationLocationDto.CountryId = country.Id;
-        var mapLocation = _mapper.Map<Location>(foundationLocationDto);
-        mapLocation.FoundationId = foundationId;
-        await _uow.locationRepo.AddAsync(mapLocation);
-        var rowchange = await _uow.CompleteAsync();
-        return mapLocation.Id;
-    }
-
+   
     public async Task<GlobalRequestReponse<string>> CreateOrganization(CreateFoundationRequestDto createFoundationRequestDto)
     {
-        if (_currentUserService.GetUserEmail() == null)
+        var mapFoundationAdmin = _mapper.Map<User>(createFoundationRequestDto.FoundationAdminInfo);
+        var foundationAdminCheck = await _uow.userRepo.GetByExpressionAsync(x =>
+        x.Email == createFoundationRequestDto.FoundationAdminInfo.Email);
+        if (foundationAdminCheck != null)
+            return ResponseHelper.BuildResponse("user already exist", StatusCodes.Status400BadRequest, "user exist", false);
+        mapFoundationAdmin.UserName = createFoundationRequestDto.FoundationAdminInfo.Email;
+        mapFoundationAdmin.PasswordHash = createFoundationRequestDto.FoundationAdminInfo.Password;         mapFoundationAdmin.Email = createFoundationRequestDto.FoundationAdminInfo.Email.Trim();
+        mapFoundationAdmin.DateCreated = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+        mapFoundationAdmin.IsActive = false;
+        mapFoundationAdmin.HasAgreedToTermsAndCondition = createFoundationRequestDto.FoundationAdminInfo.HasAgreedToTermsAndCondition;
+        mapFoundationAdmin.OTP = GenerateOTP();
+        mapFoundationAdmin.OtpSubmittedTime = Convert.ToDateTime(DateTime.Now.ToShortTimeString());
+        var result = await _userManager.CreateAsync(mapFoundationAdmin, createFoundationRequestDto.FoundationAdminInfo.Password.Trim());
+        await _userManager.AddToRoleAsync(mapFoundationAdmin, UserRolesEnum.FoundationAdmin.ToString());
+        if (result.Succeeded)
         {
-            var mapFoundationAdmin = _mapper.Map<User>(createFoundationRequestDto.FoundationAdminInfo);
-            var foundationAdminCheck = await _uow.userRepo.GetByExpressionAsync(x =>
-            x.Email == createFoundationRequestDto.FoundationAdminInfo.Email);
-            if (foundationAdminCheck != null)
-                return ResponseHelper.BuildResponse("user already exist", StatusCodes.Status400BadRequest, "user exist", false);
-            mapFoundationAdmin.UserName = createFoundationRequestDto.FoundationAdminInfo.Email;
-            mapFoundationAdmin.PasswordHash = createFoundationRequestDto.FoundationAdminInfo.Password;
-            mapFoundationAdmin.Email = createFoundationRequestDto.FoundationAdminInfo.Email.Trim();
-            mapFoundationAdmin.DateCreated = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
-            mapFoundationAdmin.IsActive = false;
-            mapFoundationAdmin.HasAgreedToTermsAndCondition = createFoundationRequestDto.FoundationAdminInfo.HasAgreedToTermsAndCondition;
-            mapFoundationAdmin.OTP = GenerateOTP();
-            mapFoundationAdmin.OtpSubmittedTime = Convert.ToDateTime(DateTime.Now.ToShortTimeString());
-            var result = await _userManager.CreateAsync(mapFoundationAdmin, createFoundationRequestDto.FoundationAdminInfo.Password.Trim());
-            await _userManager.AddToRoleAsync(mapFoundationAdmin, UserRolesEnum.FoundationAdmin.ToString());
-            if (result.Succeeded)
-            {
                 // emailService 
-                var dictionary = new Dictionary<string, string>()
-             {
-                {"firstname", mapFoundationAdmin.Email},
-                { "otp", mapFoundationAdmin.OTP}
-             };
-                var notificationTemplate = await _notify.ComposeNotificationAsync(NotificationTypeEnum.OtpRequest.ToString(), NotificationChannelEnum.Email.ToString(), dictionary);
-                if (notificationTemplate != null)
+            var dictionary = new Dictionary<string, string>()
+            {
+              {"Name", mapFoundationAdmin.Email},
+              {"Otp", mapFoundationAdmin.OTP}
+            };
+            var notificationTemplate = await _notify.ComposeNotificationAsync(NotificationTypeEnum.OtpRequest.ToString(), NotificationChannelEnum.Email.ToString(), dictionary);
+            if (notificationTemplate != null)
+            {
+                var message = new EmailModel
                 {
-                    var message = new EmailModel
-                    {
-                        Receivers = new List<string> {mapFoundationAdmin.Email},
-                        Subject = "OTP",
-                        Message = HttpUtility.HtmlDecode(notificationTemplate.Data)
-                    };
-                    var emailResponse = await _email.SendEmailASync(message);
-                }
-                var otpDto = _mapper.Map<OtpDto>(mapFoundationAdmin);
-                otpDto.IsUsed = false;
-                otpDto.Purpose = OtpPurpose.Signup.ToString();
-                otpDto.OtpCode = mapFoundationAdmin.OTP;
-                otpDto.Channel = NotificationChannelEnum.Email.ToString();
-                otpDto.UserId = mapFoundationAdmin.Id;
-                var otp = _mapper.Map<Otp>(otpDto);
-                await _uow.OtpRepo.AddAsync(otp);
-                var response = await AddOnBoardingProgress(mapFoundationAdmin.Id, (int)OrganizationOnboardingEnum.AuthInfoPage, false,6);
-                if(response.StatusCode == StatusCodes.Status200OK)
-                    return ResponseHelper.BuildResponse("foundation admin created", StatusCodes.Status200OK, "created successfully", true);
-                return ResponseHelper.BuildResponse("unsuccessful", StatusCodes.Status400BadRequest, "not successful", false);
+                    Receivers = new List<string> {mapFoundationAdmin.Email},
+                    Subject = "OTP",
+                    Message = HttpUtility.HtmlDecode(notificationTemplate.Data)
+                };
+                var emailResponse = await _email.SendEmailASync(message);
             }
+            var otpDto = _mapper.Map<OtpDto>(mapFoundationAdmin);
+            otpDto.IsUsed = false;
+            otpDto.Purpose = OtpPurpose.Signup.ToString();
+            otpDto.OtpCode = mapFoundationAdmin.OTP;
+            otpDto.Channel = NotificationChannelEnum.Email.ToString();
+            otpDto.UserId = mapFoundationAdmin.Id;
+            var otp = _mapper.Map<Otp>(otpDto);
+            await _uow.OtpRepo.AddAsync(otp); 
+            await _uow.CompleteAsync(); 
+            return ResponseHelper.BuildResponse("account created", StatusCodes.Status400BadRequest, "otp sent", false);    
         }
-        if (createFoundationRequestDto.foundationBioData != null)
-        {
-            var mapOrganization = _mapper.Map<Foundation>(createFoundationRequestDto.foundationBioData);
-            mapOrganization.Email = _currentUserService.GetUserEmail();
-            var category = await _uow.CategoryRepository.GetByExpressionAsync(c => c.Name == createFoundationRequestDto.foundationBioData.FoundationCategory);
-            mapOrganization.CategoryId = category.Id;
-            var foundationAdmin = await _userManager.FindByEmailAsync(_currentUserService.GetUserEmail());
-            foundationAdmin.FoundationId = mapOrganization.Id;
-            mapOrganization.Status = OrganizationStatusUpdateEnums.Pending.ToString();
-            await _uow.OrganizationRepository.AddAsync(mapOrganization);
-            await _uow.CompleteAsync();
-            var response = await _userManager.UpdateAsync(foundationAdmin);
-            await UpdateOnBoardingProgress(_currentUserService.GetUserId(), (int)OrganizationOnboardingEnum.BioDataPage, false);
-        }
-        if (createFoundationRequestDto.FoundationLocationDto != null)
-        {
-            var foundation = await _uow.OrganizationRepository.GetByExpressionAsync(f => f.Email == _currentUserService.GetUserEmail());
-            createFoundationRequestDto.FoundationLocationDto.UserId = _currentUserService.GetUserId();
-            var locationId = await AddLocation(createFoundationRequestDto.FoundationLocationDto, foundation.Id);
-            foundation.LocationId = locationId;
-            _uow.OrganizationRepository.Update(foundation);
-            var response = await _uow.CompleteAsync();
-            await UpdateOnBoardingProgress(_currentUserService.GetUserId(), (int)OrganizationOnboardingEnum.Location, false);
-        }
-        if (createFoundationRequestDto.CauseDto != null)
-        {
-            var foundation = await _uow.OrganizationRepository.GetByExpressionAsync(f => f.Email == _currentUserService.GetUserEmail());
-            var response = await AddFoundationCause(createFoundationRequestDto.CauseDto.Names, foundation.Id, _currentUserService.GetUserEmail());
-            await UpdateOnBoardingProgress(_currentUserService.GetUserId(), (int)OrganizationOnboardingEnum.Cause, false);
-        }
-
-        if (createFoundationRequestDto.ProfileLogo != null)
-        {
-            var imageUrl = await _fileUploadService.UploadFilesAsync(createFoundationRequestDto.ProfileLogo.Logo);
-            var foundation = await _uow.OrganizationRepository.GetByExpressionAsync(f => f.Email == _currentUserService.GetUserEmail());
-            foundation.Logo = imageUrl.Data[0];
-            _uow.OrganizationRepository.Update(foundation);
-            var response = await _uow.CompleteAsync();
-            await UpdateOnBoardingProgress(_currentUserService.GetUserId(), (int)OrganizationOnboardingEnum.Profile, false);
-        }
-
-        if(createFoundationRequestDto.Disclaimer!= null)
-        {
-            var foundation = await _uow.OrganizationRepository.GetByExpressionAsync(f => f.Email == _currentUserService.GetUserEmail());
-            foundation.HasAgreedToDisclaimer = createFoundationRequestDto.Disclaimer.HasAgreedToDisclaimer;
-            foundation.HasAgreedToDisclaimer = createFoundationRequestDto.Disclaimer.HasAgreedToDisclaimer;
-            foundation.IsActive = true;
-            _uow.OrganizationRepository.Update(foundation);
-            await _uow.CompleteAsync();
-            await UpdateOnBoardingProgress(_currentUserService.GetUserId(), (int)OrganizationOnboardingEnum.Disclaimer, true);
-            return ResponseHelper.BuildResponse("success", StatusCodes.Status200OK, "onboarding completed", true);
-        }
-        return ResponseHelper.BuildResponse("unexpected result", StatusCodes.Status400BadRequest, "not successful", false);
+        return ResponseHelper.BuildResponse("something went wrong", StatusCodes.Status400BadRequest, "not successful", false);
     }
 
     public async Task<ApiResponse<LoginResponseModel>> LoginAsync(LoginRequestModel request, CancellationToken cancellationToken)

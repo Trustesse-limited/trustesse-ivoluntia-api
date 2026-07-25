@@ -31,7 +31,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 return ApiResponse<Otp>.Failure(StatusCodes.Status400BadRequest, "otp already used");
 
             if ((DateTime.UtcNow - otp.CreatedAt).TotalMinutes > 5)
-                return ApiResponse<Otp>.Failure(StatusCodes.Status400BadRequest, "already used"); ;
+                return ApiResponse<Otp>.Failure(StatusCodes.Status400BadRequest, "already used"); 
             await _otpRepository.MarkOtpAsUsedAsync(otp);
             return ApiResponse<Otp>.Success("success", otp); 
         }

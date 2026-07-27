@@ -6,4 +6,5 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 public interface ITransactionPinService
 {
     Task<GlobalRequestReponse<SetupTransactionPinResponse>> SetupTransactionPinAsync(SetupTransactionPinRequest request);
+    Task<GlobalRequestReponse<VerifyTransactionPinResponse>> VerifyTransactionPinAsync(VerifyTransactionPinRequest request);
 }

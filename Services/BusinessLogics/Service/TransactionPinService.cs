@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
+using Trustesse.Ivoluntia.Commons.Configurations;
 using Trustesse.Ivoluntia.Commons.DTOs.Auth;
 using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
 using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Domain.Entities;
+using Trustesse.Ivoluntia.Domain.Enums;
 using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
@@ -16,16 +19,22 @@ public class TransactionPinService : ITransactionPinService
 
     private readonly ICurrentUserService _currentUserService;
     private readonly IPasswordHasher<string> _passwordHasher;
+    private readonly IAuthorizationTokenService _authorizationTokenService;
     private readonly IUnitOfWork _uow;
+    private readonly TransactionSecurityOptions _options;
 
     public TransactionPinService(
         ICurrentUserService currentUserService,
         IPasswordHasher<string> passwordHasher,
-        IUnitOfWork uow)
+        IAuthorizationTokenService authorizationTokenService,
+        IUnitOfWork uow,
+        IOptions<TransactionSecurityOptions> options)
     {
         _currentUserService = currentUserService;
         _passwordHasher = passwordHasher;
+        _authorizationTokenService = authorizationTokenService;
         _uow = uow;
+        _options = options.Value;
     }
 
     public async Task<GlobalRequestReponse<SetupTransactionPinResponse>> SetupTransactionPinAsync(SetupTransactionPinRequest request)
@@ -72,6 +81,76 @@ public class TransactionPinService : ITransactionPinService
         catch (Exception ex)
         {
             return ResponseHelper.BuildResponse<SetupTransactionPinResponse>(ex.Message, StatusCodes.Status500InternalServerError, null, false);
+        }
+    }
+
+    public async Task<GlobalRequestReponse<VerifyTransactionPinResponse>> VerifyTransactionPinAsync(VerifyTransactionPinRequest request)
+    {
+        try
+        {
+            var userId = _currentUserService.GetUserId();
+
+            if (string.IsNullOrWhiteSpace(userId))
+                return ResponseHelper.BuildResponse<VerifyTransactionPinResponse>("Invalid user.", StatusCodes.Status401Unauthorized, null, false);
+
+            var now = DateTime.UtcNow;
+
+            var attempt = await _uow.pinVerificationAttemptRepo.GetByExpressionAsync(x => x.UserId == userId);
+
+            if (attempt?.LockedUntil > now)
+                return ResponseHelper.BuildResponse<VerifyTransactionPinResponse>(
+                    $"Too many failed attempts. Try again after {attempt.LockedUntil:yyyy-MM-dd HH:mm:ss} UTC.", StatusCodes.Status423Locked, null, false);
+
+            if (attempt == null)
+            {
+                attempt = new PinVerificationAttempt
+                {
+                    UserId = userId,
+                    AttemptCount = 0,
+                    LastAttemptDate = now
+                };
+
+                await _uow.pinVerificationAttemptRepo.AddAsync(attempt);
+            }
+
+            var pin = await _uow.transactionPinRepo.GetByExpressionAsync(x => x.UserId == userId);
+
+            if (pin == null)
+                return ResponseHelper.BuildResponse<VerifyTransactionPinResponse>("Transaction PIN has not been set up.", StatusCodes.Status400BadRequest, null, false);
+
+            var verificationResult = _passwordHasher.VerifyHashedPassword(userId, pin.PinHash, request.Pin);
+            var isValid = verificationResult == PasswordVerificationResult.Success || verificationResult == PasswordVerificationResult.SuccessRehashNeeded;
+
+            if (!isValid)
+            {
+                attempt.AttemptCount++;
+                attempt.LastAttemptDate = now;
+
+                if (attempt.AttemptCount >= _options.MaxFailedPinAttempts)
+                    attempt.LockedUntil = now.AddMinutes(_options.LockoutMinutes);
+
+                await _uow.CompleteAsync();
+
+                var remainingAttempts = Math.Max(0, _options.MaxFailedPinAttempts - attempt.AttemptCount);
+
+                return ResponseHelper.BuildResponse<VerifyTransactionPinResponse>(
+                    $"Incorrect PIN. {remainingAttempts} attempt(s) remaining.", StatusCodes.Status400BadRequest, null, false);
+            }
+
+            attempt.AttemptCount = 0;
+            attempt.LockedUntil = null;
+            attempt.LastAttemptDate = now;
+
+            var token = await _authorizationTokenService.GenerateTokenAsync(userId, AuthorizationPurpose.TransactionPinVerification.ToString());
+
+            await _uow.CompleteAsync();
+
+            return ResponseHelper.BuildResponse("Transaction PIN verified successfully.", StatusCodes.Status200OK,
+                new VerifyTransactionPinResponse { Token = token }, true);
+        }
+        catch (Exception ex)
+        {
+            return ResponseHelper.BuildResponse<VerifyTransactionPinResponse>(ex.Message, StatusCodes.Status500InternalServerError, null, false);
         }
     }
 

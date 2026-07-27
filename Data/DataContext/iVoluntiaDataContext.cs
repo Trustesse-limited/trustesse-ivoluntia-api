@@ -48,6 +48,8 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<UserSecurityValidationAttempt> UserSecurityValidationAttempts { get; set; }
         public DbSet<OrganizationDeclineStatus> organizationDeclineStatuses { get; set; }
         public DbSet<TransactionPin> TransactionPins { get; set; }
+        public DbSet<Authorization> Authorizations { get; set; }
+        public DbSet<PinVerificationAttempt> PinVerificationAttempts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -92,6 +94,20 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                 entity.HasOne(t => t.User)
                       .WithOne()
                       .HasForeignKey<TransactionPin>(t => t.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Authorization>(entity =>
+            {
+                entity.Property(a => a.ByteString).HasMaxLength(16);
+                entity.Property(a => a.TokenSalt).HasMaxLength(32);
+                entity.Property(a => a.TokenHash).HasMaxLength(64);
+
+                entity.HasIndex(a => a.ByteString).IsUnique();
+
+                entity.HasOne(a => a.Initiator)
+                      .WithMany()
+                      .HasForeignKey(a => a.InitiatorId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
 

@@ -35,4 +35,6 @@ public interface IUnitOfWork
     IProgramGoalRepository ProgramGoalRepository { get; set; }
     IOrganizationDeclineStatusRepository organizationDeclineStatusRepository { get; set; }
     ITransactionPinRepository transactionPinRepo { get; }
+    IAuthorizationRepository authorizationRepo { get; }
+    IPinVerificationAttemptRepository pinVerificationAttemptRepo { get; }
 }

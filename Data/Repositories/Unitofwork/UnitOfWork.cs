@@ -41,6 +41,8 @@ public class UnitOfWork : IUnitOfWork
     public IUserProgramRepository userProgramRepository { get; set; }
     public IProgramGoalRepository ProgramGoalRepository { get; set; }
     public ITransactionPinRepository transactionPinRepo { get; set; }
+    public IAuthorizationRepository authorizationRepo { get; set; }
+    public IPinVerificationAttemptRepository pinVerificationAttemptRepo { get; set; }
 
     public UnitOfWork(iVoluntiaDataContext dbContext)
     {
@@ -73,6 +75,8 @@ public class UnitOfWork : IUnitOfWork
         userProgramRepository = new UserProgramRepository(dbContext);
         ProgramGoalRepository = new ProgramGoalRepository(dbContext);
         transactionPinRepo = new TransactionPinRepository(dbContext);
+        authorizationRepo = new AuthorizationRepository(dbContext);
+        pinVerificationAttemptRepo = new PinVerificationAttemptRepository(dbContext);
     }
     public IGenericRepository<TEntity> repository<TEntity>() where TEntity : class
     {

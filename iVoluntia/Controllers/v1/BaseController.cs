@@ -22,6 +22,9 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
                 StatusCodes.Status409Conflict => Conflict(requestReponse),
                 StatusCodes.Status415UnsupportedMediaType => BadRequest(requestReponse),
                 StatusCodes.Status204NoContent => NoContent(),
+                StatusCodes.Status423Locked => StatusCode(StatusCodes.Status423Locked, requestReponse),
+                StatusCodes.Status429TooManyRequests => StatusCode(StatusCodes.Status429TooManyRequests, requestReponse),
+                _ => StatusCode(requestReponse.ResponseCode, requestReponse),
             };
         }
     }

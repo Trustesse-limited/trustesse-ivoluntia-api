@@ -18,11 +18,11 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             _transactionPinService = transactionPinService;
         }
 
-        [HttpPost("setup")]
+        [HttpPost("setup-pin")]
         public async Task<IActionResult> SetupTransactionPin([FromBody] SetupTransactionPinRequest request)
             => BuildHttpResponse(await _transactionPinService.SetupTransactionPinAsync(request));
 
-        [HttpPost("verify")]
+        [HttpPost("pin-verification")]
         [RateLimit(MaxRequests = 10, WindowSeconds = 60)]
         public async Task<IActionResult> VerifyTransactionPin([FromBody] VerifyTransactionPinRequest request)
             => BuildHttpResponse(await _transactionPinService.VerifyTransactionPinAsync(request));

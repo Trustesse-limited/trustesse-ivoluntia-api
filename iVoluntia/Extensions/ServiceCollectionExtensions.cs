@@ -63,6 +63,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<IUserSkillLinkRepository, UserSkillLinkRepository>();
             services.AddScoped<IOtpRepository, OtpRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IOnboardingService, OnboardingService>();
 
             services.AddSwaggerGen(options =>
             {

@@ -8,8 +8,7 @@ namespace Trustesse.Ivoluntia.Domain.Enums
 {
     public enum  OrganizationOnboardingEnum
     {
-        AuthInfoPage = 1,
-        BioDataPage,
+        BioDataPage = 1,
         Location,
         Cause,
         Profile,

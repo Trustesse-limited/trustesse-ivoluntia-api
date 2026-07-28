@@ -49,6 +49,11 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<IOrganizationService, OrganizationService>();
             services.AddScoped<IOrganizationRepository, OrganizationRepository>();
             services.AddScoped<ISecurityQuestionRepository, SecurityQuestionRepository>();
+            services.AddScoped<ITransactionPinRepository, TransactionPinRepository>();
+            services.AddScoped<ITransactionPinService, TransactionPinService>();
+            services.AddScoped<IAuthorizationRepository, AuthorizationRepository>();
+            services.AddScoped<IPinVerificationAttemptRepository, PinVerificationAttemptRepository>();
+            services.AddScoped<IAuthorizationTokenService, AuthorizationTokenService>();
             services.AddScoped<ISecurityQuestionService, SecurityQuestionService>();
             services.AddScoped<IPasswordHasher<string>, PasswordHasher<string>>();
             services.AddScoped<ICountryService, CountryService>();
@@ -171,6 +176,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
         {
             var jwtOptions = configuration.GetSection("JwtOptions");
             services.Configure<JwtOptions>(jwtOptions);
+            services.Configure<TransactionSecurityOptions>(configuration.GetSection("TransactionSecurityOptions"));
 
             var issuer = jwtOptions["Issuer"];
             var audience = jwtOptions["Audience"];

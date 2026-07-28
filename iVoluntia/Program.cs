@@ -15,6 +15,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
 builder.Services.AddCustomSwagger();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddMemoryCache();
 builder.Services.AddCustomCors(builder.Configuration);
 builder.Services.AddCustomDatabase(builder.Configuration);
 builder.Services.AddCustomIdentity(builder.Configuration);

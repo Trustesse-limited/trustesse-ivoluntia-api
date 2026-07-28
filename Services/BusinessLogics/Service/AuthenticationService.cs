@@ -153,7 +153,7 @@ public class AuthenticationService : IAuthenticationService
             var otp = _mapper.Map<Otp>(otpDto);
             await _uow.OtpRepo.AddAsync(otp); 
             await _uow.CompleteAsync(); 
-            return ResponseHelper.BuildResponse("account created", StatusCodes.Status400BadRequest, "otp sent", false);    
+            return ResponseHelper.BuildResponse("account created", StatusCodes.Status200OK, "otp sent", true);    
         }
         return ResponseHelper.BuildResponse("something went wrong", StatusCodes.Status400BadRequest, "not successful", false);
     }
@@ -211,12 +211,15 @@ public class AuthenticationService : IAuthenticationService
         _uow.userRepo.Update(user);
         await _uow.CompleteAsync();
 
+        var hasSetUpPin = await _uow.transactionPinRepo.GetByExpressionAsync(x => x.UserId == user.Id) != null;
+
         var longinResponse = new LoginResponseModel
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
             HasCompletedOnboarding = user.OnboardingProgress?.HasCompletedOnboarding ?? true,
             LastCompletedPage = user.OnboardingProgress?.LastCompletedPage ?? 0,
+            HasSetUpPin = hasSetUpPin,
             Message = "Login successful"
         };
 

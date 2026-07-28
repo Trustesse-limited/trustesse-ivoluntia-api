@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Trustesse.Ivoluntia.Data.DataContext;
 
@@ -11,9 +12,11 @@ using Trustesse.Ivoluntia.Data.DataContext;
 namespace Trustesse.Ivoluntia.Data.Migrations
 {
     [DbContext(typeof(iVoluntiaDataContext))]
-    partial class iVoluntiaDataContextModelSnapshot : ModelSnapshot
+    [Migration("20260723122008_AddTransactionPin")]
+    partial class AddTransactionPin
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -193,58 +196,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AuditLogs");
-                });
-
-            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Authorization", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<byte[]>("ByteString")
-                        .HasMaxLength(16)
-                        .HasColumnType("varbinary(16)");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DateUpdated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("InitiatorId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<bool>("IsDeprecated")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsUsed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Purpose")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<byte[]>("TokenHash")
-                        .HasMaxLength(64)
-                        .HasColumnType("varbinary(64)");
-
-                    b.Property<byte[]>("TokenSalt")
-                        .HasMaxLength(32)
-                        .HasColumnType("varbinary(32)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ByteString")
-                        .IsUnique()
-                        .HasFilter("[ByteString] IS NOT NULL");
-
-                    b.HasIndex("InitiatorId");
-
-                    b.ToTable("Authorizations");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Cause", b =>
@@ -977,41 +928,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Otps");
-                });
-
-            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.PinVerificationAttempt", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("AttemptCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DateUpdated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeprecated")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("LastAttemptDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LockedUntil")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PinVerificationAttempts");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Program", b =>
@@ -1753,17 +1669,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Authorization", b =>
-                {
-                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.User", "Initiator")
-                        .WithMany()
-                        .HasForeignKey("InitiatorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Initiator");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Donation", b =>

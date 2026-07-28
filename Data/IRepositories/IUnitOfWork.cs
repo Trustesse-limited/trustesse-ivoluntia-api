@@ -34,4 +34,7 @@ public interface IUnitOfWork
     IUserProgramRepository userProgramRepository { get; set; }  
     IProgramGoalRepository ProgramGoalRepository { get; set; }
     IOrganizationDeclineStatusRepository organizationDeclineStatusRepository { get; set; }
+    ITransactionPinRepository transactionPinRepo { get; }
+    IAuthorizationRepository authorizationRepo { get; }
+    IPinVerificationAttemptRepository pinVerificationAttemptRepo { get; }
 }

@@ -36,5 +36,10 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         [HttpPatch("/organizations/{id}/status")]
         public async Task<IActionResult> OrganizationStatusUpdate([FromBody] UpdateOrganizationStatusDto updateOrganizationStatusDto, string id)
            => BuildHttpResponse<string>(await _organizationService.OrganizationStatusUpdate(updateOrganizationStatusDto.Validate(id), id));
+
+        [Authorize(Roles = AuthenticationConstants.SuperAdmin)]
+        [HttpPost("/organisations/account-details")]
+        public async Task<IActionResult> CreateOrganizationAccount([FromBody] UpdateOrganizationStatusDto updateOrganizationStatusDto, string id)
+           => BuildHttpResponse<string>(await _organizationService.OrganizationStatusUpdate(updateOrganizationStatusDto.Validate(id), id));
     }
 }

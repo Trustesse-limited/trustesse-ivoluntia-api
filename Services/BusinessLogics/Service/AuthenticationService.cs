@@ -116,7 +116,8 @@ public class AuthenticationService : IAuthenticationService
         if (foundationAdminCheck != null)
             return ResponseHelper.BuildResponse("user already exist", StatusCodes.Status400BadRequest, "user exist", false);
         mapFoundationAdmin.UserName = createFoundationRequestDto.FoundationAdminInfo.Email;
-        mapFoundationAdmin.PasswordHash = createFoundationRequestDto.FoundationAdminInfo.Password;         mapFoundationAdmin.Email = createFoundationRequestDto.FoundationAdminInfo.Email.Trim();
+        mapFoundationAdmin.PasswordHash = createFoundationRequestDto.FoundationAdminInfo.Password;       
+        mapFoundationAdmin.Email = createFoundationRequestDto.FoundationAdminInfo.Email.Trim();
         mapFoundationAdmin.DateCreated = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
         mapFoundationAdmin.IsActive = false;
         mapFoundationAdmin.HasAgreedToTermsAndCondition = createFoundationRequestDto.FoundationAdminInfo.HasAgreedToTermsAndCondition;

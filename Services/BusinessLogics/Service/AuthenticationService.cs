@@ -152,7 +152,7 @@ public class AuthenticationService : IAuthenticationService
             var otp = _mapper.Map<Otp>(otpDto);
             await _uow.OtpRepo.AddAsync(otp); 
             await _uow.CompleteAsync(); 
-            return ResponseHelper.BuildResponse("account created", StatusCodes.Status400BadRequest, "otp sent", false);    
+            return ResponseHelper.BuildResponse("account created", StatusCodes.Status200OK, "otp sent", true);    
         }
         return ResponseHelper.BuildResponse("something went wrong", StatusCodes.Status400BadRequest, "not successful", false);
     }

@@ -116,7 +116,8 @@ public class AuthenticationService : IAuthenticationService
         if (foundationAdminCheck != null)
             return ResponseHelper.BuildResponse("user already exist", StatusCodes.Status400BadRequest, "user exist", false);
         mapFoundationAdmin.UserName = createFoundationRequestDto.FoundationAdminInfo.Email;
-        mapFoundationAdmin.PasswordHash = createFoundationRequestDto.FoundationAdminInfo.Password;         mapFoundationAdmin.Email = createFoundationRequestDto.FoundationAdminInfo.Email.Trim();
+        mapFoundationAdmin.PasswordHash = createFoundationRequestDto.FoundationAdminInfo.Password;       
+        mapFoundationAdmin.Email = createFoundationRequestDto.FoundationAdminInfo.Email.Trim();
         mapFoundationAdmin.DateCreated = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
         mapFoundationAdmin.IsActive = false;
         mapFoundationAdmin.HasAgreedToTermsAndCondition = createFoundationRequestDto.FoundationAdminInfo.HasAgreedToTermsAndCondition;
@@ -168,7 +169,16 @@ public class AuthenticationService : IAuthenticationService
 
         var roles = await _userManager.GetRolesAsync(user);
         var primaryRole = roles.FirstOrDefault() ?? "Volunteer";
-        var isSuperAdmin = primaryRole == UserRolesEnum.SuperAdmin.ToString();
+        string accountType = "";
+        if(primaryRole == "Volunteer")
+        {
+            accountType = "Volunteer";
+        }
+        else
+        {
+            accountType = "Organization";
+        }
+        
 
         if (!user.IsActive)
         {
@@ -199,7 +209,7 @@ public class AuthenticationService : IAuthenticationService
             FirstName = user.FirstName,
             LastName = user.LastName,
             OrganizationName = user?.Foundation?.Name ?? string.Empty,
-            FoundationId = user?.FoundationId ?? string.Empty  
+            FoundationId = user?.FoundationId ?? string.Empty
         };
 
         var accessToken = _jwtTokenService.GenerateAccessTokenAsync(jwtClaims, primaryRole);
@@ -216,10 +226,11 @@ public class AuthenticationService : IAuthenticationService
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            HasCompletedOnboarding = user.OnboardingProgress?.HasCompletedOnboarding ?? true,
+            HasCompletedOnboarding = user.OnboardingProgress?.HasCompletedOnboarding ?? false,
             LastCompletedPage = user.OnboardingProgress?.LastCompletedPage ?? 0,
             HasSetUpPin = hasSetUpPin,
-            Message = "Login successful"
+            Message = "Login successful",
+            AccountType = accountType,  
         };
 
         return ApiResponse<LoginResponseModel>.Success("Successfully logged in", longinResponse);

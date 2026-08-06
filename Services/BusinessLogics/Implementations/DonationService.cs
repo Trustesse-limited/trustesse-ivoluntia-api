@@ -85,7 +85,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                         using var response = await _client.PostAsync($"{_baseUrl}/api/PaystackTransaction/DonationPayment", content);
                         response.EnsureSuccessStatusCode();
                         var result = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine(result);
                         var initializeResponse = await response.Content.ReadFromJsonAsync<PaymentInitializeResponse>();
                         if (initializeResponse != null)
                         {

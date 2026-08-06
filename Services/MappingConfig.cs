@@ -37,6 +37,7 @@ namespace Trustesse.Ivoluntia.Services
             config.NewConfig<OtpDto, Otp>();
             config.NewConfig<VolunteerSignUpDto, User>();
             config.NewConfig<SecurityQuestion, SecurityQuestionDto>();
+            config.NewConfig<OrganizationAccountNumberVerifyResponseDto, FoundationBankAccountDetail>();
             services.AddSingleton(config);
             services.AddScoped<IMapper, Mapper>();
         }

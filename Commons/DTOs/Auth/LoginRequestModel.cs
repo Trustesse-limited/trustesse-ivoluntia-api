@@ -24,4 +24,5 @@ public record LoginResponseModel
     public bool RequiresTwoFactor { get; init; }
     public bool RequiresPasswordChange { get; init; }
     public List<string> Permissions { get; init; } = new();
+    public string AccountType { get; set; }
 }

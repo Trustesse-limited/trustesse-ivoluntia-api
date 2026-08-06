@@ -43,6 +43,8 @@ public class UnitOfWork : IUnitOfWork
     public ITransactionPinRepository transactionPinRepo { get; set; }
     public IAuthorizationRepository authorizationRepo { get; set; }
     public IPinVerificationAttemptRepository pinVerificationAttemptRepo { get; set; }
+    public IOrganizationBankAccountDetailRepository organizationBankAccountDetailRepository { get; set; }
+    public IOrganizationBankAccountHistoryDetailRepository organizationBankAccountHistoryDetailRepository { get; set; }
 
     public UnitOfWork(iVoluntiaDataContext dbContext)
     {
@@ -77,6 +79,8 @@ public class UnitOfWork : IUnitOfWork
         transactionPinRepo = new TransactionPinRepository(dbContext);
         authorizationRepo = new AuthorizationRepository(dbContext);
         pinVerificationAttemptRepo = new PinVerificationAttemptRepository(dbContext);
+        organizationBankAccountDetailRepository = new OrganizationBankAccountDetailRepository(dbContext);
+        organizationBankAccountHistoryDetailRepository = new OrganizationBankAccountHistoryDetailRepository(dbContext);
     }
     public IGenericRepository<TEntity> repository<TEntity>() where TEntity : class
     {
@@ -95,5 +99,4 @@ public class UnitOfWork : IUnitOfWork
     {
         return await _dbContext.SaveChangesAsync();
     }
-
 }

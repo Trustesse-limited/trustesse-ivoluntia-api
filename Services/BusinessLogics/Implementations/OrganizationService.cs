@@ -3,14 +3,18 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Auth;
+using Trustesse.Ivoluntia.Commons.DTOs.Donation;
 using Trustesse.Ivoluntia.Commons.DTOs.Foundation;
 using Trustesse.Ivoluntia.Commons.DTOs.GenericResponse;
 using Trustesse.Ivoluntia.Commons.DTOs.GlobalRequest;
@@ -33,7 +37,10 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         private readonly ICurrentUserService _currentUserService;
         private readonly INotificationService _notify;
         private readonly IEmailService _email;
-        public OrganizationService(IMapper mapper, IUnitOfWork unitOfWork, IAuthenticationService authenticationService, ICurrentUserService currentUserService, INotificationService notify, IEmailService email)
+        private readonly IConfiguration _configuration;
+        private readonly HttpClient _httpClient;
+        private readonly string _baseUrl;
+        public OrganizationService(IMapper mapper, IUnitOfWork unitOfWork, IAuthenticationService authenticationService, ICurrentUserService currentUserService, INotificationService notify, IEmailService email, IConfiguration configuration, HttpClient httpClient)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
@@ -41,6 +48,9 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             _currentUserService = currentUserService;
             _notify = notify;
             _email = email;
+            _configuration = configuration;
+            _httpClient = httpClient;
+            _baseUrl = _configuration["PaymentGateway:BaseUrl"];
         }
 
         public async Task<GlobalRequestReponse<List<OrganizationResponseDto>>> GetOrganization(PagedRequestDTO pagedRequestDTO)
@@ -158,6 +168,56 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 return ResponseHelper.BuildResponse("success", StatusCodes.Status200OK, updateOrganizationStatusDto.Status, true);
             }
             return ResponseHelper.BuildResponse("something went wrong", StatusCodes.Status400BadRequest, updateOrganizationStatusDto.Status, false);
+        }
+        public async Task<GlobalRequestReponse<string>> CreateOrganizationAccount(CreateOrganizationAccountDetailRequestDto createOrganizationAccountDetailRequestDto)
+        {
+            var json = JsonConvert.SerializeObject(createOrganizationAccountDetailRequestDto);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var accountVerifyResponse = await _httpClient.PostAsync($"{_baseUrl}/api/Account/banks/verify-account", content);
+            accountVerifyResponse.EnsureSuccessStatusCode();
+            var contentResponse = await accountVerifyResponse.Content.ReadAsStringAsync();
+            var data = await accountVerifyResponse.Content.ReadFromJsonAsync<OrganizationAccountNumberVerifyResponseDto>();
+            var mapBankAccountDetail = _mapper.Map<FoundationBankAccountDetail>(data);
+            if(accountVerifyResponse.IsSuccessStatusCode == true)
+            {
+                var foundation = await _unitOfWork.foundationRepo.GetByIdAsync(_currentUserService.GetUserFoundationId());
+                var foundationAdmin = await _unitOfWork.userRepo.GetByIdAsync(_currentUserService.GetUserId());
+                if (mapBankAccountDetail.AccountName != foundation.Name)
+                    return ResponseHelper.BuildResponse("account name does not match foundation name or foundation admin name", StatusCodes.Status400BadRequest, "unmatch account name", false);
+                var bankAccountDetail =  _unitOfWork.organizationBankAccountDetailRepository.GetByExpression(a => a.FoundationId == _currentUserService.GetUserFoundationId());
+                
+                if (bankAccountDetail == null)
+                {
+                    mapBankAccountDetail.DateCreated = DateTime.UtcNow;
+                    mapBankAccountDetail.CreatedBy = foundationAdmin.FirstName;
+                    mapBankAccountDetail.FoundationId = foundation.Id;
+                    await _unitOfWork.organizationBankAccountDetailRepository.AddAsync(mapBankAccountDetail);
+                    var response = await _unitOfWork.CompleteAsync();
+                }
+                else
+                {
+                    var count = bankAccountDetail.Count();
+                    if(count > 1)
+                    {
+                        return ResponseHelper.BuildResponse("cannot update bank account details more than twice a month", StatusCodes.Status400BadRequest, "cannot update account", false);
+                    }
+                    var accountDetailDefault = await bankAccountDetail.FirstOrDefaultAsync();
+                    var mapBankUpdateAccountHistory = _mapper.Map<FoundationBankAccountDetailUpdateHistory>(accountDetailDefault);
+                    mapBankUpdateAccountHistory.PreviousAccountNumber = accountDetailDefault.AccountNumber;
+                    mapBankUpdateAccountHistory.CurrentAccountNumber = mapBankAccountDetail.AccountNumber;
+                    mapBankUpdateAccountHistory.CreatedBy = _currentUserService.GetUserEmail();
+                    mapBankUpdateAccountHistory.DateCreated = DateTime.UtcNow;
+                    await _unitOfWork.organizationBankAccountHistoryDetailRepository.AddAsync(mapBankUpdateAccountHistory);
+                    mapBankAccountDetail.DateCreated = DateTime.Now;
+                    mapBankAccountDetail.DateUpdated = DateTime.Now;
+                    mapBankAccountDetail.BankName = createOrganizationAccountDetailRequestDto.BankName;
+                    mapBankAccountDetail.BankCode = createOrganizationAccountDetailRequestDto.BankCode;
+                    await _unitOfWork.organizationBankAccountDetailRepository.AddAsync(mapBankAccountDetail);
+                    var response = await _unitOfWork.CompleteAsync();
+                }
+                return ResponseHelper.BuildResponse("success", StatusCodes.Status200OK, "account created", true);
+            }  
+            return ResponseHelper.BuildResponse("unable to create account", StatusCodes.Status400BadRequest,"unable to verify account", false);
         }
     }
 }

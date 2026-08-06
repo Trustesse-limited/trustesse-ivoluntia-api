@@ -50,6 +50,8 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<TransactionPin> TransactionPins { get; set; }
         public DbSet<Authorization> Authorizations { get; set; }
         public DbSet<PinVerificationAttempt> PinVerificationAttempts { get; set; }
+        public DbSet<FoundationBankAccountDetail> FoundationBankAccountDetails { get; set; }
+        public DbSet<FoundationBankAccountDetailUpdateHistory> FoundationAccountDetailUpdateHistories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -299,6 +301,24 @@ namespace Trustesse.Ivoluntia.Data.DataContext
 
             modelBuilder.Entity<OrganizationDeclineStatus>()
               .HasQueryFilter(d => !d.IsDeprecated);
+
+
+            modelBuilder.Entity<FoundationBankAccountDetail>(entity =>
+            {
+                entity.HasOne(fbd => fbd.Foundation)
+                     .WithMany(f => f.FoundationBankAccountDetails)
+                     .HasForeignKey(fbd => fbd.FoundationId)
+                     .OnDelete(DeleteBehavior.Cascade);
+                entity.HasQueryFilter(f => !f.IsDeprecated);
+            });
+            modelBuilder.Entity<FoundationBankAccountDetailUpdateHistory>(entity =>
+            {
+                entity.HasOne(fbud => fbud.Foundation)
+                     .WithMany(f => f.FoundationBankAccountDetailUpdateHistories)
+                     .HasForeignKey(fbud => fbud.FoundationId)
+                     .OnDelete(DeleteBehavior.Cascade);
+                entity.HasQueryFilter(f => !f.IsDeprecated);
+            });
         }
     }
 }

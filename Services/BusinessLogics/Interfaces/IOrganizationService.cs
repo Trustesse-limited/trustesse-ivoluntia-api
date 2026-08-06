@@ -16,5 +16,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces
         Task<GlobalRequestReponse<List<OrganizationResponseDto>>> GetOrganization(PagedRequestDTO pagedRequestDTO);
         Task<GlobalRequestReponse<OrganizationResponseDto>> GetOrganizationByID(string id);
         Task<GlobalRequestReponse<string>> OrganizationStatusUpdate(UpdateOrganizationStatusDto updateOrganizationStatusDto, string foundationId);
+        Task<GlobalRequestReponse<string>> CreateOrganizationAccount(CreateOrganizationAccountDetailRequestDto createOrganizationAccountDetailRequestDto);
     }
 }

@@ -38,5 +38,6 @@ public interface IUnitOfWork
     IAuthorizationRepository authorizationRepo { get; }
     IPinVerificationAttemptRepository pinVerificationAttemptRepo { get; }
     IOrganizationBankAccountDetailRepository organizationBankAccountDetailRepository { get; set; }
-    IOrganizationBankAccountHistoryDetailRepository organizationBankAccountHistoryDetailRepository { get; set; }  
+    IOrganizationBankAccountHistoryDetailRepository organizationBankAccountHistoryDetailRepository { get; set; }
+    IQualificationRepository qualificationRepo { get; set; }
 }

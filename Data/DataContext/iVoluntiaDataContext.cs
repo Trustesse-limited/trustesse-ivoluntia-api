@@ -52,6 +52,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<PinVerificationAttempt> PinVerificationAttempts { get; set; }
         public DbSet<FoundationBankAccountDetail> FoundationBankAccountDetails { get; set; }
         public DbSet<FoundationBankAccountDetailUpdateHistory> FoundationAccountDetailUpdateHistories { get; set; }
+        public DbSet<Qualification> Qualifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -318,6 +319,14 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                      .HasForeignKey(fbud => fbud.FoundationId)
                      .OnDelete(DeleteBehavior.Cascade);
                 entity.HasQueryFilter(f => !f.IsDeprecated);
+            });
+
+            modelBuilder.Entity<Qualification>(entity =>
+            {
+                entity.Property(q => q.Title).HasMaxLength(100);
+                entity.Property(q => q.SupportingDocumentFormat).HasMaxLength(20);
+                entity.HasIndex(q => q.Title).IsUnique();
+                entity.HasQueryFilter(q => !q.IsDeprecated);
             });
         }
     }

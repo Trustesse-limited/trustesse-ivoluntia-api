@@ -45,6 +45,7 @@ public class UnitOfWork : IUnitOfWork
     public IPinVerificationAttemptRepository pinVerificationAttemptRepo { get; set; }
     public IOrganizationBankAccountDetailRepository organizationBankAccountDetailRepository { get; set; }
     public IOrganizationBankAccountHistoryDetailRepository organizationBankAccountHistoryDetailRepository { get; set; }
+    public IQualificationRepository qualificationRepo { get; set; }
 
     public UnitOfWork(iVoluntiaDataContext dbContext)
     {
@@ -81,6 +82,7 @@ public class UnitOfWork : IUnitOfWork
         pinVerificationAttemptRepo = new PinVerificationAttemptRepository(dbContext);
         organizationBankAccountDetailRepository = new OrganizationBankAccountDetailRepository(dbContext);
         organizationBankAccountHistoryDetailRepository = new OrganizationBankAccountHistoryDetailRepository(dbContext);
+        qualificationRepo = new QualificationRepository(dbContext);
     }
     public IGenericRepository<TEntity> repository<TEntity>() where TEntity : class
     {

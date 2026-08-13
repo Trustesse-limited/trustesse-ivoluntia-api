@@ -40,6 +40,10 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 if (string.IsNullOrWhiteSpace(request.SupportingDocumentFormat))
                     return ResponseHelper.BuildResponse<QualificationDto>("Supporting document format is required", StatusCodes.Status400BadRequest, null, false);
 
+                if (request.SupportingDocumentFormat.Trim().Length > 20)
+                    return ResponseHelper.BuildResponse<QualificationDto>(
+                        "Supporting document format must not exceed 20 characters", StatusCodes.Status400BadRequest, null, false);
+
                 if (request.SupportingDocumentMaxSize <= 0)
                     return ResponseHelper.BuildResponse<QualificationDto>("Supporting document max size must be greater than 0", StatusCodes.Status400BadRequest, null, false);
 
@@ -51,7 +55,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 
                 var normalizedTitle = request.Title.Trim().ToUpper();
 
-                var existing = await _uow.qualificationRepo.GetByExpressionAsync(q => q.Title.ToUpper() == normalizedTitle);
+                var existing = await _uow.qualificationRepo.GetByExpressionAsync(q => q.Title.Trim().ToUpper() == normalizedTitle);
 
                 if (existing != null)
                     return ResponseHelper.BuildResponse<QualificationDto>("A qualification with this title already exists", StatusCodes.Status409Conflict, null, false);

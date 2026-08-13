@@ -44,7 +44,8 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                     return ResponseHelper.BuildResponse<QualificationDto>("Supporting document max size must be greater than 0", StatusCodes.Status400BadRequest, null, false);
 
                 if (string.IsNullOrWhiteSpace(request.SupportingDocumentFileSizeUnit) ||
-                    !Enum.TryParse<FileSizeUnit>(request.SupportingDocumentFileSizeUnit, true, out var fileSizeUnit))
+                    !Enum.TryParse<FileSizeUnit>(request.SupportingDocumentFileSizeUnit, true, out var fileSizeUnit) ||
+                    !Enum.IsDefined(typeof(FileSizeUnit), fileSizeUnit))
                     return ResponseHelper.BuildResponse<QualificationDto>(
                         "Supporting document file size unit must be one of: B, KB, MB, GB, TB", StatusCodes.Status400BadRequest, null, false);
 

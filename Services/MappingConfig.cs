@@ -10,6 +10,7 @@ using Trustesse.Ivoluntia.Commons.DTOs.Program;
 using Trustesse.Ivoluntia.Commons.DTOs.Volunteer;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Commons.DTOs.OnboardingDto;
+using Trustesse.Ivoluntia.Commons.DTOs.Qualification;
 
 namespace Trustesse.Ivoluntia.Services
 {
@@ -38,6 +39,8 @@ namespace Trustesse.Ivoluntia.Services
             config.NewConfig<VolunteerSignUpDto, User>();
             config.NewConfig<SecurityQuestion, SecurityQuestionDto>();
             config.NewConfig<OrganizationAccountNumberVerifyResponseDto, FoundationBankAccountDetail>();
+            config.NewConfig<Qualification, QualificationDto>()
+                .Map(dest => dest.SupportingDocumentFileSizeUnit, src => src.SupportingDocumentFileSizeUnit.ToString());
             services.AddSingleton(config);
             services.AddScoped<IMapper, Mapper>();
         }

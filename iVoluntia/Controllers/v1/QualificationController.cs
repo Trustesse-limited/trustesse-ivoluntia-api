@@ -1,0 +1,25 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Trustesse.Ivoluntia.Commons.Contants;
+using Trustesse.Ivoluntia.Commons.DTOs.Qualification;
+using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
+
+namespace Trustesse.Ivoluntia.API.Controllers.v1
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    [Authorize(Roles = AuthenticationConstants.SuperAdmin)]
+    public class QualificationController : BaseController
+    {
+        private readonly IQualificationService _qualificationService;
+
+        public QualificationController(IQualificationService qualificationService)
+        {
+            _qualificationService = qualificationService;
+        }
+
+        [HttpPost("creation")]
+        public async Task<IActionResult> CreateQualification([FromBody] CreateQualificationDto request)
+            => BuildHttpResponse(await _qualificationService.CreateQualification(request));
+    }
+}

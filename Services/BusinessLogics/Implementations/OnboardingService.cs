@@ -14,7 +14,6 @@ using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
 using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
-using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.Abstractions;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
@@ -51,29 +50,28 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             switch (volunteerOnboardingDto.onboardingMetaData.CurrentPage)
             {
                 case 1:
-                    await UpdateBioData(volunteerOnboardingDto.BioData);
-                    break;
+                    var bioResponse = await UpdateBioData(volunteerOnboardingDto.BioData);
+                    return ResponseHelper.BuildResponse(bioResponse.Message, bioResponse.StatusCode, OnboardingResponseDto.BuildOnboardingResponseDto(pageRemaining, hasCompleteOnboarding), true);
                 case 2:
-                    await UpdateLocation(volunteerOnboardingDto.LocationDto);
-                    break;
+                    var locationResponse = await UpdateLocation(volunteerOnboardingDto.LocationDto);
+                    return ResponseHelper.BuildResponse(locationResponse.Message, locationResponse.StatusCode, OnboardingResponseDto.BuildOnboardingResponseDto(pageRemaining, hasCompleteOnboarding), true);
                 case 3:
-                    await UpdateUserInterest(volunteerOnboardingDto.Interest);
-                    break;
+                    var interestResponse = await UpdateUserInterest(volunteerOnboardingDto.Interest);
+                    return ResponseHelper.BuildResponse(interestResponse.Message, interestResponse.StatusCode, OnboardingResponseDto.BuildOnboardingResponseDto(pageRemaining, hasCompleteOnboarding), true);
                 case 4:
-                    await UpdateUserSkill(volunteerOnboardingDto.Skill);
-                    break;
+                    var skillResponse = await UpdateUserSkill(volunteerOnboardingDto.Skill);
+                    return ResponseHelper.BuildResponse(skillResponse.Message, skillResponse.StatusCode, OnboardingResponseDto.BuildOnboardingResponseDto(pageRemaining, hasCompleteOnboarding), true);
                 case 5:
                     var imageUrl = await _fileUploadService.UploadFilesAsync(volunteerOnboardingDto.ProfileAndBioData.ProfileImage);
                     var user = await _uow.userRepo.GetByExpressionAsync(u => u.Email == _currentUserService.GetUserEmail());
                     user.UserImage = imageUrl.Data[0];
                     await _userManager.UpdateAsync(user);
-                    await AddOnBoardingProgress(user.Id, (int)OnBoardingPages.ProfileImageAndBio, true, 5);
+                    var onboardingResponse = await AddOnBoardingProgress(user.Id, (int)OnBoardingPages.ProfileImageAndBio, true, 5);
                     hasCompleteOnboarding = true;
-                    break;
+                    return ResponseHelper.BuildResponse(onboardingResponse.Message, onboardingResponse.StatusCode, OnboardingResponseDto.BuildOnboardingResponseDto(pageRemaining, hasCompleteOnboarding), true);
                 default:
                     return ResponseHelper.BuildResponse("something went wrong", StatusCodes.Status400BadRequest, OnboardingResponseDto.BuildOnboardingResponseDto(pageRemaining, hasCompleteOnboarding), false);
             }
-            return ResponseHelper.BuildResponse("success", StatusCodes.Status200OK, OnboardingResponseDto.BuildOnboardingResponseDto(pageRemaining, hasCompleteOnboarding), true);
         }
         public async Task<GlobalRequestReponse<OnboardingResponseDto>>CreateOrganizationOnboarding(OrganizationOnboardingRequestDto organizationOnboardingDto)
         {
@@ -92,30 +90,29 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                     await _uow.OrganizationRepository.AddAsync(mapOrganization);
                     await _uow.CompleteAsync();
                     var response = await _userManager.UpdateAsync(foundationAdmin);
-                    await UpdateOnBoardingProgress(_currentUserService.GetUserId(), (int)OrganizationOnboardingEnum.BioDataPage, false);
-                    break;
+                    var onboardingResponse = await  UpdateOnBoardingProgress(_currentUserService.GetUserId(), (int)OrganizationOnboardingEnum.BioDataPage, false);
+                    return ResponseHelper.BuildResponse(onboardingResponse.Message, onboardingResponse.StatusCode, OnboardingResponseDto.BuildOnboardingResponseDto(pageRemaining, hasCompleteOnboarding), true);
                 case 2:
                     var foundation = await _uow.OrganizationRepository.GetByExpressionAsync(f => f.Email == _currentUserService.GetUserEmail());
-                    organizationOnboardingDto.FoundationLocationDto.UserId = _currentUserService.GetUserId();
                     var locationId = await AddLocation(organizationOnboardingDto.FoundationLocationDto, foundation.Id);
                     foundation.LocationId = locationId;
                     _uow.OrganizationRepository.Update(foundation);
                     await _uow.CompleteAsync();
-                    await UpdateOnBoardingProgress(_currentUserService.GetUserId(), (int)OrganizationOnboardingEnum.Location, false);
-                    break;
+                    var onboardingResp = await UpdateOnBoardingProgress(_currentUserService.GetUserId(), (int)OrganizationOnboardingEnum.Location, false);
+                    return ResponseHelper.BuildResponse(onboardingResp.Message, onboardingResp.StatusCode, OnboardingResponseDto.BuildOnboardingResponseDto(pageRemaining, hasCompleteOnboarding), true);
                 case 3:
                     var foundationMap = await _uow.OrganizationRepository.GetByExpressionAsync(f => f.Email == _currentUserService.GetUserEmail());
                     await AddFoundationCause(organizationOnboardingDto.CauseDto.Names, foundationMap.Id, _currentUserService.GetUserEmail());
-                    await UpdateOnBoardingProgress(_currentUserService.GetUserId(), (int)OrganizationOnboardingEnum.Cause, false);
-                    break;
+                    var onboardingRes = await UpdateOnBoardingProgress(_currentUserService.GetUserId(), (int)OrganizationOnboardingEnum.Cause, false);
+                    return ResponseHelper.BuildResponse(onboardingRes.Message, onboardingRes.StatusCode, OnboardingResponseDto.BuildOnboardingResponseDto(pageRemaining, hasCompleteOnboarding), true);
                 case 4:
                     var imageUrl = await _fileUploadService.UploadFilesAsync(organizationOnboardingDto.ProfileLogo.Logo);
                     var foundationMapp = await _uow.OrganizationRepository.GetByExpressionAsync(f => f.Email == _currentUserService.GetUserEmail());
                     foundationMapp.Logo = imageUrl.Data[0];
                     _uow.OrganizationRepository.Update(foundationMapp);
                     await _uow.CompleteAsync();
-                    await UpdateOnBoardingProgress(_currentUserService.GetUserId(), (int)OrganizationOnboardingEnum.Profile, false);
-                    break;
+                    var onboardResp = await UpdateOnBoardingProgress(_currentUserService.GetUserId(), (int)OrganizationOnboardingEnum.Profile, false);
+                    return ResponseHelper.BuildResponse(onboardResp.Message, onboardResp.StatusCode, OnboardingResponseDto.BuildOnboardingResponseDto(pageRemaining, hasCompleteOnboarding), true);
                 case 5:
                     var foundationMapping = await _uow.OrganizationRepository.GetByExpressionAsync(f => f.Email == _currentUserService.GetUserEmail());
                     foundationMapping.HasAgreedToDisclaimer = organizationOnboardingDto.Disclaimer.HasAgreedToDisclaimer;
@@ -123,13 +120,12 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                     foundationMapping.IsActive = true;
                     _uow.OrganizationRepository.Update(foundationMapping);
                     await _uow.CompleteAsync();
-                    await UpdateOnBoardingProgress(_currentUserService.GetUserId(), (int)OrganizationOnboardingEnum.Disclaimer, true);
+                    var onBoardingesponse = await UpdateOnBoardingProgress(_currentUserService.GetUserId(), (int)OrganizationOnboardingEnum.Disclaimer, true);
                     hasCompleteOnboarding = true;
-                   break;
+                    return ResponseHelper.BuildResponse(onBoardingesponse.Message, onBoardingesponse.StatusCode, OnboardingResponseDto.BuildOnboardingResponseDto(pageRemaining, hasCompleteOnboarding), true);
                 default:
                     return ResponseHelper.BuildResponse("something went wrong", StatusCodes.Status400BadRequest, OnboardingResponseDto.BuildOnboardingResponseDto(pageRemaining, hasCompleteOnboarding), false);
             }
-            return ResponseHelper.BuildResponse("success", StatusCodes.Status200OK, OnboardingResponseDto.BuildOnboardingResponseDto(pageRemaining, hasCompleteOnboarding), true);
         }
 
         public async Task<ApiResponse<string>> UpdateBioData(BioData model)
@@ -182,13 +178,13 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             var volunteer = await _uow.userRepo.GetByExpressionAsync(x => x.Id == _currentUserService.GetUserId());
             if (volunteer == null)
             {
-                return ApiResponse<string>.Failure(404, "Volunteer not found.");
+                return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Volunteer not found.");
             }
             if (model.Names.Any())
             {
                 foreach (var name in model.Names)
                 {
-                    var interestExist = await _uow.interestRepo.GetByExpressionAsync(x => x.Name.ToLower() == name.ToLower());
+                    var interestExist = await _uow.InterestRepository.GetByExpressionAsync(x => x.Name.ToLower() == name.ToLower());
                     var saveUserInterest = new UserInterestLink()
                     {
                         UserId = volunteer.Id,
@@ -230,7 +226,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             var response = await UpdateOnBoardingProgress(volunteer.Id, 4, false);
             if (response.StatusCode == StatusCodes.Status200OK)
                 return ApiResponse<string>.Success("onboarding update", response.Data);
-            return ApiResponse<string>.Success("unable to update onboarding.", null);
+            return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest,"unable to update onboarding.");
         }
 
         public async Task<ApiResponse<string>> UpdateProfileImageAndBio(ProfileImageAndBio model)
@@ -310,9 +306,9 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             var state = await _uow.stateRepo.GetByExpressionAsync(s => s.StateName == foundationLocationDto.FoundationState);
             if (state == null)
                 return ("State doesn't exist.");
-            foundationLocationDto.StateId = state.Id;
-            foundationLocationDto.CountryId = country.Id;
             var mapLocation = _mapper.Map<Location>(foundationLocationDto);
+            mapLocation.CountryId = country.Id;
+            mapLocation.StateId = state.Id;
             mapLocation.FoundationId = foundationId;
             await _uow.locationRepo.AddAsync(mapLocation);
             var rowchange = await _uow.CompleteAsync();

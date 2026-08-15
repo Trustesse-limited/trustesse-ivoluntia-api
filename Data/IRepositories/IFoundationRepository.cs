@@ -1,8 +1,8 @@
-﻿using Trustesse.Ivoluntia.Domain.Entities;
+﻿using Trustesse.Ivoluntia.Data.IRepositories;
+using Trustesse.Ivoluntia.Domain.Entities;
 
-namespace Trustesse.Ivoluntia.Domain.IRepositories
+
+public interface IFoundationRepository : IGenericRepository<Foundation>
 {
-    public interface IFoundationRepository : IGenericRepository<Foundation>
-    {
-    }
 }
+

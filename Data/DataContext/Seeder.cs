@@ -93,6 +93,17 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                     FoundationId = foundation.Id
                 };
 
+                var user1 = new User
+                {
+                    UserName = foundationAdminEmail,
+                    Email = "goodness901@yopmail.com",
+                    EmailConfirmed = true,
+                    FirstName = "Osiki",
+                    LastName = "Lemmy Victory",
+                    IsActive = true,
+                    FoundationId = foundation.Id
+                };
+
                 var result = await userManager.CreateAsync(user, foundationAdminPassword);
 
                 if (result.Succeeded)

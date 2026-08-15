@@ -18,16 +18,14 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Volunteer
         public bool IsDeprecated { get; set; }
         public string? FoundationId { get; set; }
         public string? ProgramId { get; set; }
-        public ICollection<Skill?> Skills { get; set; }
-        public ICollection<Interest?> Interests { get; set; }
+        public ICollection<string>? Skills { get; set; }
+        public ICollection<string>? Interests { get; set; }
     }
 
     public class VolunteerQueryDto
     {
         [Required]
         public string FoundationId { get; set; }
-
         public bool? IsActive { get; set; }
     }
-
 }

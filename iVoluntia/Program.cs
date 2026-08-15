@@ -5,7 +5,6 @@ using Trustesse.Ivoluntia.API.Extensions;
 using Trustesse.Ivoluntia.API.Middlewares;
 using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
 using Trustesse.Ivoluntia.Data.Repositories;
-using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services;
 using Trustesse.Ivoluntia.Services.Helpers;
 

@@ -3,11 +3,11 @@ using System.Collections;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Data.IRepositories;
 using Trustesse.Ivoluntia.Data.Repositories.Implementation;
-using Trustesse.Ivoluntia.Domain.IRepositories;
 
 namespace Trustesse.Ivoluntia.Data.Repositories;
 
 public class UnitOfWork : IUnitOfWork
+
 {
     public readonly iVoluntiaDataContext _dbContext;
     private Hashtable _repositories;
@@ -20,7 +20,6 @@ public class UnitOfWork : IUnitOfWork
     public ILocationRepository locationRepo { get; set; }
     public IUserInterestLinkRepository userInterestLinkRepo { get; set; }
     public IUserSkillLinkRepository userSkillLinkRepo { get; set; }
-    public IInterestRepository interestRepo { get; set; }
     public ISkillRepository skillRepo { get; set; }
     public IRefreshTokenRepository refreshTokenRepo { get; set; }
     public IOrganizationRepository OrganizationRepository { get; set; } 
@@ -34,7 +33,6 @@ public class UnitOfWork : IUnitOfWork
     public ISecurityQuestionRepository securityQuestionRepo { get; set; }
     public IUserSecurityQuestionRepository userSecurityQuestionRepo { get; set; }
     public IUserSecurityValidationAttemptRepository userSecurityValidationAttemptRepo { get; set; }
-    public IOtpRepository otpRepo { get; set; }
     public IVolunteerRepository volunteerRepo { get; set; }
     public IOrganizationDeclineStatusRepository organizationDeclineStatusRepository { get; set; }   
     public IProgramRejectionReasonRepository programRejectionReasonRepository { get; set; } 
@@ -45,6 +43,7 @@ public class UnitOfWork : IUnitOfWork
     public IPinVerificationAttemptRepository pinVerificationAttemptRepo { get; set; }
     public IOrganizationBankAccountDetailRepository organizationBankAccountDetailRepository { get; set; }
     public IOrganizationBankAccountHistoryDetailRepository organizationBankAccountHistoryDetailRepository { get; set; }
+    public IInterestRepository InterestRepository { get; set; } 
 
     public UnitOfWork(iVoluntiaDataContext dbContext)
     {
@@ -55,7 +54,6 @@ public class UnitOfWork : IUnitOfWork
         locationRepo = new LocationRepository(dbContext);
         userInterestLinkRepo = new UserInterestLinkRepository(dbContext);
         userSkillLinkRepo = new UserSkillLinkRepository(dbContext);
-        interestRepo = new InterestRepository(dbContext);
         skillRepo = new SkillRepository(dbContext);
         onboardingProgressRepo = new OnboardingProgressRepository(dbContext);
         refreshTokenRepo = new RefreshTokenRepository(dbContext);
@@ -70,7 +68,6 @@ public class UnitOfWork : IUnitOfWork
         securityQuestionRepo = new SecurityQuestionRepository(dbContext);
         userSecurityQuestionRepo = new UserSecurityQuestionRepository(dbContext);
         userSecurityValidationAttemptRepo = new UserSecurityValidationAttemptRepository(dbContext);
-        otpRepo = new OtpRepository(dbContext);
         volunteerRepo = new VolunteerRepository(dbContext);
         organizationDeclineStatusRepository = new OrganizationDeclineStatusRepository(dbContext);
         programRejectionReasonRepository = new ProgramRejectionReasonRepository(dbContext);
@@ -81,6 +78,7 @@ public class UnitOfWork : IUnitOfWork
         pinVerificationAttemptRepo = new PinVerificationAttemptRepository(dbContext);
         organizationBankAccountDetailRepository = new OrganizationBankAccountDetailRepository(dbContext);
         organizationBankAccountHistoryDetailRepository = new OrganizationBankAccountHistoryDetailRepository(dbContext);
+        InterestRepository = new InterestRepository(dbContext);
     }
     public IGenericRepository<TEntity> repository<TEntity>() where TEntity : class
     {

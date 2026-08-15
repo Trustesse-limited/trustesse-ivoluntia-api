@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
 using System.Reflection;
 using Trustesse.Ivoluntia.Data.DataContext;
-using Trustesse.Ivoluntia.Domain.IRepositories;
+using Trustesse.Ivoluntia.Data.IRepositories;
 
 namespace Trustesse.Ivoluntia.Data.Repositories;
 

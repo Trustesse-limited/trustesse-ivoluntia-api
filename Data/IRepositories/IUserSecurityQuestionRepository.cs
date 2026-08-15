@@ -1,9 +1,9 @@
-﻿using Trustesse.Ivoluntia.Domain.Entities;
+﻿using Trustesse.Ivoluntia.Data.IRepositories;
+using Trustesse.Ivoluntia.Domain.Entities;
 
-namespace Trustesse.Ivoluntia.Domain.IRepositories
+
+public interface IUserSecurityQuestionRepository : IGenericRepository<UserSecurityQuestion>
 {
-    public interface IUserSecurityQuestionRepository : IGenericRepository<UserSecurityQuestion>
-    {
 
-    }
 }
+

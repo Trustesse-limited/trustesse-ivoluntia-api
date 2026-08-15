@@ -1,6 +1,5 @@
+using Trustesse.Ivoluntia.Data.IRepositories;
 using Trustesse.Ivoluntia.Domain.Entities;
-
-namespace Trustesse.Ivoluntia.Domain.IRepositories;
 
 public interface IOnboardingProgressRepository : IGenericRepository<OnboardingProgress>
 {

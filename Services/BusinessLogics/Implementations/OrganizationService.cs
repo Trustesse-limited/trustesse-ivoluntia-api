@@ -23,7 +23,6 @@ using Trustesse.Ivoluntia.Commons.Models.Request;
 using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
-using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
@@ -176,8 +175,8 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             var accountVerifyResponse = await _httpClient.PostAsync($"{_baseUrl}/api/Account/banks/verify-account", content);
             accountVerifyResponse.EnsureSuccessStatusCode();
             var contentResponse = await accountVerifyResponse.Content.ReadAsStringAsync();
-            var data = await accountVerifyResponse.Content.ReadFromJsonAsync<OrganizationAccountNumberVerifyResponseDto>();
-            var mapBankAccountDetail = _mapper.Map<FoundationBankAccountDetail>(data);
+            var data = await accountVerifyResponse.Content.ReadFromJsonAsync<VerifyBankAccountResponseDto>();
+            var mapBankAccountDetail = _mapper.Map<FoundationBankAccountDetail>(data.Data.Data);
             if(accountVerifyResponse.IsSuccessStatusCode == true)
             {
                 var foundation = await _unitOfWork.foundationRepo.GetByIdAsync(_currentUserService.GetUserFoundationId());
@@ -189,7 +188,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 if (bankAccountDetail == null)
                 {
                     mapBankAccountDetail.DateCreated = DateTime.UtcNow;
-                    mapBankAccountDetail.CreatedBy = foundationAdmin.FirstName;
+                    mapBankAccountDetail.CreatedBy = foundationAdmin.Email;
                     mapBankAccountDetail.FoundationId = foundation.Id;
                     await _unitOfWork.organizationBankAccountDetailRepository.AddAsync(mapBankAccountDetail);
                     var response = await _unitOfWork.CompleteAsync();
@@ -205,7 +204,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                     var mapBankUpdateAccountHistory = _mapper.Map<FoundationBankAccountDetailUpdateHistory>(accountDetailDefault);
                     mapBankUpdateAccountHistory.PreviousAccountNumber = accountDetailDefault.AccountNumber;
                     mapBankUpdateAccountHistory.CurrentAccountNumber = mapBankAccountDetail.AccountNumber;
-                    mapBankUpdateAccountHistory.CreatedBy = _currentUserService.GetUserEmail();
+                    mapBankUpdateAccountHistory.CreatedBy = foundationAdmin.Email;
                     mapBankUpdateAccountHistory.DateCreated = DateTime.UtcNow;
                     await _unitOfWork.organizationBankAccountHistoryDetailRepository.AddAsync(mapBankUpdateAccountHistory);
                     mapBankAccountDetail.DateCreated = DateTime.Now;

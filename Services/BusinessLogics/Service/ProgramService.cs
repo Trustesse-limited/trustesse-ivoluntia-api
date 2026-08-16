@@ -10,7 +10,6 @@ using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
-using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 

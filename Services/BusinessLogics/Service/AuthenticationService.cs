@@ -13,7 +13,6 @@ using Trustesse.Ivoluntia.Commons.Models.Request;
 using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
-using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.Abstractions;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
@@ -70,7 +69,7 @@ public class AuthenticationService : IAuthenticationService
         volunteer.DateCreated = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
         volunteer.IsActive = false;
         volunteer.HasAgreedToTermsAndCondition = model.AuthInfo.HasAgreedToTermsAndCondition;
-        var otp = GenerateOTP();
+        var otp = await _otp.GenerateOtpAsync(volunteer.Id, OtpPurpose.Signup, false, NotificationChannelEnum.Email.ToString());
         volunteer.OTP = otp;
         volunteer.OtpSubmittedTime = Convert.ToDateTime(DateTime.Now.ToShortTimeString());
         var result = await _userManager.CreateAsync(volunteer, model.AuthInfo.Password.Trim());
@@ -94,15 +93,6 @@ public class AuthenticationService : IAuthenticationService
                 };
                 var emailResponse = await _email.SendEmailASync(message);
             }
-            var otpDto = _mapper.Map<OtpDto>(volunteer);
-            otpDto.IsUsed = false;
-            otpDto.Purpose = OtpPurpose.Signup.ToString();
-            otpDto.OtpCode = volunteer.OTP;
-            otpDto.Channel = NotificationChannelEnum.Email.ToString();
-            otpDto.UserId = volunteer.Id;
-            var mapOtp = _mapper.Map<Otp>(otpDto);
-            await _uow.OtpRepo.AddAsync(mapOtp);
-            await _uow.CompleteAsync();
             return ResponseHelper.BuildResponse("account created and otp sent", StatusCodes.Status200OK, "created successfully", true);
         }
         return ResponseHelper.BuildResponse("something went wrong", StatusCodes.Status400BadRequest, "not successful", false);
@@ -121,7 +111,7 @@ public class AuthenticationService : IAuthenticationService
         mapFoundationAdmin.DateCreated = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
         mapFoundationAdmin.IsActive = false;
         mapFoundationAdmin.HasAgreedToTermsAndCondition = createFoundationRequestDto.FoundationAdminInfo.HasAgreedToTermsAndCondition;
-        mapFoundationAdmin.OTP = GenerateOTP();
+        mapFoundationAdmin.OTP = await _otp.GenerateOtpAsync(foundationAdminCheck.Id, OtpPurpose.Signup, false, NotificationChannelEnum.Email.ToString());
         mapFoundationAdmin.OtpSubmittedTime = Convert.ToDateTime(DateTime.Now.ToShortTimeString());
         var result = await _userManager.CreateAsync(mapFoundationAdmin, createFoundationRequestDto.FoundationAdminInfo.Password.Trim());
         await _userManager.AddToRoleAsync(mapFoundationAdmin, UserRolesEnum.FoundationAdmin.ToString());
@@ -144,15 +134,6 @@ public class AuthenticationService : IAuthenticationService
                 };
                 var emailResponse = await _email.SendEmailASync(message);
             }
-            var otpDto = _mapper.Map<OtpDto>(mapFoundationAdmin);
-            otpDto.IsUsed = false;
-            otpDto.Purpose = OtpPurpose.Signup.ToString();
-            otpDto.OtpCode = mapFoundationAdmin.OTP;
-            otpDto.Channel = NotificationChannelEnum.Email.ToString();
-            otpDto.UserId = mapFoundationAdmin.Id;
-            var otp = _mapper.Map<Otp>(otpDto);
-            await _uow.OtpRepo.AddAsync(otp); 
-            await _uow.CompleteAsync(); 
             return ResponseHelper.BuildResponse("account created", StatusCodes.Status200OK, "otp sent", true);    
         }
         return ResponseHelper.BuildResponse("something went wrong", StatusCodes.Status400BadRequest, "not successful", false);
@@ -178,13 +159,10 @@ public class AuthenticationService : IAuthenticationService
         {
             accountType = "Organization";
         }
-        
-
         if (!user.IsActive)
         {
             return ApiResponse<LoginResponseModel>.Failure(401, "Account is inactive");
         }
-
         if (await _userManager.IsLockedOutAsync(user))
         {
             return ApiResponse<LoginResponseModel>.Failure(403, "Account is locked for 1 hour due to multiple failed login attempts.");
@@ -195,12 +173,9 @@ public class AuthenticationService : IAuthenticationService
             await _userManager.AccessFailedAsync(user);
             return ApiResponse<LoginResponseModel>.Failure(401, "Invalid credentials");
         }
-
         await _userManager.ResetAccessFailedCountAsync(user);
-
         user.LastLogin = DateTime.UtcNow;
         user.DateUpdated = DateTime.UtcNow;
-
         var jwtClaims = new JwtClaimsModel
         {
             UserId = user.Id,
@@ -211,17 +186,13 @@ public class AuthenticationService : IAuthenticationService
             OrganizationName = user?.Foundation?.Name ?? string.Empty,
             FoundationId = user?.FoundationId ?? string.Empty
         };
-
         var accessToken = _jwtTokenService.GenerateAccessTokenAsync(jwtClaims, primaryRole);
         var refreshToken = await _jwtTokenService.GenerateRefreshTokenAsync(
             user?.Id!, primaryRole);
-
         user!.LastLogin = DateTime.UtcNow;
         _uow.userRepo.Update(user);
         await _uow.CompleteAsync();
-
         var hasSetUpPin = await _uow.transactionPinRepo.GetByExpressionAsync(x => x.UserId == user.Id) != null;
-
         var longinResponse = new LoginResponseModel
         {
             AccessToken = accessToken,
@@ -299,17 +270,14 @@ public class AuthenticationService : IAuthenticationService
         };
 
         return ApiResponse<RefreshTokenResponseModel>.Success("Tokens refreshed successfully", refreshResponse);
-
-
     }
-
     public async Task<ApiResponse<string>> ResetPasswordAsync(string email)
     {
         var user = await _userManager.FindByEmailAsync(email.Trim().ToLower());
         if (user != null)
         {
             //Generate OTP
-            var otp = await _otp.GenerateOtpAsync(user.Id, OtpPurpose.PasswordReset);
+            var otp = await _otp.GenerateOtpAsync(user.Id, OtpPurpose.PasswordReset,true, NotificationChannelEnum.Email.ToString());
             user.OTP = otp;
             user.OtpSubmittedTime = Convert.ToDateTime(DateTime.Now.ToShortTimeString());
             var result = await _userManager.UpdateAsync(user).ConfigureAwait(false);
@@ -392,7 +360,7 @@ public class AuthenticationService : IAuthenticationService
             return ApiResponse<string>.Failure(400, "Password change Fail");
         }
     }
-    public async Task<ApiResponse<string>> ResendOTP(string email, OtpPurpose purpose)
+    public async Task<ApiResponse<string>> ResendOTP(string email, OtpPurpose purpose, bool includeAlphabet, string channel)
     {
         var user = await _userManager.FindByEmailAsync(email.Trim().ToLower());
         if (user != null)
@@ -402,7 +370,7 @@ public class AuthenticationService : IAuthenticationService
             if (isUsed.StatusCode == StatusCodes.Status200OK)
             {
                 //Generate OTP
-                var otp = await _otp.GenerateOtpAsync(user.Id, OtpPurpose.PasswordReset);
+                var otp = await _otp.GenerateOtpAsync(user.Id,purpose, includeAlphabet, channel);
                 user.OTP = otp;
                 user.OtpSubmittedTime = Convert.ToDateTime(DateTime.Now.ToShortTimeString());
                 var result = await _userManager.UpdateAsync(user).ConfigureAwait(false);

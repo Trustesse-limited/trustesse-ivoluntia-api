@@ -5,12 +5,15 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Http;
 using Trustesse.Ivoluntia.Commons.DTOs;
+using Trustesse.Ivoluntia.Commons.DTOs.Country;
+using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
 using Trustesse.Ivoluntia.Commons.Models.Request;
 using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Domain.Entities;
-using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
@@ -18,170 +21,53 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
     public class CountryService : ICountryService
     {
         private readonly IUnitOfWork _uow;
-        public CountryService(IUnitOfWork uow)
+        private readonly IMapper _mapper;
+        public CountryService(IUnitOfWork uow, IMapper mapper)
         {
             _uow = uow;
+            _mapper = mapper;
         }
-        public async Task<ApiResponse<string>> AddCountry(CreateCountryModel country)
+        public async Task<GlobalRequestReponse<string>> CreateCountry(CreateCountryRequestDto createCountryRequestDto)
         {
-            try
-            {
-                var countryExist = await _uow.countryRepo.GetByExpressionAsync(x => x.CountryName.ToLower() == country.Name.ToLower());
-                if(countryExist == null)
-                {
-                    var saveCountry = new Country
-                    {
-                        CountryName = country.Name,
-                    };
-                    _uow.countryRepo.Add(saveCountry);
-                    await _uow.CompleteAsync();
-                }
-                return ApiResponse<string>.Success("Country Added successfully.", null);
-
+           var countryExist = await _uow.countryRepo.GetByExpressionAsync(x => x.CountryName.ToLower() == createCountryRequestDto.CountryName.ToLower());
+           if(countryExist == null)
+           {
+              var mapCountry = _mapper.Map<Country>(createCountryRequestDto); 
+              mapCountry.IsDeprecated = false;
+              _uow.countryRepo.Add(mapCountry);
+              var response = await _uow.CompleteAsync();
+              if(response > 0)
+                return ResponseHelper.BuildResponse<string>("success", StatusCodes.Status200OK, "country created", true);
+                return ResponseHelper.BuildResponse<string>("something went wrong", StatusCodes.Status400BadRequest, null, false);
             }
-            catch (Exception ex)
-            {
-                return ApiResponse<string>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
-            }
+            return ResponseHelper.BuildResponse<string>("country already exist", StatusCodes.Status200OK, null, false);
         }
-        public async Task<Country?> GetCountryById(string countryId)
+        public async Task<GlobalRequestReponse<GetCountryResponseDto>> GetCountryById(string countryId)
         {
-            Country? country = null;
-            try
-            {
-                country = await _uow.countryRepo.GetByIdAsync(countryId);
-
-            }
-            catch (Exception ex)
-            {
-
-
-            }
-            return country;
+            if(countryId == null)
+                return ResponseHelper.BuildResponse<GetCountryResponseDto>("invalid request", StatusCodes.Status400BadRequest, null, false);
+            var country = await _uow.countryRepo.GetByIdAsync(countryId);
+            var mapCountry = _mapper.Map<GetCountryResponseDto>(country);
+            return ResponseHelper.BuildResponse<GetCountryResponseDto>("success", StatusCodes.Status200OK, mapCountry, true);
         }
-      /*  public async Task<IReadOnlyList<Country>> GetCountries()
+        public async Task<GlobalRequestReponse<List<GetCountryResponse>>> GetCountries()
         {
-            IReadOnlyList<Country> countries = new List<Country>();
-            try
-            {
-                countries = await _uow.countryRepo.GetAllAsync();
-            }
-            catch (Exception ex)
-            {
-
-            }
-            return countries;
-        }*/
-        public async Task<ApiResponse<List<GetCountryResponse>>> GetCountries()
-        {
-            IEnumerable<Country> country = null;
-            var countryResponse = new List<GetCountryResponse>();
-            try
-            {
-                country = await _uow.countryRepo.GetAllAsync();
-                if (country is not null)
-                {
-                    countryResponse = country.Select(x => new GetCountryResponse
-                    {
-                        CountryId = x.Id,
-                        CountryName = x.CountryName,
-                    }).OrderBy(x => x.CountryName).ToList();
-
-                    return ApiResponse<List<GetCountryResponse>>.Success("State Successfully retreive", countryResponse);
-                }
-                else
-                {
-                    return ApiResponse<List<GetCountryResponse>>.Success("No State Found", countryResponse);
-                }
-            }
-            catch (Exception ex)
-            {
-                return ApiResponse<List<GetCountryResponse>>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
-            }
+            var country = await _uow.countryRepo.GetAllAsync();
+            if(country == null)
+                return ResponseHelper.BuildResponse<List<GetCountryResponse>> ("something went wrong", StatusCodes.Status400BadRequest, null, false);
+            var mapCountry = _mapper.Map<List<GetCountryResponse>>(country);
+            return ResponseHelper.BuildResponse<List<GetCountryResponse>>("success", StatusCodes.Status200OK, mapCountry, true);
         }
-        public async Task<ApiResponse<string>> CreateStateAsync(CreateStateModel model)
+        public async Task<GlobalRequestReponse<string>> DeleteCountry(string countryId)
         {
-            try
-            {
-                if (model != null)
-                {
-                    //var country = await GetCountryById(model.CountryId);
-                    //{
-                    //    if (country != null)
-                    //    {
-                    //        var state = await _uow.stateRepo.GetByExpressionAsync(x => x.StateName.ToLower() == model.StateName.ToLower());
-                    //        if (state != null)
-                    //        {
-                    //            return ApiResponse<string>.Failure(StatusCodes.Status409Conflict, $"The state with the name {model.StateName} already exists.");
-                    //        }
-                    //        state = new State
-                    //        {
-                    //            CountryId = country.Id,
-                    //            StateName = model.StateName
-                    //        };
-                    //        _uow.stateRepo.Add(state);
-                    //        await _uow.CompleteAsync();
-                    //    }
-                    //    else
-                    //    {
-                    //        return ApiResponse<string>.Success($"country with{model.CountryId} deos not exist", null);
-                    //    }
-                    //}
-                }
-                else
-                {
-                    return ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid request");
-                }
-            }
-            catch (Exception ex)
-            {
-                return ApiResponse<string>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
-            }
-            return ApiResponse<string>.Success("State Save successfully.", null);
-        }
-
-        //public async Task<State?> GetStateByIdAsync(string stateId)
-        //{
-        //    State? result = null;
-        //    try
-        //    {
-        //        result = await _uow.stateRepo.GetByIdAsync(stateId);
-        //    }
-        //    catch (Exception ex)
-        //    {
-
-        //    }
-        //    return result;
-        //}
-        public async Task<ApiResponse<List<GetStateResponse>>> GetStatesByCountryIdAsync(string countryId)
-        {
-            //IEnumerable<State> states = null;
-            //var stateResponse = new List<GetStateResponse>();
-            //try
-            //{
-            //    states = await _uow.stateRepo.GetStateByCountryId(countryId);
-            //    if (states is not null)
-            //    {
-            //        stateResponse = states.Select(x => new GetStateResponse
-            //        {
-            //            StateId = x.Id,
-            //            StateName = x.StateName,
-            //            CountryId = x.Country.Id,
-            //            CountryName = x.Country.CountryName
-            //        }).OrderBy(x => x.StateName).ToList();
-
-            //        return ApiResponse<List<GetStateResponse>>.Success("State Successfully retreive", stateResponse);
-            //    }
-            //    else
-            //    {
-            //        return ApiResponse<List<GetStateResponse>>.Success("No State Found", stateResponse);
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    return ApiResponse<List<GetStateResponse>>.Failure(StatusCodes.Status500InternalServerError, $"An error occurred: {ex.Message}");
-            //}
-            return null;
+            if (countryId == null)
+                return ResponseHelper.BuildResponse<string>("invalid request", StatusCodes.Status400BadRequest, null, false);
+            var country = await _uow.countryRepo.GetByIdAsync(countryId); 
+            await _uow.countryRepo.DeleteAsync(country);
+            var response = await _uow.CompleteAsync();
+            if(response > 0)
+                return ResponseHelper.BuildResponse<string>("success", StatusCodes.Status200OK, "country deleted", true);
+            return ResponseHelper.BuildResponse<string>("something went wrong", StatusCodes.Status400BadRequest, null, false);
         }
     }
 }

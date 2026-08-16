@@ -11,7 +11,6 @@ using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
-using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
@@ -329,7 +328,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             if (user == null)
                 return ResponseHelper.BuildResponse<string>("Invalid user.", StatusCodes.Status400BadRequest, null, false);
 
-            var otpCode = await _otpService.GenerateOtpAsync(userId, OtpPurpose.ResetSecurityQuestion);
+            var otpCode = await _otpService.GenerateOtpAsync(userId, OtpPurpose.ResetSecurityQuestion,true, NotificationChannelEnum.Email.ToString());
 
             var placeholders = new Dictionary<string, string>
             {
@@ -374,7 +373,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 if (validQuestionCount != questionIds.Count)
                     return ResponseHelper.BuildResponse<ResetSecurityQuestionsResponse>("One or more security questions are invalid.", StatusCodes.Status400BadRequest, null, false);
 
-                var otp = await _uow.otpRepo
+                var otp = await _uow.OtpRepo
                     .GetByExpressionAsync(x => x.UserId == userId && x.OtpCode == request.Verification.Otp && !x.IsUsed && x.ExpiresAt > now && x.Purpose == OtpPurpose.ResetSecurityQuestion.ToString());
 
                 if (otp == null)

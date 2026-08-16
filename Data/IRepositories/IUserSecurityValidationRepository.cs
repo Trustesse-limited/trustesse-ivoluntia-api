@@ -1,9 +1,9 @@
-﻿using Trustesse.Ivoluntia.Domain.Entities;
+﻿using Trustesse.Ivoluntia.Data.IRepositories;
+using Trustesse.Ivoluntia.Domain.Entities;
 
-namespace Trustesse.Ivoluntia.Domain.IRepositories
+
+public interface IUserSecurityValidationAttemptRepository : IGenericRepository<UserSecurityValidationAttempt>
 {
-    public interface IUserSecurityValidationAttemptRepository : IGenericRepository<UserSecurityValidationAttempt>
-    {
 
-    }
 }
+

@@ -9,7 +9,6 @@ namespace Trustesse.Ivoluntia.Data.IRepositories
 {
     public interface ICurrentUserRepository
     {
-        //Task<ApiResponse<string>> GetUserFoundationId(string userId);
         string GetUserId();
         string GetUserEmail();
         string GetUserFirstName();

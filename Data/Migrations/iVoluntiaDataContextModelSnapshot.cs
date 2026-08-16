@@ -311,6 +311,9 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("CountryCode")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("CountryName")
                         .HasColumnType("nvarchar(max)");
 

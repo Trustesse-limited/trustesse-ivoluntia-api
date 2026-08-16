@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace Trustesse.Ivoluntia.Domain.IRepositories;
+namespace Trustesse.Ivoluntia.Data.IRepositories;
 
 public interface ISpecification<T>
 {

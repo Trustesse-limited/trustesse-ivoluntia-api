@@ -7,7 +7,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService
 {
     public interface IOtpService
     {
-        Task<string> GenerateOtpAsync(string userId, OtpPurpose purpose);
+        Task<string> GenerateOtpAsync(string userId, OtpPurpose purpose, bool includeAlphabet, string channel);
         Task<ApiResponse<Otp>> ConfirmOtpAsync(string otpCode, string otpPurpose);
     }
 }

@@ -1,7 +1,6 @@
 using Trustesse.Ivoluntia.Data.IRepositories;
 using Trustesse.Ivoluntia.Data.Repositories;
 
-namespace Trustesse.Ivoluntia.Domain.IRepositories;
 
 public interface IUnitOfWork
 {
@@ -14,7 +13,7 @@ public interface IUnitOfWork
     ILocationRepository locationRepo { get; }
     IUserInterestLinkRepository userInterestLinkRepo { get; }
     IUserSkillLinkRepository userSkillLinkRepo { get; }
-    IInterestRepository interestRepo { get; }
+   // IInterestRepository interestRepo { get; }
     ISkillRepository skillRepo { get; }
     IRefreshTokenRepository refreshTokenRepo { get; set; }
     IOrganizationRepository OrganizationRepository { get; set; }
@@ -28,7 +27,6 @@ public interface IUnitOfWork
     ISecurityQuestionRepository securityQuestionRepo { get; set; }
     IUserSecurityQuestionRepository userSecurityQuestionRepo { get; set; }
     IUserSecurityValidationAttemptRepository userSecurityValidationAttemptRepo { get; set; }
-    IOtpRepository otpRepo { get; set; }
     IVolunteerRepository volunteerRepo { get; set; }
     IProgramRejectionReasonRepository programRejectionReasonRepository { get; set; }
     IUserProgramRepository userProgramRepository { get; set; }  
@@ -38,5 +36,6 @@ public interface IUnitOfWork
     IAuthorizationRepository authorizationRepo { get; }
     IPinVerificationAttemptRepository pinVerificationAttemptRepo { get; }
     IOrganizationBankAccountDetailRepository organizationBankAccountDetailRepository { get; set; }
-    IOrganizationBankAccountHistoryDetailRepository organizationBankAccountHistoryDetailRepository { get; set; }  
+    IOrganizationBankAccountHistoryDetailRepository organizationBankAccountHistoryDetailRepository { get; set; }
+    IInterestRepository InterestRepository { get; set; } 
 }

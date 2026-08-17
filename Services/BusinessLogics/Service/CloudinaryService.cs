@@ -129,5 +129,41 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 
             return uploadResult.SecureUrl?.AbsoluteUri;
         }
+
+        public async Task<bool> DeleteFileAsync(string fileUrl)
+        {
+            if (string.IsNullOrWhiteSpace(fileUrl))
+                return false;
+
+            const string uploadMarker = "/upload/";
+
+            var uploadIndex = fileUrl.IndexOf(uploadMarker, StringComparison.OrdinalIgnoreCase);
+
+            if (uploadIndex < 0)
+                return false;
+
+            var path = fileUrl.Substring(uploadIndex + uploadMarker.Length);
+            var segments = path.Split('/');
+            var startIndex = segments.Length > 0 && segments[0].Length > 1 && segments[0][0] == 'v' && segments[0].Substring(1).All(char.IsDigit)
+                ? 1
+                : 0;
+
+            var publicId = Uri.UnescapeDataString(string.Join('/', segments.Skip(startIndex)));
+
+            if (string.IsNullOrWhiteSpace(publicId))
+                return false;
+
+            try
+            {
+                var result = await _cloudinary.DestroyAsync(new DeletionParams(publicId) { ResourceType = ResourceType.Raw });
+
+                return string.Equals(result.Result, "ok", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(result.Result, "not found", StringComparison.OrdinalIgnoreCase);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
     }
 }

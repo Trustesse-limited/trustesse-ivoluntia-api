@@ -20,5 +20,9 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         [HttpPost]
         public async Task<IActionResult> AddUserQualification([FromForm] CreateUserQualificationRequestDto request)
             => BuildHttpResponse(await _userQualificationService.AddUserQualification(request));
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> RemoveUserQualification(string id)
+            => BuildHttpResponse(await _userQualificationService.RemoveUserQualification(id));
     }
 }

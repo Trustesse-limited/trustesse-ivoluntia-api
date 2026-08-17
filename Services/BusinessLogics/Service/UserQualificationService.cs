@@ -99,6 +99,41 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             }
         }
 
+        public async Task<GlobalRequestReponse<string>> RemoveUserQualification(string id)
+        {
+            try
+            {
+                var userId = _currentUserService.GetUserId();
+
+                if (string.IsNullOrWhiteSpace(userId))
+                    return ResponseHelper.BuildResponse<string>("Invalid user", StatusCodes.Status400BadRequest, null, false);
+
+                if (string.IsNullOrWhiteSpace(id))
+                    return ResponseHelper.BuildResponse<string>("Qualification id is required", StatusCodes.Status400BadRequest, null, false);
+
+                var userQualification = await _uow.userQualificationRepo.GetByIdAsync(id);
+
+                if (userQualification == null || userQualification.UserId != userId)
+                    return ResponseHelper.BuildResponse<string>("Qualification not found", StatusCodes.Status404NotFound, null, false);
+
+                await _uow.userQualificationRepo.DeleteAsync(userQualification);
+
+                await _uow.CompleteAsync();
+
+                var fileDeleted = await _fileUploadService.DeleteFileAsync(userQualification.ProofOfQualificationURL);
+
+                if (!fileDeleted)
+                    _logger.LogWarning("Failed to delete proof of qualification file at {Url} for UserQualification {Id}", userQualification.ProofOfQualificationURL, id);
+
+                return ResponseHelper.BuildResponse("Qualification removed successfully.", StatusCodes.Status200OK, id, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return ResponseHelper.BuildResponse<string>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
+            }
+        }
+
         private static long ToBytes(int size, FileSizeUnit unit)
         {
             long multiplier = unit switch

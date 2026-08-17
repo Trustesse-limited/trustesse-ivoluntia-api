@@ -193,5 +193,35 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 return ResponseHelper.BuildResponse<QualificationDto>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
             }
         }
+
+        public async Task<GlobalRequestReponse<string>> DeleteQualification(string qualificationId)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(qualificationId))
+                    return ResponseHelper.BuildResponse<string>("Qualification id is required", StatusCodes.Status400BadRequest, null, false);
+
+                var qualification = await _uow.qualificationRepo.GetByIdAsync(qualificationId);
+
+                if (qualification == null)
+                    return ResponseHelper.BuildResponse<string>("Qualification not found", StatusCodes.Status404NotFound, null, false);
+
+                // TODO: block deletion when a qualification type is in use, once a link table
+                // (e.g. VolunteerQualification) exists to check usage against.
+
+                qualification.IsDeprecated = true;
+
+                await _uow.qualificationRepo.UpdateAsync(qualification);
+
+                await _uow.CompleteAsync();
+
+                return ResponseHelper.BuildResponse("Qualification type deleted successfully.", StatusCodes.Status200OK, qualificationId, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return ResponseHelper.BuildResponse<string>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
+            }
+        }
     }
 }

@@ -35,5 +35,10 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         [HttpGet("{qualificationId}")]
         public async Task<IActionResult> GetQualificationById(string qualificationId)
             => BuildHttpResponse(await _qualificationService.GetQualificationById(qualificationId));
+
+        [HttpDelete("{qualificationId}")]
+        [Authorize(Roles = AuthenticationConstants.SuperAdmin)]
+        public async Task<IActionResult> DeleteQualification(string qualificationId)
+            => BuildHttpResponse(await _qualificationService.DeleteQualification(qualificationId));
     }
 }

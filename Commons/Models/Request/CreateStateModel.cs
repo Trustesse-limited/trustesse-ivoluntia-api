@@ -10,5 +10,12 @@ namespace Trustesse.Ivoluntia.Commons.Models.Request
     {
         public string StateName { get; set; }
         public string CountryId { get; set; }
+
+        public CreateStateModel Validate()
+        {
+            if (this == null)
+                throw new Exception("invalid request");
+            return this;
+        }
     }
 }

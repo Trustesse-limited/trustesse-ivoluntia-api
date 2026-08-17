@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Trustesse.Ivoluntia.Domain.IRepositories;
+using Trustesse.Ivoluntia.Data.IRepositories;
 
 namespace Trustesse.Ivoluntia.Data.DataContext;
 

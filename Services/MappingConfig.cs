@@ -11,6 +11,11 @@ using Trustesse.Ivoluntia.Commons.DTOs.Volunteer;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Commons.DTOs.OnboardingDto;
 using Trustesse.Ivoluntia.Commons.DTOs.Qualification;
+using Trustesse.Ivoluntia.Commons.Models.Response;
+using Trustesse.Ivoluntia.Commons.DTOs.Country;
+using Trustesse.Ivoluntia.Commons.DTOs.Skill;
+using Trustesse.Ivoluntia.Commons.DTOs.Interest;
+using Trustesse.Ivoluntia.Commons.DTOs.Cause;
 
 namespace Trustesse.Ivoluntia.Services
 {
@@ -41,6 +46,15 @@ namespace Trustesse.Ivoluntia.Services
             config.NewConfig<OrganizationAccountNumberVerifyResponseDto, FoundationBankAccountDetail>();
             config.NewConfig<Qualification, QualificationDto>()
                 .Map(dest => dest.SupportingDocumentFileSizeUnit, src => src.SupportingDocumentFileSizeUnit.ToString());
+            config.NewConfig<State, GetStateResponse>();
+            config.NewConfig<CreateCountryRequestDto, Country>();
+            config.NewConfig<Skill, GetSkillResponseDto>();
+            config.NewConfig<CreateSkillRequestDto, Skill>();
+            config.NewConfig<CreateInterestRequestDto, Interest>();
+            config.NewConfig<Interest, GetInterestResponseDto>();
+            config.NewConfig<CreateCauseRequestDto, Cause>();
+            config.NewConfig<Cause, GetCauseResponseDto>();
+
             services.AddSingleton(config);
             services.AddScoped<IMapper, Mapper>();
         }

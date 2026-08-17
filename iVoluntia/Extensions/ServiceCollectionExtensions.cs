@@ -12,7 +12,6 @@ using Trustesse.Ivoluntia.Data.IRepositories;
 using Trustesse.Ivoluntia.Data.Repositories;
 using Trustesse.Ivoluntia.Data.Repositories.Implementation;
 using Trustesse.Ivoluntia.Domain.Entities;
-using Trustesse.Ivoluntia.Domain.IRepositories;
 using Trustesse.Ivoluntia.Services.Abstractions;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Implementations;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
@@ -64,11 +63,16 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<ISkillRepository, SkillRepository>();
             services.AddScoped<IUserInterestLinkRepository, UserInterestLinkRepository>();
             services.AddScoped<IUserSkillLinkRepository, UserSkillLinkRepository>();
-            services.AddScoped<IOtpRepository, OtpRepository>();
+            services.AddScoped<IOtpRepo, OtpRepo>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IOnboardingService, OnboardingService>();
             services.AddScoped<IQualificationService, QualificationService>();
             services.AddScoped<IQualificationRepository, QualificationRepository>();
+            services.AddScoped<IStateService, StateService>();
+            services.AddScoped<ICauseService, CauseService>();
+            services.AddScoped<ICauseRepository, CauseRepository>();
+            services.AddScoped<ISkillService, SkillService>();
+            services.AddScoped<IInterestService, InterestService>();
 
             services.AddSwaggerGen(options =>
             {

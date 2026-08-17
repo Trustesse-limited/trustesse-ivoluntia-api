@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Trustesse.Ivoluntia.Data.IRepositories;
 using Trustesse.Ivoluntia.Domain.Entities;
 
-namespace Trustesse.Ivoluntia.Domain.IRepositories
-{
-    public interface IOtpRepo: IGenericRepository<Otp>
-    {
 
-    }
+public interface IOtpRepo : IGenericRepository<Otp>
+{
 }
+

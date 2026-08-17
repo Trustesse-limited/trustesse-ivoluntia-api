@@ -2,6 +2,7 @@
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.Models.Request;
 using Trustesse.Ivoluntia.Domain.Enums;
+using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
 namespace Trustesse.Ivoluntia.API.Controllers.v1
@@ -12,23 +13,21 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
     {
         private readonly IOtpService _otpService;
         private readonly IAuthenticationService _authService;
-        public OtpController(IOtpService otpService, IAuthenticationService authService)
+        private readonly ICurrentUserService _currentUserService;
+        public OtpController(IOtpService otpService, IAuthenticationService authService, ICurrentUserService currentUserService)
         {
             _otpService = otpService;
             _authService = authService;
+            _currentUserService = currentUserService;
         }
         [HttpPost("generate-otp")]
         public async Task<IActionResult> GenerateOtp([FromBody] GenerateOtpDto request)
         {
             if (request == null)
                 return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid request."));
-
             if (!Enum.TryParse<OtpPurpose>(request.Purpose.ToString(), true, out var purposeEnum))
                 return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid purpose."));
-
-            var code = await _otpService.GenerateOtpAsync(request.UserId, purposeEnum);
-
-
+            var code = await _otpService.GenerateOtpAsync(_currentUserService.GetUserId(), purposeEnum, request.IncludeAlphabet, request.Channel);
             return Ok(new { Message = "OTP generated successfully and sent.", OtpCode = code });
         }
 
@@ -49,15 +48,14 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         }
 
         [HttpPost("resendotp")]
-        public async Task<IActionResult> ResendOTP(string email, OtpPurpose purpose)
+        public async Task<IActionResult> ResendOTP(string email, OtpPurpose purpose, bool includeAlphabet, string channel)
         {
-            var result = await _authService.ResendOTP(email, purpose);
+            var result = await _authService.ResendOTP(email, purpose, includeAlphabet, channel);
 
             if (result.StatusCode != 200)
             {
                 return BadRequest(new { ResponseCode = 500, ResponseMessage = "Internal server error." });
             }
-
             return Ok(result);
         }
     }

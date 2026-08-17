@@ -17,6 +17,6 @@ public interface IAuthenticationService
     Task<ApiResponse<string>> ResetPasswordAsync(string email);
     Task<ApiResponse<string>> ChangePasswordAsync(ChangePasswordModel model);
     Task<ApiResponse<string>> ConfirmUser(string otpCode, string otpPurpose);
-    Task<ApiResponse<string>> ResendOTP(string email, OtpPurpose purpose);
+    Task<ApiResponse<string>> ResendOTP(string email, OtpPurpose purpose, bool includeAlphabet, string channel);
     Task<ApiResponse<string>> CreatePasswordAsync(ResetPasswordModel model);
 }

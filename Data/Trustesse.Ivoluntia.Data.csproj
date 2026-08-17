@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.19" />
-    <None Include="Repositories\OtpRepository.cs" />
   </ItemGroup>
 
   <ItemGroup>

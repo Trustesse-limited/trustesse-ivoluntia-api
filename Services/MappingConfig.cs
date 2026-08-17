@@ -16,6 +16,7 @@ using Trustesse.Ivoluntia.Commons.DTOs.Country;
 using Trustesse.Ivoluntia.Commons.DTOs.Skill;
 using Trustesse.Ivoluntia.Commons.DTOs.Interest;
 using Trustesse.Ivoluntia.Commons.DTOs.Cause;
+using Trustesse.Ivoluntia.Commons.DTOs.UserQualification;
 
 namespace Trustesse.Ivoluntia.Services
 {
@@ -55,6 +56,7 @@ namespace Trustesse.Ivoluntia.Services
             config.NewConfig<Interest, GetInterestResponseDto>();
             config.NewConfig<CreateCauseRequestDto, Cause>();
             config.NewConfig<Cause, GetCauseResponseDto>();
+            config.NewConfig<UserQualification, UserQualificationDto>();
 
             services.AddSingleton(config);
             services.AddScoped<IMapper, Mapper>();

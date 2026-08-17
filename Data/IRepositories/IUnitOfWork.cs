@@ -39,4 +39,5 @@ public interface IUnitOfWork
     IOrganizationBankAccountHistoryDetailRepository organizationBankAccountHistoryDetailRepository { get; set; }
     IQualificationRepository qualificationRepo { get; set; }
     IInterestRepository InterestRepository { get; set; }
+    IUserQualificationRepository userQualificationRepo { get; set; }
 }

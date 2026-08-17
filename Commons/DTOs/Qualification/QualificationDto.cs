@@ -8,6 +8,14 @@ public class CreateQualificationDto
     public string SupportingDocumentFileSizeUnit { get; set; }
 }
 
+public class UpdateQualificationDto
+{
+    public string Title { get; set; }
+    public string SupportingDocumentFormat { get; set; }
+    public int SupportingDocumentMaxSize { get; set; }
+    public string SupportingDocumentFileSizeUnit { get; set; }
+}
+
 public class QualificationDto
 {
     public string Id { get; set; }

@@ -21,5 +21,9 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         [HttpPost("creation")]
         public async Task<IActionResult> CreateQualification([FromBody] CreateQualificationDto request)
             => BuildHttpResponse(await _qualificationService.CreateQualification(request));
+
+        [HttpPut("{qualificationId}")]
+        public async Task<IActionResult> UpdateQualification(string qualificationId, [FromBody] UpdateQualificationDto request)
+            => BuildHttpResponse(await _qualificationService.UpdateQualification(qualificationId, request));
     }
 }

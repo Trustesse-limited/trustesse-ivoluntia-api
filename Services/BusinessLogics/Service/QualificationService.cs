@@ -81,5 +81,74 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 return ResponseHelper.BuildResponse<QualificationDto>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
             }
         }
+
+        public async Task<GlobalRequestReponse<QualificationDto>> UpdateQualification(string qualificationId, UpdateQualificationDto request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(qualificationId))
+                    return ResponseHelper.BuildResponse<QualificationDto>("Qualification id is required", StatusCodes.Status400BadRequest, null, false);
+
+                var qualification = await _uow.qualificationRepo.GetByIdAsync(qualificationId);
+
+                if (qualification == null)
+                    return ResponseHelper.BuildResponse<QualificationDto>("Qualification not found", StatusCodes.Status404NotFound, null, false);
+
+                if (request == null)
+                    return ResponseHelper.BuildResponse<QualificationDto>("Invalid request", StatusCodes.Status400BadRequest, null, false);
+
+                if (string.IsNullOrWhiteSpace(request.Title))
+                    return ResponseHelper.BuildResponse<QualificationDto>("Title is required", StatusCodes.Status400BadRequest, null, false);
+
+                if (request.Title.Trim().Length > 100)
+                    return ResponseHelper.BuildResponse<QualificationDto>("Title must not exceed 100 characters", StatusCodes.Status400BadRequest, null, false);
+
+                if (string.IsNullOrWhiteSpace(request.SupportingDocumentFormat))
+                    return ResponseHelper.BuildResponse<QualificationDto>("Supporting document format is required", StatusCodes.Status400BadRequest, null, false);
+
+                if (request.SupportingDocumentFormat.Trim().Length > 20)
+                    return ResponseHelper.BuildResponse<QualificationDto>(
+                        "Supporting document format must not exceed 20 characters", StatusCodes.Status400BadRequest, null, false);
+
+                if (request.SupportingDocumentMaxSize <= 0)
+                    return ResponseHelper.BuildResponse<QualificationDto>("Supporting document max size must be greater than 0", StatusCodes.Status400BadRequest, null, false);
+
+                if (string.IsNullOrWhiteSpace(request.SupportingDocumentFileSizeUnit) ||
+                    !Enum.TryParse<FileSizeUnit>(request.SupportingDocumentFileSizeUnit, true, out var fileSizeUnit) ||
+                    !Enum.IsDefined(typeof(FileSizeUnit), fileSizeUnit))
+                    return ResponseHelper.BuildResponse<QualificationDto>(
+                        "Supporting document file size unit must be one of: B, KB, MB, GB, TB", StatusCodes.Status400BadRequest, null, false);
+
+                var normalizedTitle = request.Title.Trim().ToUpper();
+                var normalizedExistingTitle = qualification.Title.Trim().ToUpper();
+
+                if (normalizedTitle != normalizedExistingTitle)
+                {
+                    var duplicate = await _uow.qualificationRepo.GetByExpressionAsync(
+                        q => q.Id != qualificationId && q.Title.Trim().ToUpper() == normalizedTitle);
+
+                    if (duplicate != null)
+                        return ResponseHelper.BuildResponse<QualificationDto>("A qualification with this title already exists", StatusCodes.Status409Conflict, null, false);
+                }
+
+                qualification.Title = request.Title.Trim();
+                qualification.SupportingDocumentFormat = request.SupportingDocumentFormat.Trim();
+                qualification.SupportingDocumentMaxSize = request.SupportingDocumentMaxSize;
+                qualification.SupportingDocumentFileSizeUnit = fileSizeUnit;
+
+                await _uow.qualificationRepo.UpdateAsync(qualification);
+
+                await _uow.CompleteAsync();
+
+                var resultDto = _mapper.Map<QualificationDto>(qualification);
+
+                return ResponseHelper.BuildResponse("Qualification updated successfully", StatusCodes.Status200OK, resultDto, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return ResponseHelper.BuildResponse<QualificationDto>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
+            }
+        }
     }
 }

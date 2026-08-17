@@ -24,4 +24,5 @@ public class QualificationDto
     public int SupportingDocumentMaxSize { get; set; }
     public string SupportingDocumentFileSizeUnit { get; set; }
     public DateTime DateCreated { get; set; }
+    public DateTime? DateUpdated { get; set; }
 }

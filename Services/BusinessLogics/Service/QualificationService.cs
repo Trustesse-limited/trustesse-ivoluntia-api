@@ -150,5 +150,25 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 return ResponseHelper.BuildResponse<QualificationDto>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
             }
         }
+
+        public async Task<GlobalRequestReponse<List<QualificationDto>>> GetAllQualifications()
+        {
+            try
+            {
+                var qualifications = await _uow.qualificationRepo.GetAsync(
+                    orderby: q => q.OrderBy(x => x.Title),
+                    pageNumber: 0,
+                    pageSize: 0);
+
+                var resultDtos = _mapper.Map<List<QualificationDto>>(qualifications);
+
+                return ResponseHelper.BuildResponse("Qualifications retrieved successfully", StatusCodes.Status200OK, resultDtos, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return ResponseHelper.BuildResponse<List<QualificationDto>>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
+            }
+        }
     }
 }

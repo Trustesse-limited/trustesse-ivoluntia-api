@@ -8,7 +8,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = AuthenticationConstants.SuperAdmin)]
+    [Authorize]
     public class QualificationController : BaseController
     {
         private readonly IQualificationService _qualificationService;
@@ -19,11 +19,17 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         }
 
         [HttpPost("creation")]
+        [Authorize(Roles = AuthenticationConstants.SuperAdmin)]
         public async Task<IActionResult> CreateQualification([FromBody] CreateQualificationDto request)
             => BuildHttpResponse(await _qualificationService.CreateQualification(request));
 
         [HttpPut("{qualificationId}")]
+        [Authorize(Roles = AuthenticationConstants.SuperAdmin)]
         public async Task<IActionResult> UpdateQualification(string qualificationId, [FromBody] UpdateQualificationDto request)
             => BuildHttpResponse(await _qualificationService.UpdateQualification(qualificationId, request));
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllQualifications()
+            => BuildHttpResponse(await _qualificationService.GetAllQualifications());
     }
 }

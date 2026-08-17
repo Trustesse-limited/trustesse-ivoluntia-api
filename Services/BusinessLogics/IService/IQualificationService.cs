@@ -8,4 +8,5 @@ public interface IQualificationService
     Task<GlobalRequestReponse<QualificationDto>> CreateQualification(CreateQualificationDto request);
     Task<GlobalRequestReponse<QualificationDto>> UpdateQualification(string qualificationId, UpdateQualificationDto request);
     Task<GlobalRequestReponse<List<QualificationDto>>> GetAllQualifications();
+    Task<GlobalRequestReponse<QualificationDto>> GetQualificationById(string qualificationId);
 }

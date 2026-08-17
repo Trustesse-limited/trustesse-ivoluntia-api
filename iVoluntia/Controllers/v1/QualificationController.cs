@@ -31,5 +31,9 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         [HttpGet]
         public async Task<IActionResult> GetAllQualifications()
             => BuildHttpResponse(await _qualificationService.GetAllQualifications());
+
+        [HttpGet("{qualificationId}")]
+        public async Task<IActionResult> GetQualificationById(string qualificationId)
+            => BuildHttpResponse(await _qualificationService.GetQualificationById(qualificationId));
     }
 }

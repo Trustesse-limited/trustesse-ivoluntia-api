@@ -45,7 +45,8 @@ namespace Trustesse.Ivoluntia.Services
             config.NewConfig<SecurityQuestion, SecurityQuestionDto>();
             config.NewConfig<OrganizationAccountNumberVerifyResponseDto, FoundationBankAccountDetail>();
             config.NewConfig<Qualification, QualificationDto>()
-                .Map(dest => dest.SupportingDocumentFileSizeUnit, src => src.SupportingDocumentFileSizeUnit.ToString());
+                .Map(dest => dest.SupportingDocumentFileSizeUnit, src => src.SupportingDocumentFileSizeUnit.ToString())
+                .Map(dest => dest.Status, src => src.IsDeprecated ? "Inactive" : "Active");
             config.NewConfig<State, GetStateResponse>();
             config.NewConfig<CreateCountryRequestDto, Country>();
             config.NewConfig<Skill, GetSkillResponseDto>();

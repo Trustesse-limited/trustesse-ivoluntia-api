@@ -206,8 +206,10 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 if (qualification == null)
                     return ResponseHelper.BuildResponse<string>("Qualification not found", StatusCodes.Status404NotFound, null, false);
 
-                // TODO: block deletion when a qualification type is in use, once a link table
-                // (e.g. VolunteerQualification) exists to check usage against.
+                var inUse = await _uow.userQualificationRepo.GetByExpressionAsync(uq => uq.QualificationTypeId == qualificationId);
+
+                if (inUse != null)
+                    return ResponseHelper.BuildResponse<string>("This qualification type is in use by one or more users and cannot be deleted", StatusCodes.Status409Conflict, null, false);
 
                 qualification.IsDeprecated = true;
 

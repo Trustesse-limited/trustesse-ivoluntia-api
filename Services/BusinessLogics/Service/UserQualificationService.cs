@@ -61,7 +61,10 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 
                 var extension = Path.GetExtension(request.ProofOfQualification.FileName).TrimStart('.');
 
-                if (!string.Equals(extension, qualificationType.SupportingDocumentFormat, StringComparison.OrdinalIgnoreCase))
+                var allowedFormats = qualificationType.SupportingDocumentFormat
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                if (!allowedFormats.Any(format => string.Equals(extension, format, StringComparison.OrdinalIgnoreCase)))
                     return ResponseHelper.BuildResponse<UserQualificationDto>(
                         $"Proof of qualification must be a {qualificationType.SupportingDocumentFormat} file", StatusCodes.Status400BadRequest, null, false);
 

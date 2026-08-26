@@ -7,5 +7,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService
     {
         Task<GlobalRequestReponse<IReadOnlyList<string>>> UploadFilesAsync(IEnumerable<IFormFile> files);
         Task<string> UploadImageFromBase64Async(string base64String, string fileNameWithoutExtension, int maxFileSizeInMb = 5);
+        Task<bool> DeleteFileAsync(string fileUrl);
     }
 }

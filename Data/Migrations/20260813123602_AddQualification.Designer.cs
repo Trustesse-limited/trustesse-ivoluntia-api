@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Trustesse.Ivoluntia.Data.DataContext;
 
@@ -11,9 +12,11 @@ using Trustesse.Ivoluntia.Data.DataContext;
 namespace Trustesse.Ivoluntia.Data.Migrations
 {
     [DbContext(typeof(iVoluntiaDataContext))]
-    partial class iVoluntiaDataContextModelSnapshot : ModelSnapshot
+    [Migration("20260813123602_AddQualification")]
+    partial class AddQualification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -310,9 +313,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("CountryCode")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CountryName")
                         .HasColumnType("nvarchar(max)");
@@ -1635,45 +1635,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.ToTable("userPrograms");
                 });
 
-            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.UserQualification", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DateUpdated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeprecated")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("ProofOfQualificationURL")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("QualificationTypeId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("QualificationTypeId");
-
-                    b.HasIndex("UserId", "QualificationTypeId")
-                        .IsUnique();
-
-                    b.ToTable("UserQualifications");
-                });
-
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.UserRefreshToken", b =>
                 {
                     b.Property<string>("Id")
@@ -2188,25 +2149,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Program");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.UserQualification", b =>
-                {
-                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Qualification", "Qualification")
-                        .WithMany()
-                        .HasForeignKey("QualificationTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Qualification");
 
                     b.Navigation("User");
                 });

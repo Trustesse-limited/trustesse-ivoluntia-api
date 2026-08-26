@@ -70,3 +70,7 @@ nunit-*.xml
 # Local-only implementation docs (specs/plans) - never pushed to remote
 docs/superpowers/
 .superpowers/
+
+# Claude Code artifacts - local/working content, not project deliverables
+CLAUDE.md
+.claude/

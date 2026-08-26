@@ -10,11 +10,13 @@ using Trustesse.Ivoluntia.Commons.DTOs.Program;
 using Trustesse.Ivoluntia.Commons.DTOs.Volunteer;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Commons.DTOs.OnboardingDto;
+using Trustesse.Ivoluntia.Commons.DTOs.Qualification;
 using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Commons.DTOs.Country;
 using Trustesse.Ivoluntia.Commons.DTOs.Skill;
 using Trustesse.Ivoluntia.Commons.DTOs.Interest;
 using Trustesse.Ivoluntia.Commons.DTOs.Cause;
+using Trustesse.Ivoluntia.Commons.DTOs.UserQualification;
 
 namespace Trustesse.Ivoluntia.Services
 {
@@ -43,6 +45,9 @@ namespace Trustesse.Ivoluntia.Services
             config.NewConfig<VolunteerSignUpDto, User>();
             config.NewConfig<SecurityQuestion, SecurityQuestionDto>();
             config.NewConfig<OrganizationAccountNumberVerifyResponseDto, FoundationBankAccountDetail>();
+            config.NewConfig<Qualification, QualificationDto>()
+                .Map(dest => dest.SupportingDocumentFileSizeUnit, src => src.SupportingDocumentFileSizeUnit.ToString())
+                .Map(dest => dest.Status, src => src.IsDeprecated ? "Inactive" : "Active");
             config.NewConfig<State, GetStateResponse>();
             config.NewConfig<CreateCountryRequestDto, Country>();
             config.NewConfig<Skill, GetSkillResponseDto>();
@@ -51,6 +56,7 @@ namespace Trustesse.Ivoluntia.Services
             config.NewConfig<Interest, GetInterestResponseDto>();
             config.NewConfig<CreateCauseRequestDto, Cause>();
             config.NewConfig<Cause, GetCauseResponseDto>();
+            config.NewConfig<UserQualification, UserQualificationDto>();
 
             services.AddSingleton(config);
             services.AddScoped<IMapper, Mapper>();

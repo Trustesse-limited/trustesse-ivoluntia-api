@@ -66,11 +66,15 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<IOtpRepo, OtpRepo>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IOnboardingService, OnboardingService>();
+            services.AddScoped<IQualificationService, QualificationService>();
+            services.AddScoped<IQualificationRepository, QualificationRepository>();
             services.AddScoped<IStateService, StateService>();
             services.AddScoped<ICauseService, CauseService>();
             services.AddScoped<ICauseRepository, CauseRepository>();
-            services.AddScoped<ISkillService, SkillService>();   
+            services.AddScoped<ISkillService, SkillService>();
             services.AddScoped<IInterestService, InterestService>();
+            services.AddScoped<IUserQualificationService, UserQualificationService>();
+            services.AddScoped<IUserQualificationRepository, UserQualificationRepository>();
 
             services.AddSwaggerGen(options =>
             {

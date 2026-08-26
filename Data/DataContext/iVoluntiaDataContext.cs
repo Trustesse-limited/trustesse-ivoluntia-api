@@ -52,6 +52,8 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<PinVerificationAttempt> PinVerificationAttempts { get; set; }
         public DbSet<FoundationBankAccountDetail> FoundationBankAccountDetails { get; set; }
         public DbSet<FoundationBankAccountDetailUpdateHistory> FoundationAccountDetailUpdateHistories { get; set; }
+        public DbSet<Qualification> Qualifications { get; set; }
+        public DbSet<UserQualification> UserQualifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -318,6 +320,33 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                      .HasForeignKey(fbud => fbud.FoundationId)
                      .OnDelete(DeleteBehavior.Cascade);
                 entity.HasQueryFilter(f => !f.IsDeprecated);
+            });
+
+            modelBuilder.Entity<Qualification>(entity =>
+            {
+                entity.Property(q => q.Title).HasMaxLength(100);
+                entity.Property(q => q.SupportingDocumentFormat).HasMaxLength(20);
+                entity.HasIndex(q => q.Title).IsUnique();
+                entity.HasQueryFilter(q => !q.IsDeprecated);
+            });
+
+            modelBuilder.Entity<UserQualification>(entity =>
+            {
+                entity.Property(uq => uq.UserId).IsRequired();
+                entity.Property(uq => uq.QualificationTypeId).IsRequired();
+                entity.Property(uq => uq.ProofOfQualificationURL).IsRequired();
+
+                entity.HasOne(uq => uq.User)
+                      .WithMany()
+                      .HasForeignKey(uq => uq.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(uq => uq.Qualification)
+                      .WithMany()
+                      .HasForeignKey(uq => uq.QualificationTypeId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(uq => new { uq.UserId, uq.QualificationTypeId }).IsUnique();
             });
         }
     }

@@ -328,7 +328,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             if (user == null)
                 return ResponseHelper.BuildResponse<string>("Invalid user.", StatusCodes.Status400BadRequest, null, false);
 
-            var otpCode = await _otpService.GenerateOtpAsync(userId, OtpPurpose.ResetSecurityQuestion,true, NotificationChannelEnum.Email.ToString());
+            var otpCode = await _otpService.GenerateOtpAsync(userId, OtpPurpose.ResetSecurityQuestion.ToString(),true, NotificationChannelEnum.Email.ToString());
 
             var placeholders = new Dictionary<string, string>
             {

@@ -12,6 +12,9 @@
         RequestToLeaveProgram,
         OtpRequest,
         OrganizationStatusUpdate,
-        OrganizationBlockStatusUpdate
+        OrganizationBlockStatusUpdate,
+        TwoFactorAuthentication,
+        EmailConfirmationOtp,
+        ResetPasswordOtp
     }
 }

@@ -42,7 +42,8 @@ namespace Trustesse.Ivoluntia.Services
             config.NewConfig<FoundationBioData, Foundation>();
             config.NewConfig<User, OtpDto>();
             config.NewConfig<OtpDto, Otp>();
-            config.NewConfig<VolunteerSignUpDto, User>();
+            config.NewConfig<SignUpDto, User>();
+            config.NewConfig<User, SignUpDto>();
             config.NewConfig<SecurityQuestion, SecurityQuestionDto>();
             config.NewConfig<OrganizationAccountNumberVerifyResponseDto, FoundationBankAccountDetail>();
             config.NewConfig<Qualification, QualificationDto>()
@@ -57,7 +58,8 @@ namespace Trustesse.Ivoluntia.Services
             config.NewConfig<CreateCauseRequestDto, Cause>();
             config.NewConfig<Cause, GetCauseResponseDto>();
             config.NewConfig<UserQualification, UserQualificationDto>();
-
+            config.NewConfig<User, PasswordResetTokenPayload>();
+            config.NewConfig<User, JwtClaimsModel>();
             services.AddSingleton(config);
             services.AddScoped<IMapper, Mapper>();
         }

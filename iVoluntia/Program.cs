@@ -19,6 +19,7 @@ builder.Services.AddCustomCors(builder.Configuration);
 builder.Services.AddCustomDatabase(builder.Configuration);
 builder.Services.AddCustomIdentity(builder.Configuration);
 builder.Services.RegisterJwtServices(builder.Configuration);
+builder.Services.AddRateLimt();
 builder.Services.AddScoped<NetworkFilter>();
 builder.Services.AddCustomServices();
 builder.ConfigureHsts();

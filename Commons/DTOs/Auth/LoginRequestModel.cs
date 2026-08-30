@@ -1,16 +1,25 @@
+using System.Security.AccessControl;
+
 namespace Trustesse.Ivoluntia.Commons.DTOs.Auth;
 
-public record LoginRequestModel
+public class LoginRequestModel
 {
-    public string Email { get; init; } = string.Empty;
-    public string Password { get; init; } = string.Empty;
+    public string Email { get; init; } 
+    public string Password { get; init; }
     public bool RememberMe { get; init; } = false;
     public string? TwoFactorCode { get; init; }
     public string? DeviceInfo { get; init; }
+
+    public LoginRequestModel Validate()
+    {
+        if (this == null)
+            throw new Exception("invalid request");
+        return this;
+    }
 }
 
 
-public record LoginResponseModel
+public class LoginResponseModel
 {
     public string Message { get; init; } = string.Empty;
     public string AccessToken { get; init; } = string.Empty;

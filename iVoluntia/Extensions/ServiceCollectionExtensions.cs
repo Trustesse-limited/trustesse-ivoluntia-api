@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using System.Threading.RateLimiting;
 using Trustesse.Ivoluntia.Commons.Configurations;
 using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Commons.Validators;
@@ -75,6 +77,9 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<IInterestService, InterestService>();
             services.AddScoped<IUserQualificationService, UserQualificationService>();
             services.AddScoped<IUserQualificationRepository, UserQualificationRepository>();
+            services.AddScoped<ITwoFactorAuthenticationService, TwoFactorAuthenticationService>();
+            services.AddScoped<IUserMapperService, UserMapperService>();
+            services.AddScoped<IOtpEmailSenderService, OtpEmailSenderService>();
 
             services.AddSwaggerGen(options =>
             {
@@ -221,6 +226,22 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<AuditSaveChangesInterceptor>();
 
+            return services;
+        }
+
+        public static IServiceCollection AddRateLimt(this IServiceCollection services)
+        {
+            services.AddRateLimiter(options =>
+            {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+                options.AddFixedWindowLimiter("fixed", opt =>
+                {
+                    opt.PermitLimit = 4;
+                    opt.Window = TimeSpan.FromSeconds(12);
+                    opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                    opt.QueueLimit = 2;
+                });
+            });
             return services;
         }
     }

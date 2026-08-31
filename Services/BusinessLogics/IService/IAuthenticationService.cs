@@ -10,13 +10,13 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
 public interface IAuthenticationService
 {
-    Task<GlobalRequestReponse<string>> CreateVolunteer(VolunteerSignUpDto model);
-    Task<GlobalRequestReponse<string>> CreateOrganization(CreateFoundationRequestDto createFoundationRequestDto);
-    Task<ApiResponse<LoginResponseModel>> LoginAsync(LoginRequestModel request, CancellationToken cancellationToken);
+    Task<GlobalRequestReponse<string>> CreateVolunteer(SignUpDto signUpDto);
+    Task<GlobalRequestReponse<string>> CreateOrganization(SignUpDto signUpDto);
+    Task<GlobalRequestReponse<LoginResponseModel>> LoginAsync(LoginRequestModel request, CancellationToken cancellationToken);
     Task<ApiResponse<RefreshTokenResponseModel>> RefreshTokenAsync(RefreshTokenRequestModel request, CancellationToken cancellationToken);
-    Task<ApiResponse<string>> ResetPasswordAsync(string email);
-    Task<ApiResponse<string>> ChangePasswordAsync(ChangePasswordModel model);
-    Task<ApiResponse<string>> ConfirmUser(string otpCode, string otpPurpose);
-    Task<ApiResponse<string>> ResendOTP(string email, OtpPurpose purpose, bool includeAlphabet, string channel);
-    Task<ApiResponse<string>> CreatePasswordAsync(ResetPasswordModel model);
+    Task<GlobalRequestReponse<string>> ResetPasswordAsync(string email);
+    Task<GlobalRequestReponse<string>> ChangePasswordAsync(ChangePasswordDto changePasswordDto);
+    Task<GlobalRequestReponse<string>> ForgetPasswordAsync(ForgotPasswordDto forgotPasswordDto);
+    Task<GlobalRequestReponse<string>> TwoFactorAuthenticationSetUp();
+    Task<GlobalRequestReponse<VerifyTwoFactorAuthenticationResponseDto>> VerifyTwoFactorAuthentication(VerifyTwoFactorAuthenticationRequestDto verifyTwoFactorAuthenticationRequestDto); 
 }

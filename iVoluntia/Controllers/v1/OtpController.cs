@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.Models.Request;
 using Trustesse.Ivoluntia.Domain.Enums;
@@ -9,7 +10,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
 {
     [Route("api/v1/[Controller]")]
     [ApiController]
-    public class OtpController : ControllerBase
+    public class OtpController : BaseController
     {
         private readonly IOtpService _otpService;
         private readonly IAuthenticationService _authService;
@@ -27,7 +28,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
                 return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid request."));
             if (!Enum.TryParse<OtpPurpose>(request.Purpose.ToString(), true, out var purposeEnum))
                 return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid purpose."));
-            var code = await _otpService.GenerateOtpAsync(_currentUserService.GetUserId(), purposeEnum, request.IncludeAlphabet, request.Channel);
+            var code = await _otpService.GenerateOtpAsync(_currentUserService.GetUserId(), purposeEnum.ToString(), request.IncludeAlphabet, request.Channel);
             return Ok(new { Message = "OTP generated successfully and sent.", OtpCode = code });
         }
 
@@ -48,15 +49,17 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         }
 
         [HttpPost("resendotp")]
-        public async Task<IActionResult> ResendOTP(string email, OtpPurpose purpose, bool includeAlphabet, string channel)
-        {
-            var result = await _authService.ResendOTP(email, purpose, includeAlphabet, channel);
+        public async Task<IActionResult> ResendOTP(string email, string purpose, bool includeAlphabet, string notificationType)
+            => BuildHttpResponse<string>(await _otpService.ResendOTP(email, purpose, includeAlphabet, NotificationChannelEnum.Email.ToString(), notificationType));
+       
+        [EnableRateLimiting("fixed")]
+        [HttpPost("verify-email-confirm-otp")]
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string otpCode)
+            => BuildHttpResponse<string>(await _otpService.ConfirmEmail(otpCode, OtpPurpose.Signup.ToString()));
 
-            if (result.StatusCode != 200)
-            {
-                return BadRequest(new { ResponseCode = 500, ResponseMessage = "Internal server error." });
-            }
-            return Ok(result);
-        }
+        [EnableRateLimiting("fixed")]
+        [HttpPost("verify-reset-password-otp")]
+        public async Task<IActionResult> VerifyResetPasswordOtp([FromQuery] string otpCode)
+            => BuildHttpResponse<string>(await _otpService.VerifyResetPasswordOtp(otpCode));
     }
 }

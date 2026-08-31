@@ -5,7 +5,7 @@
         PasswordReset = 1,
         Signup,
         TransactionApproval,
-        TwoFactorLogin,
+        TwoFactorAuthenticationLogin,
         ChangeEmail,
         ResetSecurityQuestion
     }

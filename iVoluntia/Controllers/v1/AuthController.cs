@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Collections.Generic;
+//using System.Web.Http;
 using Trustesse.Ivoluntia.API.Extensions;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Auth;
@@ -22,73 +25,38 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> LoginAsync(LoginRequestModel request, CancellationToken cancellationToken)
-        {
-            var response = await _authenticationService.LoginAsync(request, cancellationToken);
-            return response.ToActionResult();
-        }
-
+        public async Task<IActionResult> LoginAsync([FromBody] LoginRequestModel request, CancellationToken cancellationToken)
+            => BuildHttpResponse<LoginResponseModel>(await _authenticationService.LoginAsync(request.Validate(), cancellationToken));
+       
         [HttpPost("volunteer-signup")]
-        public async Task<IActionResult> CreateVolunteer([FromBody] VolunteerSignUpDto request)
-            =>BuildHttpResponse<string>(await _authenticationService.CreateVolunteer(request.Validate()));    
+        public async Task<IActionResult> CreateVolunteer([FromBody] SignUpDto signUpDto)
+            =>BuildHttpResponse<string>(await _authenticationService.CreateVolunteer(signUpDto.Validate()));    
         
         [HttpPost("organization-signup")]
-        public async Task<IActionResult> CreateOrganization([FromBody] CreateFoundationRequestDto createFoundationRequestDto)
-            => BuildHttpResponse<string>(await _authenticationService.CreateOrganization(createFoundationRequestDto.Validate()));
-       
+        public async Task<IActionResult> CreateOrganization([FromBody] SignUpDto signUpDto)
+            => BuildHttpResponse<string>(await _authenticationService.CreateOrganization(signUpDto.Validate()));
+
         [HttpPost("resetpassword")]
-        public async Task<IActionResult> ResetPassword(string email)
-        {
-            var result = await _authenticationService.ResetPasswordAsync(email);
-
-            if (result.StatusCode != 200)
-            {
-                return BadRequest(new { ResponseCode = 500, ResponseMessage = "Internal server error." });
-            }
-
-            return Ok(result);
-        }
-
+        public async Task<IActionResult> ResetPassword([FromQuery] string email)
+            => BuildHttpResponse<string>(await _authenticationService.ResetPasswordAsync(email));
+        
         [HttpPost("changepassword")]
-        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel request)
-        {
-            if (request == null)
-                return BadRequest(ApiResponse<string>.Failure(StatusCodes.Status400BadRequest, "Invalid request."));
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+            => BuildHttpResponse<string>(await _authenticationService.ChangePasswordAsync(changePasswordDto.Validate())); 
+       
+        [HttpPost("forgotpassword")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordDto forgotPasswordDto)
+            => BuildHttpResponse<string>(await _authenticationService.ForgetPasswordAsync(forgotPasswordDto.Validate()));     
+        
+        [Authorize]
+        [HttpPost("2fa-setup")]
+        public async Task<IActionResult> TwoFactorAuthenticationSetUp()
+            => BuildHttpResponse<string>(await _authenticationService.TwoFactorAuthenticationSetUp());
 
-            var result = await _authenticationService.ChangePasswordAsync(request);
-
-            if (result.StatusCode != 200)
-            {
-                return BadRequest(new { ResponseCode = 500, ResponseMessage = "Internal server error." });
-            }
-
-            return Ok(result);
-        }
-        [HttpPost("confirmuser")]
-        public async Task<IActionResult> ConfirmUser([FromQuery]string otpCode)
-        {
-            var result = await _authenticationService.ConfirmUser(otpCode, OtpPurpose.Signup.ToString());
-
-            if (result.StatusCode != 200)
-            {
-                return BadRequest(new { ResponseCode = 500, ResponseMessage = "Internal server error." });
-            }
-
-            return Ok(result);
-        }
-
-        [HttpPost("createpassword")]
-        public async Task<IActionResult> CreatePassword(ResetPasswordModel model)
-        {
-            var result = await _authenticationService.CreatePasswordAsync(model);
-
-            if (result.StatusCode != 200)
-            {
-                return BadRequest(new { ResponseCode = 500, ResponseMessage = "Internal server error." });
-            }
-
-            return Ok(result);
-        }
-
+        [EnableRateLimiting("fixed")]
+        [HttpPost("2fa-verify")]
+        public async Task<IActionResult> VerifyTwoFactorAuthentication(VerifyTwoFactorAuthenticationRequestDto verifyTwoFactorAuthenticationRequestDto)
+            => BuildHttpResponse<VerifyTwoFactorAuthenticationResponseDto>(await _authenticationService.VerifyTwoFactorAuthentication(verifyTwoFactorAuthenticationRequestDto.Validate()));
     }
 }
+ 

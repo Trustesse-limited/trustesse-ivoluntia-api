@@ -44,7 +44,6 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         {
             const string superAdminEmail = "admin@ivoluntia.com";
             const string superAdminPassword = "Admin#123";
-
             var existingUser = await userManager.FindByEmailAsync(superAdminEmail);
 
             if (existingUser == null)
@@ -56,7 +55,8 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                     EmailConfirmed = true,
                     FirstName = "Super",
                     LastName = "Admin",
-                    IsActive = true
+                    IsActive = true,
+                    TwoFactorEnabled = true
                 };
 
                 var result = await userManager.CreateAsync(user, superAdminPassword);

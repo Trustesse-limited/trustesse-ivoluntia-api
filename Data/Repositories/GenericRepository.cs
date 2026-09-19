@@ -123,7 +123,10 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
     public async Task<T> GetByExpressionIncludeAsync(Expression<Func<T, bool>> expression, params Expression<Func<T, object>>[] includes)
     {
         IQueryable<T> query = _dbContext.Set<T>();
-
+        if (expression != null)
+        {
+            query = query.Where(expression);
+        }
         foreach (var include in includes)
         {
             query = query.Include(include);

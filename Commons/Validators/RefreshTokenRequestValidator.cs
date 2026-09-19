@@ -16,7 +16,7 @@ public class RefreshTokenRequestValidator : AbstractValidator<RefreshTokenReques
             .NotEmpty().WithMessage("Refresh token is required")
             .MinimumLength(32).WithMessage("Invalid refresh token format");
 
-        RuleFor(x => x.UserId)
+        RuleFor(x => x.Email)
             .NotNull()
             .NotEmpty().WithMessage("UserId  is required");
 

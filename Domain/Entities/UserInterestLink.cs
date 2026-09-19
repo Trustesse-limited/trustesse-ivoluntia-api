@@ -6,5 +6,4 @@ public class UserInterestLink : BaseEntity
     public string InterestId { get; set; }
     public virtual User User { get; set; }
     public virtual Interest Interest { get; set; }
-   
 }

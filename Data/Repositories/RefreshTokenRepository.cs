@@ -15,7 +15,6 @@ public class RefreshTokenRepository : GenericRepository<UserRefreshToken>, IRefr
     public async Task<UserRefreshToken> GetActiveUserTokensAsync(string userId)
     {
         return await GetByExpressionAsync(x => x.UserId.Trim() == userId.Trim() && !x.IsRevoked);
-
     }
 
     public async Task<UserRefreshToken?> GetUserRefreshTokenAsync(string refreshToken, string userId)

@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Trustesse.Ivoluntia.Commons.DTOs.Cause
+namespace Trustesse.Ivoluntia.Commons.DTOs.Category
 {
-    public class GetCauseResponseDto
+    public class CreateCategoryRequestDto
     {
-        public string Id { get; set; } 
         public string Name { get; set; }
         public string? Description { get; set; }
     }

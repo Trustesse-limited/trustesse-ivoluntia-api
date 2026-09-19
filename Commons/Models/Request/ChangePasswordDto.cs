@@ -9,9 +9,9 @@ namespace Trustesse.Ivoluntia.Commons.Models.Request
 {
     public class ChangePasswordDto
     {
-        [EmailAddress]
-        [Required(ErrorMessage = "Email is Required")]
-        public string Email { get; set; }
+        //[EmailAddress]
+        //[Required(ErrorMessage = "Email is Required")]
+        //public string Email { get; set; }
         [Required(ErrorMessage = " Old Password is Required")]
         public string OldPassword { get; set; }
         [Required(ErrorMessage = "New Password is Required")]

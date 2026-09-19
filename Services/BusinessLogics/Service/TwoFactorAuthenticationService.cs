@@ -55,7 +55,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                     var emailModel = EmailModelBuilder.EmailModelObjectBuilder(receivers, NotificationTypeEnum.TwoFactorAuthentication.ToString(), Message);
                     var emailResponse = await _emailService.SendEmailASync(emailModel);
                     if(emailResponse.StatusCode == StatusCodes.Status200OK)
-                        return ResponseHelper.BuildResponse("success", StatusCodes.Status200OK, "two factor code sent to email", true);
+                        return ResponseHelper.BuildResponse("two factor code sent to your email", StatusCodes.Status200OK, "two factor code sent to email", true);
                 }
                 return ResponseHelper.BuildResponse<string>("something went wrong", StatusCodes.Status400BadRequest, null, false);
             }

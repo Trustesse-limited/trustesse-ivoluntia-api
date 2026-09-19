@@ -12,6 +12,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService
         Task<ApiResponse<Otp>> ConfirmOtpAsync(string otpCode, string otpPurpose);
         Task<GlobalRequestReponse<string>> ConfirmEmail(string otpCode, string otpPurpose);
         Task<GlobalRequestReponse<string>> VerifyResetPasswordOtp(string otpCode);
+        Task<GlobalRequestReponse<string>> VerifyForgotPasswordOtp(string otpCode);
         Task<GlobalRequestReponse<string>> ResendOTP(string email, string purpose, bool includeAlphabet, string channel, string notificationType);
     }
 }

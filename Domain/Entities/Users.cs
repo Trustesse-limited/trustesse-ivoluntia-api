@@ -7,11 +7,12 @@ namespace Trustesse.Ivoluntia.Domain.Entities
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public string OtherName { get; set; }
         public Location Location { get; set; }
         public string? UserImage { get; set; }
         public string? Bio { get; set; }
         public DateTime? LastLogin { get; set; }
-        public byte? Gender { get; set; }
+        public string Gender { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public bool IsActive { get; set; }
         public string? OTP { get; set; }
@@ -24,8 +25,7 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public bool IsDeprecated { get; set; }
         public string? FoundationId { get; set; }
         public bool HasSecurityQuestionsConfigured { get; set; }
-
-        public virtual OnboardingProgress OnboardingProgress { get; set; }
+        public OnboardingProgress OnboardingProgress { get; set; }
         public Foundation? Foundation { get; set; }
         public ICollection<Skill?> Skills { get; set; } = new List<Skill>();
         public ICollection<Interest?> Interests { get; set; } = new List<Interest>();

@@ -15,6 +15,7 @@
         OrganizationBlockStatusUpdate,
         TwoFactorAuthentication,
         EmailConfirmationOtp,
-        ResetPasswordOtp
+        ResetPasswordOtp,
+        ForgotPassWord
     }
 }

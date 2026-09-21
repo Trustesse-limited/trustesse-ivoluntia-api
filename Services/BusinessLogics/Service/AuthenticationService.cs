@@ -1,4 +1,5 @@
 using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using MapsterMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -23,6 +24,7 @@ using Trustesse.Ivoluntia.Domain.Enums;
 using Trustesse.Ivoluntia.Services.Abstractions;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 using static System.Net.WebRequestMethods;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service;
@@ -81,8 +83,7 @@ public class AuthenticationService : IAuthenticationService
     }
     public async Task<GlobalRequestReponse<string>> CreateVolunteer(SignUpDto signUpDto)
     {
-        var user = await _uow.userRepo.GetByExpressionAsync(x =>
-        x.Email == signUpDto.Email);
+        var user = await _userManager.FindByEmailAsync(signUpDto.Email);
         if (user != null)
             return ResponseHelper.BuildResponse<string>($"user already exist. please sign in", StatusCodes.Status400BadRequest, null, false);
         var volunteer = await _userMapperService.UserMapper(signUpDto);
@@ -98,31 +99,40 @@ public class AuthenticationService : IAuthenticationService
    
     public async Task<GlobalRequestReponse<string>> CreateOrganization(SignUpDto signUpDto)
     {
-        var user = await _uow.userRepo.GetByExpressionAsync(x =>
-        x.Email == signUpDto.Email);
+        var user = await _userManager.FindByEmailAsync(signUpDto.Email);
         if (user != null)
             return ResponseHelper.BuildResponse<string>($"user already exist, please log in.", StatusCodes.Status400BadRequest, null, false);
+
         var foundationAdmin = await _userMapperService.UserMapper(signUpDto);
         var result = await _userManager.CreateAsync(foundationAdmin, signUpDto.Password.Trim());
         await _userManager.AddToRoleAsync(foundationAdmin, UserRolesEnum.FoundationAdmin.ToString());
         if (result.Succeeded)
         {
-            // emailService 
             var response = await _otpEmailSenderService.OtpSender(foundationAdmin.Email, foundationAdmin.OTP, NotificationTypeEnum.EmailConfirmationOtp.ToString());
             return response; 
         }
         return ResponseHelper.BuildResponse<string>("something went wrong", StatusCodes.Status400BadRequest, null, false);
     }
 
-    public async Task<GlobalRequestReponse<LoginResponseModel>> LoginAsync(LoginRequestModel request, CancellationToken cancellationToken)
+    public async Task<GlobalRequestReponse<LoginResponseModel>> LoginAsync(LoginRequestModel request)
     {
-        var user = await _userRepository.GetUserByEmailWithFoundationAsync(request.Email, cancellationToken);
-
+        var user = await _uow.userRepo.GetByExpressionIncludeAsync(u => u.Email == request.Email, u => u.OnboardingProgress, u => u.UserInterestLinks, u => u.UserSkillLinks, u => u.Location, u => u.Location.Country, u => u.Location.State, u => u.Foundation, u => u.Foundation.Category,u =>  u.Foundation.Location.State, u => u.Foundation.Location.Country, u => u.Foundation.Causes);
+        var interest = new List<UserInterestLink>(); 
+        var skill = new List<UserSkillLink>();  
         if (user is null)
         {
             return ResponseHelper.BuildResponse<LoginResponseModel>("user not found , please sign up", StatusCodes.Status404NotFound, null, false);
         }
-
+        if (!await _userManager.CheckPasswordAsync(user, request.Password))
+        {
+            await _userManager.AccessFailedAsync(user);
+            return ResponseHelper.BuildResponse<LoginResponseModel>("invalid credentials", StatusCodes.Status400BadRequest, null, false);
+        }
+        if (user.OnboardingProgress != null && user.OnboardingProgress.LastCompletedPage > 0 && user.OnboardingProgress.LastCompletedPage < 5 && user.OnboardingProgress.HasCompletedOnboarding == false)
+        {
+            interest = await _uow.userInterestLinkRepo.GetListByExpressionAsync(i => i.UserId == user.Id, i => i.Interest);
+            skill = await _uow.userSkillLinkRepo.GetListByExpressionAsync(i => i.UserId == user.Id, i => i.Skill);
+        }
         var roles = await _userManager.GetRolesAsync(user);
         var role = roles.FirstOrDefault();
         string accountType = "";
@@ -130,23 +140,26 @@ public class AuthenticationService : IAuthenticationService
         {
             accountType = "Volunteer";
         }
+        else if(role == "FoundationAdmin")
+        {
+            accountType = "Foundation";
+        }
         else
         {
-            accountType = "Organization";
+            accountType = "Admin";
         }
         if (!user.IsActive)
         {
-            return ResponseHelper.BuildResponse<LoginResponseModel>("account not active, please confirm your email", StatusCodes.Status400BadRequest, null, false); 
+            var otp = await _otp.GenerateOtpAsync(user.Id, OtpPurpose.Signup.ToString(), false, NotificationChannelEnum.Email.ToString());
+            user.OTP = otp;
+            var response = await _otpEmailSenderService.OtpSender(user.Email, user.OTP, NotificationTypeEnum.EmailConfirmationOtp.ToString());
+            if(response.isSuccessfull)
+                return ResponseHelper.BuildResponse<LoginResponseModel>("your account has not been confirm , please confirm your email with the OTP sent to your email", StatusCodes.Status400BadRequest, null, false);
+            return ResponseHelper.BuildResponse<LoginResponseModel>("something went wrong", StatusCodes.Status400BadRequest, null, false);
         }
         if (await _userManager.IsLockedOutAsync(user))
         {
             return ResponseHelper.BuildResponse<LoginResponseModel>("account lock due to failed attempt",StatusCodes.Status403Forbidden, null, false);
-        }
-
-        if (!await _userManager.CheckPasswordAsync(user, request.Password))
-        {
-            await _userManager.AccessFailedAsync(user);
-            return ResponseHelper.BuildResponse<LoginResponseModel>("wrong password", StatusCodes.Status400BadRequest, null,false);
         }
         await _userManager.ResetAccessFailedCountAsync(user);
         if(user.TwoFactorEnabled)
@@ -170,77 +183,131 @@ public class AuthenticationService : IAuthenticationService
         var refreshToken = await _jwtTokenService.GenerateRefreshTokenAsync(
             user?.Id!, role);
         user!.LastLogin = DateTime.UtcNow;
-        _uow.userRepo.Update(user);
-        await _uow.CompleteAsync();
+        await _userManager.UpdateAsync(user); 
         var hasSetUpPin = await _uow.transactionPinRepo.GetByExpressionAsync(x => x.UserId == user.Id) != null;
-        var longinResponse = new LoginResponseModel
+        //volunteer data
+        if (user.OnboardingProgress != null && user.FoundationId == null && user.OnboardingProgress.LastCompletedPage > 0 && user.OnboardingProgress.LastCompletedPage < 5 && user.OnboardingProgress.HasCompletedOnboarding == false)
         {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken,
-            HasCompletedOnboarding = user.OnboardingProgress?.HasCompletedOnboarding ?? false,
-            LastCompletedPage = user.OnboardingProgress?.LastCompletedPage ?? 0,
-            HasSetUpPin = hasSetUpPin,
-            Message = "Login successful",
-            AccountType = accountType,  
-        };
-        return ResponseHelper.BuildResponse<LoginResponseModel>("login successful", StatusCodes.Status200OK, longinResponse, true);
+            var loginResponse = _mapper.Map<LoginResponseModel>(user);
+            loginResponse.AccountType = accountType;
+            loginResponse.AccessToken = accessToken;
+            loginResponse.AccessTokenExpireMinutes = DateTime.Now.AddMinutes(30);
+            loginResponse.RefreshToken = refreshToken;
+            loginResponse.RefreshTokenExpireDays = DateTime.Now.AddDays(30);    
+            loginResponse.HasCompletedOnboarding = user.OnboardingProgress?.HasCompletedOnboarding ?? false;
+            loginResponse.LastCompletedPage = user.OnboardingProgress?.LastCompletedPage ?? 0;
+            loginResponse.NumberOfPageRemaining = 5 - user.OnboardingProgress?.LastCompletedPage ?? 5;
+            loginResponse.HasSetUpPin = hasSetUpPin;
+            loginResponse.Message = "Login successful";
+            loginResponse.UserProfile = _mapper.Map<UserProfileSummary>(user);
+            loginResponse.UserProfile.Address = user.Location?.Address ?? null;
+            loginResponse.UserProfile.City = user.Location?.City ?? null;
+            loginResponse.UserProfile.ZipCode = user.Location?.Zipcode ?? null;
+            loginResponse.UserProfile.CountryName = user.Location?.Country.CountryName ?? null;
+            loginResponse.UserProfile.StateName = user.Location?.State.StateName ?? null;
+            loginResponse.UserProfile.InterestNames = interest?.Select(i => i.Interest.Name).ToList() ?? null;
+            loginResponse.UserProfile.SkillNames = skill?.Select(s => s.Skill.Name).ToList() ?? null ;
+            return ResponseHelper.BuildResponse<LoginResponseModel>("login successful", StatusCodes.Status200OK, loginResponse, true);
+        }
+        // foundation data
+        else if(user.OnboardingProgress != null && user.FoundationId != null && user.OnboardingProgress.LastCompletedPage > 0 && user.OnboardingProgress.LastCompletedPage < 5 && user.OnboardingProgress.HasCompletedOnboarding == false)
+        {
+            var loginResponse = _mapper.Map<LoginResponseModel>(user);
+            loginResponse.AccountType = accountType;
+            loginResponse.AccessToken = accessToken;
+            loginResponse.AccessTokenExpireMinutes = DateTime.Now.AddMinutes(30);
+            loginResponse.RefreshToken = refreshToken;
+            loginResponse.RefreshTokenExpireDays = DateTime.Now.AddDays(30);
+            loginResponse.HasCompletedOnboarding = user.OnboardingProgress?.HasCompletedOnboarding ?? false;
+            loginResponse.LastCompletedPage = user.OnboardingProgress?.LastCompletedPage ?? 0;
+            loginResponse.NumberOfPageRemaining = 5 - user.OnboardingProgress?.LastCompletedPage ?? 5;
+            loginResponse.HasSetUpPin = hasSetUpPin;
+            loginResponse.Message = "Login successful";
+            loginResponse.UserProfile = _mapper.Map<UserProfileSummary>(user);
+            loginResponse.UserProfile.Name = user.Foundation?.Name ?? null;
+            loginResponse.UserProfile.Category = user.Foundation?.Category?.Name ?? null;
+            loginResponse.UserProfile.Website = user.Foundation?.Website ?? null;
+            loginResponse.UserProfile.Mission = user.Foundation?.Mission ?? null;
+            loginResponse.UserProfile.Address = user.Foundation?.Location?.Address ?? null;
+            loginResponse.UserProfile.City = user.Foundation?.Location?.City ?? null;
+            loginResponse.UserProfile.ZipCode = user.Foundation?.Location?.Zipcode?? null;
+            loginResponse.UserProfile.CountryName = user.Foundation?.Location?.Country?.CountryName ?? null;
+            loginResponse.UserProfile.StateName = user.Foundation?.Location?.State?.StateName ?? null;
+            loginResponse.UserProfile.CauseNames = user.Foundation?.Causes?.Select(fc => fc.Name).ToList() ?? null;
+            loginResponse.UserProfile.FoundationLogoUrl = user.Foundation?.Logo ?? null  ;
+            return ResponseHelper.BuildResponse<LoginResponseModel>("login successful", StatusCodes.Status200OK, loginResponse, true);
+        }
+        //completed onboarding or not started onboarding
+        else
+        {
+            var loginResponse = _mapper.Map<LoginResponseModel>(user);
+            loginResponse.AccessToken = accessToken;
+            loginResponse.AccessTokenExpireMinutes = DateTime.Now.AddMinutes(30);
+            loginResponse.RefreshToken = refreshToken;
+            loginResponse.RefreshTokenExpireDays = DateTime.Now.AddDays(30);
+            loginResponse.HasCompletedOnboarding = user.OnboardingProgress?.HasCompletedOnboarding ?? false;
+            loginResponse.LastCompletedPage = user.OnboardingProgress?.LastCompletedPage ?? 0;
+            loginResponse.NumberOfPageRemaining = 5 - user.OnboardingProgress?.LastCompletedPage ?? 5;
+            loginResponse.HasSetUpPin = hasSetUpPin;
+            loginResponse.Message = "Login successful";
+            loginResponse.AccountType = accountType;
+            loginResponse.UserProfile = _mapper.Map<UserProfileSummary>(user);
+            return ResponseHelper.BuildResponse<LoginResponseModel>("login successful", StatusCodes.Status200OK, loginResponse, true);
+        } 
     }
 
-    public async Task<ApiResponse<RefreshTokenResponseModel>> RefreshTokenAsync(RefreshTokenRequestModel request, CancellationToken cancellationToken)
+    public async Task<GlobalRequestReponse<RefreshTokenResponseModel>> RefreshTokenAsync(RefreshTokenRequestModel request)
     {
-        var validation = await _jwtTokenService.ValidateRefreshTokenAsync(request.RefreshToken, request.UserId);
-
+        var principal = _jwtTokenService.GetPrincipalFromExpiredToken(request.AccessToken);
+        var email = principal.Identity.Name;
+        var validation = await _jwtTokenService.ValidateRefreshTokenAsync(request.RefreshToken, email);
         if (!validation.IsValid)
         {
             _logger.LogWarning("Invalid refresh token used. Status: {Status}, Error: {Error}",
                 validation.Status, validation.ValidationError);
-
-            return ApiResponse<RefreshTokenResponseModel>.Failure(400, $"Invalid refresh token due to {nameof(validation.Status)}");
+            return ResponseHelper.BuildResponse<RefreshTokenResponseModel>("invalid refresh token", StatusCodes.Status400BadRequest,null, false);
         }
-        var user = await _userRepository.GetUserByEmailWithFoundationAsync(request.UserId, cancellationToken);
-        if (user is null)
+        if (validation.User is null)
         {
-            return ApiResponse<RefreshTokenResponseModel>.Failure(404, "User not found");
+            return ResponseHelper.BuildResponse<RefreshTokenResponseModel>("user not found", StatusCodes.Status404NotFound, null, false);
         }
-        var userRoles = await _userManager.GetRolesAsync(user);
-        var userRole = userRoles.First() ?? "Volunteer";
-        var jwtClaims = new JwtClaimsModel
+        var userRoles = await _userManager.GetRolesAsync(validation.User);
+        var userRole = userRoles.FirstOrDefault();
+        var jwtClaims = _mapper.Map<JwtClaimsModel>(validation.User);
+        jwtClaims.UserId = validation.User.Id;
+        jwtClaims.Role = userRole;
+        if (validation.User.Foundation != null)
         {
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            OrganizationName = user?.Foundation?.Name!,
-        };
-        var newRefreshToken = await _jwtTokenService.RotateRefreshTokenAsync(request.RefreshToken, user.Id, userRole);
+            jwtClaims.OrganizationName = validation.User.Foundation.Name;
+            jwtClaims.FoundationId = validation.User.Foundation.Id;
+        }
+        var newRefreshToken = await _jwtTokenService.GenerateRefreshTokenAsync(validation.User.Id, userRole);
         if (string.IsNullOrEmpty(newRefreshToken))
         {
-            _logger.LogError("Failed to rotate refresh token for user {UserId}", request.UserId);
-            return ApiResponse<RefreshTokenResponseModel>.Failure(400, "Failed to generate new refresh token");
+            _logger.LogError($"Failed to rotate refresh token for user {validation.User.Id}");
+            return ResponseHelper.BuildResponse<RefreshTokenResponseModel>("Failed to generate new refresh token", StatusCodes.Status400BadRequest, null, false);
         }
         var newAccessToken = _jwtTokenService.GenerateAccessTokenAsync(jwtClaims, userRole);
         var tokenExpirations = AuthenticationConstants.TokenExpirations.ContainsKey(userRole)
                     ? AuthenticationConstants.TokenExpirations[userRole]
-                    : new TokenExpiration(AccessToken: 60, RefreshToken: 1440); // Default values
-
+                    : new TokenExpiration(AccessToken: 15, RefreshToken: 30); // Default values
         var accessTokenExpiresAt = DateTime.UtcNow.AddMinutes(tokenExpirations.AccessToken);
-        var refreshTokenExpiresAt = DateTime.UtcNow.AddMinutes(tokenExpirations.RefreshToken);
-        _logger.LogInformation("Token refresh successful for user {UserId}. New tokens generated.", request.UserId);
-
-        // Create response
+        var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(tokenExpirations.RefreshToken);
+        _logger.LogInformation($"refresh token generated for user {validation.User.Id}.");
         var refreshResponse = new RefreshTokenResponseModel
         {
             Success = true,
             Message = "Tokens refreshed successfully",
             AccessToken = newAccessToken,
             RefreshToken = newRefreshToken,
-            TokenExpiresAt = accessTokenExpiresAt,
+            AccessTokenExpiresAt = accessTokenExpiresAt,
             RefreshTokenExpiresAt = refreshTokenExpiresAt
         };
-
-        return ApiResponse<RefreshTokenResponseModel>.Success("Tokens refreshed successfully", refreshResponse);
+        return ResponseHelper.BuildResponse<RefreshTokenResponseModel>("token refresh successfully", StatusCodes.Status200OK, refreshResponse, true);
     }
-    public async Task<GlobalRequestReponse<string>> ResetPasswordAsync(string email)
+    public async Task<GlobalRequestReponse<string>> ResetPasswordAsync()
     {
-        var user = await _userManager.FindByEmailAsync(email.Trim().ToLower());
+        var user = await _userManager.FindByEmailAsync(_currentUserService.GetUserEmail().Trim().ToLower());
         if (user != null)
         {
             //Generate OTP
@@ -273,32 +340,70 @@ public class AuthenticationService : IAuthenticationService
             var result = await _userManager.ChangePasswordAsync(user, changePasswordDto.OldPassword.Trim(), changePasswordDto.NewPassword.Trim());
             if (result.Succeeded)
             {
-                //await _userManager.UpdateAsync(user).ConfigureAwait(false);
+                await _userManager.UpdateAsync(user);
+                var refresh = await _uow.refreshTokenRepo.GetByExpressionAsync(r => r.UserId == user.Id);
+                if (refresh != null)
+                {
+                    refresh.ExpiresAt = DateTime.UtcNow;
+                    _uow.refreshTokenRepo.Update(refresh);
+                    await _uow.CompleteAsync();
+                }
                 return ResponseHelper.BuildResponse<string>("password change successfully", StatusCodes.Status200OK, null, true);
             }
             return ResponseHelper.BuildResponse<string>("something went wrong", StatusCodes.Status404NotFound, null, false);
         }
         return ResponseHelper.BuildResponse<string>("user not found", StatusCodes.Status404NotFound, null, false);
     }
-    
+    public async Task<GlobalRequestReponse<string>> ResetForgotPassword(string email)
+    {
+        var user = await _userManager.FindByEmailAsync(email.Trim().ToLower());
+        if (user != null)
+        {
+            //Generate OTP
+            var otp = await _otp.GenerateOtpAsync(user.Id, OtpPurpose.ForgotPassWord.ToString(), true, NotificationChannelEnum.Email.ToString());
+            user.OTP = otp;
+            user.OtpSubmittedTime = Convert.ToDateTime(DateTime.Now.ToShortTimeString());
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                return ResponseHelper.BuildResponse<string>("something went wrong", StatusCodes.Status400BadRequest, null, false);
+            }
+            else
+            {
+                var response = await _otpEmailSenderService.OtpSender(user.Email, user.OTP, NotificationTypeEnum.ForgotPassWord.ToString());
+                return response;
+            }
+        }
+        return ResponseHelper.BuildResponse<string>("user not found", StatusCodes.Status404NotFound, null, false);
+    }
     public async Task<GlobalRequestReponse<string>> ForgetPasswordAsync(ForgotPasswordDto forgotPasswordDto)
     {
         var decrptedToken = AES.DecryptData(forgotPasswordDto.Token, _key);
-        if(string.IsNullOrEmpty(decrptedToken))
+        if (string.IsNullOrEmpty(decrptedToken))
             return ResponseHelper.BuildResponse<string>("invalid token", StatusCodes.Status400BadRequest, null, false);
         var payload = JsonSerializer.Deserialize<PasswordResetTokenPayload>(decrptedToken);
-        var user = await _userManager.FindByEmailAsync(payload.Email); 
+        var user = await _userManager.FindByEmailAsync(payload.Email);
         if (user != null)
         {
             var passwordHash = _userManager.PasswordHasher.HashPassword(user, forgotPasswordDto.NewPassword);
             user.PasswordHash = passwordHash;
             var result = await _userManager.UpdateAsync(user);
-            if(result.Succeeded)
+            if (result.Succeeded)
+            {
+                var refresh = await _uow.refreshTokenRepo.GetByExpressionAsync(r => r.UserId == user.Id);
+                if (refresh != null)
+                {
+                    refresh.ExpiresAt = DateTime.UtcNow;
+                    _uow.refreshTokenRepo.Update(refresh);
+                    await _uow.CompleteAsync();
+                }
                 return ResponseHelper.BuildResponse<string>("password reset successfully", StatusCodes.Status200OK, null, true);
-            return ResponseHelper.BuildResponse<string>("something went wrong", StatusCodes.Status400BadRequest, null, false); 
+            }  
+            return ResponseHelper.BuildResponse<string>("something went wrong", StatusCodes.Status400BadRequest, null, false);
         }
         return ResponseHelper.BuildResponse<string>("user not found", StatusCodes.Status404NotFound, null, false); ;
     }
+    
     public async Task<GlobalRequestReponse<string>> TwoFactorAuthenticationSetUp()
     {
         var email = _currentUserService.GetUserEmail(); 
@@ -314,24 +419,24 @@ public class AuthenticationService : IAuthenticationService
         return ResponseHelper.BuildResponse("something went wrong", StatusCodes.Status400BadRequest, "not successful", false);
     }
 
-    public async Task<GlobalRequestReponse<VerifyTwoFactorAuthenticationResponseDto>> VerifyTwoFactorAuthentication(VerifyTwoFactorAuthenticationRequestDto verifyTwoFactorAuthenticationRequestDto)
+    public async Task<GlobalRequestReponse<LoginResponseModel>> VerifyTwoFactorAuthentication(VerifyTwoFactorAuthenticationRequestDto verifyTwoFactorAuthenticationRequestDto)
     {
         var user = await _userManager.FindByEmailAsync(verifyTwoFactorAuthenticationRequestDto.Email);
         var otp = await _uow.OtpRepo.GetByExpressionAsync(o => o.UserId == user.Id && o.OtpCode == verifyTwoFactorAuthenticationRequestDto.TwoFactorAuthCode && o.Purpose == OtpPurpose.TwoFactorAuthenticationLogin.ToString() && !o.IsUsed);
         if (otp == null)
         {
             await _userManager.AccessFailedAsync(user);
-            return ResponseHelper.BuildResponse<VerifyTwoFactorAuthenticationResponseDto>("two factor authentication code is incorrect", StatusCodes.Status500InternalServerError, null, false);
+            return ResponseHelper.BuildResponse<LoginResponseModel>("two factor authentication code is incorrect", StatusCodes.Status500InternalServerError, null, false);
         }
         if(user == null)
-            return ResponseHelper.BuildResponse<VerifyTwoFactorAuthenticationResponseDto>("user not found", StatusCodes.Status404NotFound, null, false);
+            return ResponseHelper.BuildResponse<LoginResponseModel>("user not found", StatusCodes.Status404NotFound, null, false);
         if (await _userManager.IsLockedOutAsync(user))
         {
-            return ResponseHelper.BuildResponse<VerifyTwoFactorAuthenticationResponseDto>("Account is locked for 1 hour due to multiple fail verification attempts", StatusCodes.Status400BadRequest, null, false);
+            return ResponseHelper.BuildResponse<LoginResponseModel>("Account is locked for 1 hour due to multiple fail verification attempts", StatusCodes.Status400BadRequest, null, false);
         }
         
-        if ((DateTime.UtcNow - otp.CreatedAt).TotalMinutes > 5)
-            return ResponseHelper.BuildResponse<VerifyTwoFactorAuthenticationResponseDto>("two factor authentication code already expire", StatusCodes.Status400BadRequest, null, false);
+        if ((DateTime.UtcNow - otp.CreatedAt).TotalMinutes > 10)
+            return ResponseHelper.BuildResponse<LoginResponseModel>("two factor authentication code already expire", StatusCodes.Status400BadRequest, null, false);
         await _userManager.ResetAccessFailedCountAsync(user);
         var roles = await _userManager.GetRolesAsync(user);
         var role = roles.FirstOrDefault();
@@ -340,9 +445,13 @@ public class AuthenticationService : IAuthenticationService
         {
             accountType = "Volunteer";
         }
+        else if(role == "FoundationAdmin")
+        {
+           accountType = "Foundation";
+        }
         else
         {
-            accountType = "Organization";
+            accountType = "SuperAdmin";
         }
         user.LastLogin = DateTime.UtcNow;
         user.DateUpdated = DateTime.UtcNow; 
@@ -357,13 +466,63 @@ public class AuthenticationService : IAuthenticationService
         var accessToken = _jwtTokenService.GenerateAccessTokenAsync(jwtClaims, role);
         var refreshToken = await _jwtTokenService.GenerateRefreshTokenAsync(
             user?.Id!, role);
+        var tokenExpirations = AuthenticationConstants.TokenExpirations.ContainsKey(role)
+                    ? AuthenticationConstants.TokenExpirations[role]
+                    : new TokenExpiration(AccessToken: 15, RefreshToken: 30); // Default values
+        var accessTokenExpiresAt = DateTime.UtcNow.AddMinutes(tokenExpirations.AccessToken);
+        var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(tokenExpirations.RefreshToken);
         user!.LastLogin = DateTime.UtcNow;
-        _uow.userRepo.Update(user);
-        await _uow.CompleteAsync();
-        var response = VerifyTwoFactorAuthenticationResponseDtoBuilder.VerifyTwoFactorResponseBuilder(accessToken, refreshToken, accountType);
-        return ResponseHelper.BuildResponse<VerifyTwoFactorAuthenticationResponseDto>("something went wrong", StatusCodes.Status400BadRequest, response, false);
+        await _userManager.UpdateAsync(user);
+        var hasSetUpPin = await _uow.transactionPinRepo.GetByExpressionAsync(x => x.UserId == user.Id) != null;
+        if (role == "SuperAdmin")
+        {
+            var loginResponse = _mapper.Map<LoginResponseModel>(user);
+            loginResponse.AccountType = accountType;
+            loginResponse.AccessToken = accessToken;
+            loginResponse.RefreshToken = refreshToken;
+            loginResponse.AccessTokenExpireMinutes = accessTokenExpiresAt;
+            loginResponse.RefreshTokenExpireDays = refreshTokenExpiresAt;
+            loginResponse.HasCompletedOnboarding = true;
+            loginResponse.LastCompletedPage = 5;
+            loginResponse.NumberOfPageRemaining = 0;
+            loginResponse.HasSetUpPin = hasSetUpPin;
+            loginResponse.Message = "Login successful";
+            loginResponse.UserProfile = _mapper.Map<UserProfileSummary>(user);
+            return ResponseHelper.BuildResponse<LoginResponseModel>("login successful", StatusCodes.Status200OK, loginResponse, true);
+        } 
+        else
+        {
+            var loginResponse = _mapper.Map<LoginResponseModel>(user);
+            loginResponse.AccessToken = accessToken;
+            loginResponse.RefreshToken = refreshToken;
+            loginResponse.AccessTokenExpireMinutes = accessTokenExpiresAt;
+            loginResponse.RefreshTokenExpireDays = refreshTokenExpiresAt;
+            loginResponse.HasCompletedOnboarding = user.OnboardingProgress.HasCompletedOnboarding;
+            loginResponse.LastCompletedPage = user.OnboardingProgress.LastCompletedPage;
+            loginResponse.NumberOfPageRemaining = 5 - user.OnboardingProgress.LastCompletedPage;
+            loginResponse.HasSetUpPin = hasSetUpPin;
+            loginResponse.Message = "Login successful";
+            loginResponse.AccountType = accountType;
+            loginResponse.UserProfile = _mapper.Map<UserProfileSummary>(user);
+            return ResponseHelper.BuildResponse<LoginResponseModel>("login successful", StatusCodes.Status200OK, loginResponse, true);
+        }
     }
-    
+    public async Task<GlobalRequestReponse<string>>Logout()
+    {
+        var user = await _userManager.FindByIdAsync(_currentUserService.GetUserId());
+        if (user == null)
+        {
+            return ResponseHelper.BuildResponse<string>("user not found", StatusCodes.Status404NotFound, null, false);
+        }
+        var userRefreshToken = await _uow.refreshTokenRepo.GetByExpressionIncludeAsync(r => r.UserId == user.Id, r => r.User);
+        if (userRefreshToken == null)
+        {
+            return ResponseHelper.BuildResponse<string>("no refresh token found for user", StatusCodes.Status404NotFound, null, false);
+        }
+        userRefreshToken.ExpiresAt = DateTime.Now;
+        await _uow.refreshTokenRepo.UpdateAsync(userRefreshToken);  
+        return ResponseHelper.BuildResponse<string>("logout successfully", StatusCodes.Status200OK, "logout", true);
+    }
     private string GenerateOTP()
     {
         try

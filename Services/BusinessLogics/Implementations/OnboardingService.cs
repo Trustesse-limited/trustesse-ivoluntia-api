@@ -65,8 +65,9 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                     var imageUrl = await _fileUploadService.UploadFilesAsync(volunteerOnboardingDto.ProfileAndBioData.ProfileImage);
                     var user = await _uow.userRepo.GetByExpressionAsync(u => u.Email == _currentUserService.GetUserEmail());
                     user.UserImage = imageUrl.Data[0];
+                    user.Bio = volunteerOnboardingDto.ProfileAndBioData.Bio;
                     await _userManager.UpdateAsync(user);
-                    var onboardingResponse = await AddOnBoardingProgress(user.Id, (int)OnBoardingPages.ProfileImageAndBio, true, 5);
+                    var onboardingResponse = await UpdateOnBoardingProgress(user.Id,5, true);
                     hasCompleteOnboarding = true;
                     return ResponseHelper.BuildResponse(onboardingResponse.Message, onboardingResponse.StatusCode, OnboardingResponseDto.BuildOnboardingResponseDto(pageRemaining, hasCompleteOnboarding), true);
                 default:
@@ -90,7 +91,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                     await _uow.OrganizationRepository.AddAsync(mapOrganization);
                     await _uow.CompleteAsync();
                     var response = await _userManager.UpdateAsync(foundationAdmin);
-                    var onboardingResponse = await  UpdateOnBoardingProgress(_currentUserService.GetUserId(), (int)OrganizationOnboardingEnum.BioDataPage, false);
+                    var onboardingResponse = await  AddOnBoardingProgress(_currentUserService.GetUserId(), (int)OrganizationOnboardingEnum.BioDataPage, false, 5);
                     return ResponseHelper.BuildResponse(onboardingResponse.Message, onboardingResponse.StatusCode, OnboardingResponseDto.BuildOnboardingResponseDto(pageRemaining, hasCompleteOnboarding), true);
                 case 2:
                     var foundation = await _uow.OrganizationRepository.GetByExpressionAsync(f => f.Email == _currentUserService.GetUserEmail());
@@ -137,12 +138,15 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             }
             volunteer.FirstName = model.FirstName;
             volunteer.LastName = model.LastName;
+            //add other name field
             volunteer.Gender = model.Gender;
+            volunteer.OtherName = model.OtherName;  
             volunteer.DateOfBirth = model.DateOfBirth;
             var bioUpdate = await _userManager.UpdateAsync(volunteer);
             if (bioUpdate.Succeeded)
             {
-                await UpdateOnBoardingProgress(volunteer.Id, 1, false);
+                //await UpdateOnBoardingProgress(volunteer.Id, 1, false);
+                await AddOnBoardingProgress(volunteer.Id, 1, false, 5);
             }
             return ApiResponse<string>.Success("Volunteer BioData updated successfully.", null);
         }

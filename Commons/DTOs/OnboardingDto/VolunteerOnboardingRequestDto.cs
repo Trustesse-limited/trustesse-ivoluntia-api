@@ -34,7 +34,8 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.OnboardingDto
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public byte Gender { get; set; }
+        public string OtherName { get; set; }
+        public string Gender { get; set; }
         public DateTime DateOfBirth { get; set; }
     }
 

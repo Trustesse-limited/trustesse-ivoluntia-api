@@ -3,6 +3,7 @@
     public enum OtpPurpose
     {
         PasswordReset = 1,
+        ForgotPassWord,
         Signup,
         TransactionApproval,
         TwoFactorAuthenticationLogin,

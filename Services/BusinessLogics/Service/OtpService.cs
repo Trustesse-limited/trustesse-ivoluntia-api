@@ -84,6 +84,24 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             {
                 var tokenPayload = _mapper.Map<PasswordResetTokenPayload>(user);
                 tokenPayload.Text = _text;
+                tokenPayload.Otp = otpCode;
+                var json = JsonSerializer.Serialize(tokenPayload);
+                var token = AES.EncryptData(json, _key);
+                return ResponseHelper.BuildResponse<string>("otp verified and token generated", StatusCodes.Status200OK, $"token:{token}", true);
+            }
+            return ResponseHelper.BuildResponse<string>("user not found", StatusCodes.Status404NotFound, "Wrong OTP. no user found", false);
+        }
+        public async Task<GlobalRequestReponse<string>> VerifyForgotPasswordOtp(string otpCode)
+        {
+            var otp = await ConfirmOtpAsync(otpCode, OtpPurpose.ForgotPassWord.ToString());
+            if (otp.StatusCode != StatusCodes.Status200OK)
+                return ResponseHelper.BuildResponse<string>(otp.Message, otp.StatusCode, null, false);
+            var user = await _userManager.FindByIdAsync(otp.Data.UserId);
+            if (user != null)
+            {
+                var tokenPayload = _mapper.Map<ForgotPasswordTokenPayload>(user);
+                tokenPayload.Text = _text;
+                tokenPayload.Otp = otpCode;
                 var json = JsonSerializer.Serialize(tokenPayload);
                 var token = AES.EncryptData(json, _key);
                 return ResponseHelper.BuildResponse<string>("otp verified and token generated", StatusCodes.Status200OK, $"token:{token}", true);

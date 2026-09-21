@@ -14,7 +14,7 @@ public static class AuthenticationConstants
         {
             { "SuperAdmin", new TokenExpiration(AccessToken: 15, RefreshToken: 30) },
             { "FoundationAdmin", new TokenExpiration(AccessToken: 15, RefreshToken: 30) },
-            { "Volunteer", new TokenExpiration(AccessToken: 120, RefreshToken: 10080) } // 2 hours, 1 week
+            { "Volunteer", new TokenExpiration(AccessToken: 15, RefreshToken: 30) } // 30 minutes, 30 days
         };
 
     public static readonly List<string> ValidGenders = new() { "Male", "Female", "Other" };

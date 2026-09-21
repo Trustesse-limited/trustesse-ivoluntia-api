@@ -11,5 +11,6 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Auth
         public string AccessToken { get; set; } 
         public string RefreshToken { get; set; }  
         public string AccountType { get; set; } 
+        public UserProfileSummary UserProfileSummary { get; set; }  
     }
 }

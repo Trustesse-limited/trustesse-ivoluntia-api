@@ -33,10 +33,7 @@ public class LoginResponseModel
     public DateTime AccessTokenExpireMinutes { get; set; } 
     public DateTime RefreshTokenExpireDays { get; set; }
     public bool HasSetUpPin { get; set; }
-    public UserProfileSummary? UserProfile { get; set; }
-    //public bool RequiresTwoFactor { get; init; }
-    //public bool RequiresPasswordChange { get; init; }
-    //public List<string> Permissions { get; init; } = new();    
+    public UserProfileSummary? UserProfile { get; set; }    
 }
 public class PageCompletedUserData
 {

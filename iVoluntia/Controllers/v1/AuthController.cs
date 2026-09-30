@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Collections.Generic;
+//using System.Web.Http;
 using Trustesse.Ivoluntia.API.Extensions;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Auth;
@@ -27,7 +28,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginRequestModel request)
             => BuildHttpResponse<LoginResponseModel>(await _authenticationService.LoginAsync(request.Validate()));
-       
+
         [HttpPost("volunteer-signup")]
         public async Task<IActionResult> CreateVolunteer([FromBody] SignUpDto signUpDto)
             =>BuildHttpResponse<string>(await _authenticationService.CreateVolunteer(signUpDto.Validate()));    
@@ -49,6 +50,14 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         public async Task<IActionResult> ResetForgotPassword(string email)
             => BuildHttpResponse<string>(await _authenticationService.ResetForgotPassword(email));
 
+        //[HttpPost("resetpassword")]
+        //public async Task<IActionResult> ResetPassword([FromQuery] string email)
+        //    => BuildHttpResponse<string>(await _authenticationService.ResetPasswordAsync(email));
+        
+        //[HttpPost("changepassword")]
+        //public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+        //    => BuildHttpResponse<string>(await _authenticationService.ChangePasswordAsync(changePasswordDto.Validate())); 
+       
         [HttpPost("forgotpassword")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordDto forgotPasswordDto)
             => BuildHttpResponse<string>(await _authenticationService.ForgetPasswordAsync(forgotPasswordDto.Validate()));     

@@ -102,19 +102,19 @@ public class AuthenticationService : IAuthenticationService
         var user = await _userManager.FindByEmailAsync(signUpDto.Email);
         if (user != null)
             return ResponseHelper.BuildResponse<string>($"user already exist, please log in.", StatusCodes.Status400BadRequest, null, false);
-
         var foundationAdmin = await _userMapperService.UserMapper(signUpDto);
         var result = await _userManager.CreateAsync(foundationAdmin, signUpDto.Password.Trim());
         await _userManager.AddToRoleAsync(foundationAdmin, UserRolesEnum.FoundationAdmin.ToString());
         if (result.Succeeded)
         {
+            // emailService 
             var response = await _otpEmailSenderService.OtpSender(foundationAdmin.Email, foundationAdmin.OTP, NotificationTypeEnum.EmailConfirmationOtp.ToString());
             return response; 
         }
         return ResponseHelper.BuildResponse<string>("something went wrong", StatusCodes.Status400BadRequest, null, false);
     }
-
     public async Task<GlobalRequestReponse<LoginResponseModel>> LoginAsync(LoginRequestModel request)
+
     {
         var user = await _uow.userRepo.GetByExpressionIncludeAsync(u => u.Email == request.Email, u => u.OnboardingProgress, u => u.UserInterestLinks, u => u.UserSkillLinks, u => u.Location, u => u.Location.Country, u => u.Location.State, u => u.Foundation, u => u.Foundation.Category,u =>  u.Foundation.Location.State, u => u.Foundation.Location.Country, u => u.Foundation.Causes);
         var interest = new List<UserInterestLink>(); 
@@ -123,6 +123,7 @@ public class AuthenticationService : IAuthenticationService
         {
             return ResponseHelper.BuildResponse<LoginResponseModel>("user not found , please sign up", StatusCodes.Status404NotFound, null, false);
         }
+
         if (!await _userManager.CheckPasswordAsync(user, request.Password))
         {
             await _userManager.AccessFailedAsync(user);
@@ -159,7 +160,29 @@ public class AuthenticationService : IAuthenticationService
         }
         if (await _userManager.IsLockedOutAsync(user))
         {
+            return ResponseHelper.BuildResponse<LoginResponseModel>("account lock due to failed attempt", StatusCodes.Status403Forbidden, null, false);
+        }
+        if(role == "Volunteer")
+        {
+            accountType = "Volunteer";
+        }
+        else
+        {
+            accountType = "Organization";
+        }
+        if (!user.IsActive)
+        {
+            return ResponseHelper.BuildResponse<LoginResponseModel>("account not active, please confirm your email", StatusCodes.Status400BadRequest, null, false); 
+        }
+        if (await _userManager.IsLockedOutAsync(user))
+        {
             return ResponseHelper.BuildResponse<LoginResponseModel>("account lock due to failed attempt",StatusCodes.Status403Forbidden, null, false);
+        }
+
+        if (!await _userManager.CheckPasswordAsync(user, request.Password))
+        {
+            await _userManager.AccessFailedAsync(user);
+            return ResponseHelper.BuildResponse<LoginResponseModel>("wrong password", StatusCodes.Status400BadRequest, null,false);
         }
         await _userManager.ResetAccessFailedCountAsync(user);
         if(user.TwoFactorEnabled)
@@ -404,6 +427,7 @@ public class AuthenticationService : IAuthenticationService
         return ResponseHelper.BuildResponse<string>("user not found", StatusCodes.Status404NotFound, null, false); ;
     }
     
+  
     public async Task<GlobalRequestReponse<string>> TwoFactorAuthenticationSetUp()
     {
         var email = _currentUserService.GetUserEmail(); 
@@ -418,24 +442,17 @@ public class AuthenticationService : IAuthenticationService
             return ResponseHelper.BuildResponse("two factor authenticaton is enable", StatusCodes.Status200OK, "success", true);
         return ResponseHelper.BuildResponse("something went wrong", StatusCodes.Status400BadRequest, "not successful", false);
     }
-
     public async Task<GlobalRequestReponse<LoginResponseModel>> VerifyTwoFactorAuthentication(VerifyTwoFactorAuthenticationRequestDto verifyTwoFactorAuthenticationRequestDto)
     {
         var user = await _userManager.FindByEmailAsync(verifyTwoFactorAuthenticationRequestDto.Email);
         var otp = await _uow.OtpRepo.GetByExpressionAsync(o => o.UserId == user.Id && o.OtpCode == verifyTwoFactorAuthenticationRequestDto.TwoFactorAuthCode && o.Purpose == OtpPurpose.TwoFactorAuthenticationLogin.ToString() && !o.IsUsed);
-        if (otp == null)
-        {
-            await _userManager.AccessFailedAsync(user);
-            return ResponseHelper.BuildResponse<LoginResponseModel>("two factor authentication code is incorrect", StatusCodes.Status500InternalServerError, null, false);
-        }
         if(user == null)
             return ResponseHelper.BuildResponse<LoginResponseModel>("user not found", StatusCodes.Status404NotFound, null, false);
         if (await _userManager.IsLockedOutAsync(user))
         {
             return ResponseHelper.BuildResponse<LoginResponseModel>("Account is locked for 1 hour due to multiple fail verification attempts", StatusCodes.Status400BadRequest, null, false);
         }
-        
-        if ((DateTime.UtcNow - otp.CreatedAt).TotalMinutes > 10)
+        if ((DateTime.UtcNow - otp.CreatedAt).TotalMinutes > 5)
             return ResponseHelper.BuildResponse<LoginResponseModel>("two factor authentication code already expire", StatusCodes.Status400BadRequest, null, false);
         await _userManager.ResetAccessFailedCountAsync(user);
         var roles = await _userManager.GetRolesAsync(user);
@@ -445,9 +462,9 @@ public class AuthenticationService : IAuthenticationService
         {
             accountType = "Volunteer";
         }
-        else if(role == "FoundationAdmin")
+        else if (role == "FoundationAdmin")
         {
-           accountType = "Foundation";
+            accountType = "Foundation";
         }
         else
         {

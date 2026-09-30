@@ -62,6 +62,9 @@ namespace Trustesse.Ivoluntia.Services
             config.NewConfig<User, JwtClaimsModel>();
             config.NewConfig<User, LoginResponseModel>();
             config.NewConfig<User, UserProfileSummary>();
+            config.NewConfig<SignUpDto, User>();
+            config.NewConfig<User, PasswordResetTokenPayload>();
+            config.NewConfig<User, JwtClaimsModel>();
             services.AddSingleton(config);
             services.AddScoped<IMapper, Mapper>();
         }

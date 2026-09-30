@@ -15,10 +15,10 @@ public interface IAuthenticationService
     Task<GlobalRequestReponse<LoginResponseModel>> LoginAsync(LoginRequestModel request);
     Task<GlobalRequestReponse<RefreshTokenResponseModel>> RefreshTokenAsync(RefreshTokenRequestModel request);
     Task<GlobalRequestReponse<string>> ResetPasswordAsync();
-    Task<GlobalRequestReponse<string>> ChangePasswordAsync(ChangePasswordDto changePasswordDto);
     Task<GlobalRequestReponse<string>> ResetForgotPassword(string email);
-    Task<GlobalRequestReponse<string>> ForgetPasswordAsync(ForgotPasswordDto forgotPasswordDto);
-    Task<GlobalRequestReponse<string>> TwoFactorAuthenticationSetUp();
     Task<GlobalRequestReponse<LoginResponseModel>> VerifyTwoFactorAuthentication(VerifyTwoFactorAuthenticationRequestDto verifyTwoFactorAuthenticationRequestDto);
     Task<GlobalRequestReponse<string>> Logout();
+    Task<GlobalRequestReponse<string>> ChangePasswordAsync(ChangePasswordDto changePasswordDto);
+    Task<GlobalRequestReponse<string>> ForgetPasswordAsync(ForgotPasswordDto forgotPasswordDto);
+    Task<GlobalRequestReponse<string>> TwoFactorAuthenticationSetUp();
 }

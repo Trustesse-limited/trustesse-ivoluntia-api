@@ -43,7 +43,10 @@ namespace Trustesse.Ivoluntia.Services
             config.NewConfig<User, OtpDto>();
             config.NewConfig<OtpDto, Otp>();
             config.NewConfig<SignUpDto, User>();
+<<<<<<< Updated upstream
             config.NewConfig<User, SignUpDto>();
+=======
+>>>>>>> Stashed changes
             config.NewConfig<SecurityQuestion, SecurityQuestionDto>();
             config.NewConfig<OrganizationAccountNumberVerifyResponseDto, FoundationBankAccountDetail>();
             config.NewConfig<Qualification, QualificationDto>()
@@ -57,11 +60,18 @@ namespace Trustesse.Ivoluntia.Services
             config.NewConfig<Interest, GetInterestResponseDto>();
             config.NewConfig<CreateCauseRequestDto, Cause>();
             config.NewConfig<Cause, GetCauseResponseDto>();
+<<<<<<< Updated upstream
             config.NewConfig<UserQualification, UserQualificationDto>();
             config.NewConfig<User, PasswordResetTokenPayload>();
             config.NewConfig<User, JwtClaimsModel>();
             config.NewConfig<User, LoginResponseModel>();
             config.NewConfig<User, UserProfileSummary>();
+=======
+            config.NewConfig<SignUpDto, User>();
+            config.NewConfig<User, PasswordResetTokenPayload>();
+            config.NewConfig<User, JwtClaimsModel>();
+
+>>>>>>> Stashed changes
             services.AddSingleton(config);
             services.AddScoped<IMapper, Mapper>();
         }

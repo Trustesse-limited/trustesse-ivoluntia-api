@@ -1,8 +1,12 @@
+<<<<<<< Updated upstream
 using Azure.Core;
+=======
+>>>>>>> Stashed changes
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Collections.Generic;
+//using System.Web.Http;
 using Trustesse.Ivoluntia.API.Extensions;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Auth;
@@ -25,8 +29,13 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         }
 
         [HttpPost("login")]
+<<<<<<< Updated upstream
         public async Task<IActionResult> LoginAsync([FromBody] LoginRequestModel request)
             => BuildHttpResponse<LoginResponseModel>(await _authenticationService.LoginAsync(request.Validate()));
+=======
+        public async Task<IActionResult> LoginAsync([FromBody] LoginRequestModel request, CancellationToken cancellationToken)
+            => BuildHttpResponse<LoginResponseModel>(await _authenticationService.LoginAsync(request.Validate(), cancellationToken));
+>>>>>>> Stashed changes
        
         [HttpPost("volunteer-signup")]
         public async Task<IActionResult> CreateVolunteer([FromBody] SignUpDto signUpDto)
@@ -36,6 +45,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         public async Task<IActionResult> CreateOrganization([FromBody] SignUpDto signUpDto)
             => BuildHttpResponse<string>(await _authenticationService.CreateOrganization(signUpDto.Validate()));
 
+<<<<<<< Updated upstream
         [Authorize]
         [HttpPost("resetchangepassword")]
         public async Task<IActionResult> ResetChangePassword()
@@ -49,6 +59,16 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         public async Task<IActionResult> ResetForgotPassword(string email)
             => BuildHttpResponse<string>(await _authenticationService.ResetForgotPassword(email));
 
+=======
+        [HttpPost("resetpassword")]
+        public async Task<IActionResult> ResetPassword([FromQuery] string email)
+            => BuildHttpResponse<string>(await _authenticationService.ResetPasswordAsync(email));
+        
+        [HttpPost("changepassword")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+            => BuildHttpResponse<string>(await _authenticationService.ChangePasswordAsync(changePasswordDto.Validate())); 
+       
+>>>>>>> Stashed changes
         [HttpPost("forgotpassword")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordDto forgotPasswordDto)
             => BuildHttpResponse<string>(await _authenticationService.ForgetPasswordAsync(forgotPasswordDto.Validate()));     
@@ -57,6 +77,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         [HttpPost("2fa-setup")]
         public async Task<IActionResult> TwoFactorAuthenticationSetUp()
             => BuildHttpResponse<string>(await _authenticationService.TwoFactorAuthenticationSetUp());
+<<<<<<< Updated upstream
 
         [EnableRateLimiting("fixed")]
         [HttpPost("2fa-verify")]
@@ -70,6 +91,13 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         [HttpPost("logout")]
         public async Task<IActionResult> LogoutAsync()
             => BuildHttpResponse<string>(await _authenticationService.Logout());
+=======
+
+        [EnableRateLimiting("fixed")]
+        [HttpPost("2fa-verify")]
+        public async Task<IActionResult> VerifyTwoFactorAuthentication(VerifyTwoFactorAuthenticationRequestDto verifyTwoFactorAuthenticationRequestDto)
+            => BuildHttpResponse<VerifyTwoFactorAuthenticationResponseDto>(await _authenticationService.VerifyTwoFactorAuthentication(verifyTwoFactorAuthenticationRequestDto.Validate()));
+>>>>>>> Stashed changes
     }
 }
  

@@ -75,12 +75,18 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<ICauseRepository, CauseRepository>();
             services.AddScoped<ISkillService, SkillService>();
             services.AddScoped<IInterestService, InterestService>();
+<<<<<<< Updated upstream
             services.AddScoped<IUserQualificationService, UserQualificationService>();
             services.AddScoped<IUserQualificationRepository, UserQualificationRepository>();
             services.AddScoped<ITwoFactorAuthenticationService, TwoFactorAuthenticationService>();
             services.AddScoped<IUserMapperService, UserMapperService>();
             services.AddScoped<IOtpEmailSenderService, OtpEmailSenderService>();
             services.AddScoped<ICategoryService, CategoryService>();
+=======
+            services.AddScoped<ITwoFactorAuthenticationService, TwoFactorAuthenticationService>();
+            services.AddScoped<IUserMapperService, UserMapperService>();
+            services.AddScoped<IOtpEmailSenderService, OtpEmailSenderService>();
+>>>>>>> Stashed changes
 
             services.AddSwaggerGen(options =>
             {

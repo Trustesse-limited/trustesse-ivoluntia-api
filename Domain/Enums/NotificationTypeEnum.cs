@@ -15,7 +15,11 @@
         OrganizationBlockStatusUpdate,
         TwoFactorAuthentication,
         EmailConfirmationOtp,
+<<<<<<< Updated upstream
         ResetPasswordOtp,
         ForgotPassWord
+=======
+        ResetPasswordOtp
+>>>>>>> Stashed changes
     }
 }

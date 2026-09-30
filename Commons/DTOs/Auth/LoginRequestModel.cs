@@ -1,16 +1,27 @@
+<<<<<<< Updated upstream
 using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
+=======
+>>>>>>> Stashed changes
 using System.Security.AccessControl;
 
 namespace Trustesse.Ivoluntia.Commons.DTOs.Auth;
 
 public class LoginRequestModel
 {
+<<<<<<< Updated upstream
     public string Email { get; set; } 
     public string Password { get; set; }
     public bool RememberMe { get; set; } = false;
     public string? TwoFactorCode { get; set; }
     public string? DeviceInfo { get; set; }
+=======
+    public string Email { get; init; } 
+    public string Password { get; init; }
+    public bool RememberMe { get; init; } = false;
+    public string? TwoFactorCode { get; init; }
+    public string? DeviceInfo { get; init; }
+>>>>>>> Stashed changes
 
     public LoginRequestModel Validate()
     {

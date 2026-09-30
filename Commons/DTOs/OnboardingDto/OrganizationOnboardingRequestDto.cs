@@ -33,24 +33,17 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.OnboardingDto
     
     public class FoundationBioData
     {
-        [Required]
         public string Name { get; set; }
-        [Required]
         public string FoundationCategory { get; set; }
         public string Website { get; set; }
-        [Required]
         public string Mission { get; set; }
     }
     public class FoundationLocationDto
     {
         public string Address { get; set; }
-        [Required]
         public string City { get; set; }
-        [Required]
         public string Zipcode { get; set; }
-        [Required]
         public string FoundationCountry { get; set; }
-        [Required]
         public string FoundationState { get; set; }
     }
     public class CauseDto
@@ -63,7 +56,6 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.OnboardingDto
     }
     public class Disclaimer
     {
-        [Required]
         public bool HasAgreedToDisclaimer { get; set; }
     }
 }

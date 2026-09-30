@@ -84,7 +84,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             {
                 var tokenPayload = _mapper.Map<PasswordResetTokenPayload>(user);
                 tokenPayload.Text = _text;
-<<<<<<< Updated upstream
                 tokenPayload.Otp = otpCode;
                 var json = JsonSerializer.Serialize(tokenPayload);
                 var token = AES.EncryptData(json, _key);
@@ -103,8 +102,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 var tokenPayload = _mapper.Map<ForgotPasswordTokenPayload>(user);
                 tokenPayload.Text = _text;
                 tokenPayload.Otp = otpCode;
-=======
->>>>>>> Stashed changes
                 var json = JsonSerializer.Serialize(tokenPayload);
                 var token = AES.EncryptData(json, _key);
                 return ResponseHelper.BuildResponse<string>("otp verified and token generated", StatusCodes.Status200OK, $"token:{token}", true);

@@ -61,13 +61,10 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         [HttpPost("verify-reset-password-otp")]
         public async Task<IActionResult> VerifyResetPasswordOtp([FromQuery] string otpCode)
             => BuildHttpResponse<string>(await _otpService.VerifyResetPasswordOtp(otpCode));
-<<<<<<< Updated upstream
 
         [EnableRateLimiting("fixed")]
         [HttpPost("verify-forgot-password-otp")]
         public async Task<IActionResult> VerifyForgotPasswordOtp([FromQuery] string otpCode)
             => BuildHttpResponse<string>(await _otpService.VerifyForgotPasswordOtp(otpCode));
-=======
->>>>>>> Stashed changes
     }
 }

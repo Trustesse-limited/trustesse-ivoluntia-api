@@ -1,8 +1,5 @@
 using CloudinaryDotNet;
-<<<<<<< Updated upstream
 using CloudinaryDotNet.Actions;
-=======
->>>>>>> Stashed changes
 using MapsterMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -86,12 +83,7 @@ public class AuthenticationService : IAuthenticationService
     }
     public async Task<GlobalRequestReponse<string>> CreateVolunteer(SignUpDto signUpDto)
     {
-<<<<<<< Updated upstream
         var user = await _userManager.FindByEmailAsync(signUpDto.Email);
-=======
-        var user = await _uow.userRepo.GetByExpressionAsync(x =>
-        x.Email == signUpDto.Email);
->>>>>>> Stashed changes
         if (user != null)
             return ResponseHelper.BuildResponse<string>($"user already exist. please sign in", StatusCodes.Status400BadRequest, null, false);
         var volunteer = await _userMapperService.UserMapper(signUpDto);
@@ -107,37 +99,22 @@ public class AuthenticationService : IAuthenticationService
    
     public async Task<GlobalRequestReponse<string>> CreateOrganization(SignUpDto signUpDto)
     {
-<<<<<<< Updated upstream
         var user = await _userManager.FindByEmailAsync(signUpDto.Email);
         if (user != null)
             return ResponseHelper.BuildResponse<string>($"user already exist, please log in.", StatusCodes.Status400BadRequest, null, false);
-
-=======
-        var user = await _uow.userRepo.GetByExpressionAsync(x =>
-        x.Email == signUpDto.Email);
-        if (user != null)
-            return ResponseHelper.BuildResponse<string>($"user already exist, please log in.", StatusCodes.Status400BadRequest, null, false);
->>>>>>> Stashed changes
         var foundationAdmin = await _userMapperService.UserMapper(signUpDto);
         var result = await _userManager.CreateAsync(foundationAdmin, signUpDto.Password.Trim());
         await _userManager.AddToRoleAsync(foundationAdmin, UserRolesEnum.FoundationAdmin.ToString());
         if (result.Succeeded)
         {
-<<<<<<< Updated upstream
-=======
             // emailService 
->>>>>>> Stashed changes
             var response = await _otpEmailSenderService.OtpSender(foundationAdmin.Email, foundationAdmin.OTP, NotificationTypeEnum.EmailConfirmationOtp.ToString());
             return response; 
         }
         return ResponseHelper.BuildResponse<string>("something went wrong", StatusCodes.Status400BadRequest, null, false);
     }
-
-<<<<<<< Updated upstream
     public async Task<GlobalRequestReponse<LoginResponseModel>> LoginAsync(LoginRequestModel request)
-=======
-    public async Task<GlobalRequestReponse<LoginResponseModel>> LoginAsync(LoginRequestModel request, CancellationToken cancellationToken)
->>>>>>> Stashed changes
+
     {
         var user = await _uow.userRepo.GetByExpressionIncludeAsync(u => u.Email == request.Email, u => u.OnboardingProgress, u => u.UserInterestLinks, u => u.UserSkillLinks, u => u.Location, u => u.Location.Country, u => u.Location.State, u => u.Foundation, u => u.Foundation.Category,u =>  u.Foundation.Location.State, u => u.Foundation.Location.Country, u => u.Foundation.Causes);
         var interest = new List<UserInterestLink>(); 
@@ -146,7 +123,7 @@ public class AuthenticationService : IAuthenticationService
         {
             return ResponseHelper.BuildResponse<LoginResponseModel>("user not found , please sign up", StatusCodes.Status404NotFound, null, false);
         }
-<<<<<<< Updated upstream
+
         if (!await _userManager.CheckPasswordAsync(user, request.Password))
         {
             await _userManager.AccessFailedAsync(user);
@@ -183,12 +160,8 @@ public class AuthenticationService : IAuthenticationService
         }
         if (await _userManager.IsLockedOutAsync(user))
         {
-            return ResponseHelper.BuildResponse<LoginResponseModel>("account lock due to failed attempt",StatusCodes.Status403Forbidden, null, false);
-=======
-
-        var roles = await _userManager.GetRolesAsync(user);
-        var role = roles.FirstOrDefault();
-        string accountType = "";
+            return ResponseHelper.BuildResponse<LoginResponseModel>("account lock due to failed attempt", StatusCodes.Status403Forbidden, null, false);
+        }
         if(role == "Volunteer")
         {
             accountType = "Volunteer";
@@ -210,7 +183,6 @@ public class AuthenticationService : IAuthenticationService
         {
             await _userManager.AccessFailedAsync(user);
             return ResponseHelper.BuildResponse<LoginResponseModel>("wrong password", StatusCodes.Status400BadRequest, null,false);
->>>>>>> Stashed changes
         }
         await _userManager.ResetAccessFailedCountAsync(user);
         if(user.TwoFactorEnabled)
@@ -239,7 +211,6 @@ public class AuthenticationService : IAuthenticationService
         //volunteer data
         if (user.OnboardingProgress != null && user.FoundationId == null && user.OnboardingProgress.LastCompletedPage > 0 && user.OnboardingProgress.LastCompletedPage < 5 && user.OnboardingProgress.HasCompletedOnboarding == false)
         {
-<<<<<<< Updated upstream
             var loginResponse = _mapper.Map<LoginResponseModel>(user);
             loginResponse.AccountType = accountType;
             loginResponse.AccessToken = accessToken;
@@ -306,17 +277,6 @@ public class AuthenticationService : IAuthenticationService
             loginResponse.UserProfile = _mapper.Map<UserProfileSummary>(user);
             return ResponseHelper.BuildResponse<LoginResponseModel>("login successful", StatusCodes.Status200OK, loginResponse, true);
         } 
-=======
-            AccessToken = accessToken,
-            RefreshToken = refreshToken,
-            HasCompletedOnboarding = user.OnboardingProgress?.HasCompletedOnboarding ?? false,
-            LastCompletedPage = user.OnboardingProgress?.LastCompletedPage ?? 0,
-            HasSetUpPin = hasSetUpPin,
-            Message = "Login successful",
-            AccountType = accountType,  
-        };
-        return ResponseHelper.BuildResponse<LoginResponseModel>("login successful", StatusCodes.Status200OK, longinResponse, true);
->>>>>>> Stashed changes
     }
 
     public async Task<GlobalRequestReponse<RefreshTokenResponseModel>> RefreshTokenAsync(RefreshTokenRequestModel request)
@@ -330,16 +290,10 @@ public class AuthenticationService : IAuthenticationService
                 validation.Status, validation.ValidationError);
             return ResponseHelper.BuildResponse<RefreshTokenResponseModel>("invalid refresh token", StatusCodes.Status400BadRequest,null, false);
         }
-<<<<<<< Updated upstream
         if (validation.User is null)
-=======
-        var user = await _userRepository.GetUserByEmailWithFoundationAsync(request.UserId, cancellationToken);
-        if (user is null)
->>>>>>> Stashed changes
         {
             return ResponseHelper.BuildResponse<RefreshTokenResponseModel>("user not found", StatusCodes.Status404NotFound, null, false);
         }
-<<<<<<< Updated upstream
         var userRoles = await _userManager.GetRolesAsync(validation.User);
         var userRole = userRoles.FirstOrDefault();
         var jwtClaims = _mapper.Map<JwtClaimsModel>(validation.User);
@@ -351,17 +305,6 @@ public class AuthenticationService : IAuthenticationService
             jwtClaims.FoundationId = validation.User.Foundation.Id;
         }
         var newRefreshToken = await _jwtTokenService.GenerateRefreshTokenAsync(validation.User.Id, userRole);
-=======
-        var userRoles = await _userManager.GetRolesAsync(user);
-        var userRole = userRoles.First() ?? "Volunteer";
-        var jwtClaims = new JwtClaimsModel
-        {
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            OrganizationName = user?.Foundation?.Name!,
-        };
-        var newRefreshToken = await _jwtTokenService.RotateRefreshTokenAsync(request.RefreshToken, user.Id, userRole);
->>>>>>> Stashed changes
         if (string.IsNullOrEmpty(newRefreshToken))
         {
             _logger.LogError($"Failed to rotate refresh token for user {validation.User.Id}");
@@ -372,15 +315,8 @@ public class AuthenticationService : IAuthenticationService
                     ? AuthenticationConstants.TokenExpirations[userRole]
                     : new TokenExpiration(AccessToken: 15, RefreshToken: 30); // Default values
         var accessTokenExpiresAt = DateTime.UtcNow.AddMinutes(tokenExpirations.AccessToken);
-<<<<<<< Updated upstream
         var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(tokenExpirations.RefreshToken);
         _logger.LogInformation($"refresh token generated for user {validation.User.Id}.");
-=======
-        var refreshTokenExpiresAt = DateTime.UtcNow.AddMinutes(tokenExpirations.RefreshToken);
-        _logger.LogInformation("Token refresh successful for user {UserId}. New tokens generated.", request.UserId);
-
-        // Create response
->>>>>>> Stashed changes
         var refreshResponse = new RefreshTokenResponseModel
         {
             Success = true,
@@ -392,7 +328,6 @@ public class AuthenticationService : IAuthenticationService
         };
         return ResponseHelper.BuildResponse<RefreshTokenResponseModel>("token refresh successfully", StatusCodes.Status200OK, refreshResponse, true);
     }
-<<<<<<< Updated upstream
     public async Task<GlobalRequestReponse<string>> ResetPasswordAsync()
     {
         var user = await _userManager.FindByEmailAsync(_currentUserService.GetUserEmail().Trim().ToLower());
@@ -443,19 +378,12 @@ public class AuthenticationService : IAuthenticationService
         return ResponseHelper.BuildResponse<string>("user not found", StatusCodes.Status404NotFound, null, false);
     }
     public async Task<GlobalRequestReponse<string>> ResetForgotPassword(string email)
-=======
-    public async Task<GlobalRequestReponse<string>> ResetPasswordAsync(string email)
->>>>>>> Stashed changes
     {
         var user = await _userManager.FindByEmailAsync(email.Trim().ToLower());
         if (user != null)
         {
             //Generate OTP
-<<<<<<< Updated upstream
             var otp = await _otp.GenerateOtpAsync(user.Id, OtpPurpose.ForgotPassWord.ToString(), true, NotificationChannelEnum.Email.ToString());
-=======
-            var otp = await _otp.GenerateOtpAsync(user.Id, OtpPurpose.PasswordReset.ToString(),true, NotificationChannelEnum.Email.ToString());
->>>>>>> Stashed changes
             user.OTP = otp;
             user.OtpSubmittedTime = Convert.ToDateTime(DateTime.Now.ToShortTimeString());
             var result = await _userManager.UpdateAsync(user);
@@ -465,18 +393,12 @@ public class AuthenticationService : IAuthenticationService
             }
             else
             {
-<<<<<<< Updated upstream
                 var response = await _otpEmailSenderService.OtpSender(user.Email, user.OTP, NotificationTypeEnum.ForgotPassWord.ToString());
                 return response;
-=======
-                var response = await _otpEmailSenderService.OtpSender(user.Email, user.OTP, NotificationTypeEnum.ResetPasswordOtp.ToString());
-                return response;    
->>>>>>> Stashed changes
             }
         }
         return ResponseHelper.BuildResponse<string>("user not found", StatusCodes.Status404NotFound, null, false);
     }
-<<<<<<< Updated upstream
     public async Task<GlobalRequestReponse<string>> ForgetPasswordAsync(ForgotPasswordDto forgotPasswordDto)
     {
         var decrptedToken = AES.DecryptData(forgotPasswordDto.Token, _key);
@@ -505,51 +427,9 @@ public class AuthenticationService : IAuthenticationService
         return ResponseHelper.BuildResponse<string>("user not found", StatusCodes.Status404NotFound, null, false); ;
     }
     
+  
     public async Task<GlobalRequestReponse<string>> TwoFactorAuthenticationSetUp()
     {
-=======
-   
-    public async Task<GlobalRequestReponse<string>> ChangePasswordAsync(ChangePasswordDto changePasswordDto)
-    {
-        var decrptedToken = AES.DecryptData(changePasswordDto.Token, _key);
-        if (string.IsNullOrEmpty(decrptedToken))
-            return ResponseHelper.BuildResponse<string>("invalid token", StatusCodes.Status400BadRequest, null, false);
-        var payload = JsonSerializer.Deserialize<PasswordResetTokenPayload>(decrptedToken);
-        var user = await _userManager.FindByEmailAsync(payload.Email.Trim().ToLower());
-        if (user != null)
-        {
-            var result = await _userManager.ChangePasswordAsync(user, changePasswordDto.OldPassword.Trim(), changePasswordDto.NewPassword.Trim());
-            if (result.Succeeded)
-            {
-                //await _userManager.UpdateAsync(user).ConfigureAwait(false);
-                return ResponseHelper.BuildResponse<string>("password change successfully", StatusCodes.Status200OK, null, true);
-            }
-            return ResponseHelper.BuildResponse<string>("something went wrong", StatusCodes.Status404NotFound, null, false);
-        }
-        return ResponseHelper.BuildResponse<string>("user not found", StatusCodes.Status404NotFound, null, false);
-    }
-    
-    public async Task<GlobalRequestReponse<string>> ForgetPasswordAsync(ForgotPasswordDto forgotPasswordDto)
-    {
-        var decrptedToken = AES.DecryptData(forgotPasswordDto.Token, _key);
-        if(string.IsNullOrEmpty(decrptedToken))
-            return ResponseHelper.BuildResponse<string>("invalid token", StatusCodes.Status400BadRequest, null, false);
-        var payload = JsonSerializer.Deserialize<PasswordResetTokenPayload>(decrptedToken);
-        var user = await _userManager.FindByEmailAsync(payload.Email); 
-        if (user != null)
-        {
-            var passwordHash = _userManager.PasswordHasher.HashPassword(user, forgotPasswordDto.NewPassword);
-            user.PasswordHash = passwordHash;
-            var result = await _userManager.UpdateAsync(user);
-            if(result.Succeeded)
-                return ResponseHelper.BuildResponse<string>("password reset successfully", StatusCodes.Status200OK, null, true);
-            return ResponseHelper.BuildResponse<string>("something went wrong", StatusCodes.Status400BadRequest, null, false); 
-        }
-        return ResponseHelper.BuildResponse<string>("user not found", StatusCodes.Status404NotFound, null, false); ;
-    }
-    public async Task<GlobalRequestReponse<string>> TwoFactorAuthenticationSetUp()
-    {
->>>>>>> Stashed changes
         var email = _currentUserService.GetUserEmail(); 
         var user = await _userManager.FindByEmailAsync(email);
         if (user == null) 
@@ -562,43 +442,18 @@ public class AuthenticationService : IAuthenticationService
             return ResponseHelper.BuildResponse("two factor authenticaton is enable", StatusCodes.Status200OK, "success", true);
         return ResponseHelper.BuildResponse("something went wrong", StatusCodes.Status400BadRequest, "not successful", false);
     }
-
-<<<<<<< Updated upstream
     public async Task<GlobalRequestReponse<LoginResponseModel>> VerifyTwoFactorAuthentication(VerifyTwoFactorAuthenticationRequestDto verifyTwoFactorAuthenticationRequestDto)
-=======
-    public async Task<GlobalRequestReponse<VerifyTwoFactorAuthenticationResponseDto>> VerifyTwoFactorAuthentication(VerifyTwoFactorAuthenticationRequestDto verifyTwoFactorAuthenticationRequestDto)
->>>>>>> Stashed changes
     {
         var user = await _userManager.FindByEmailAsync(verifyTwoFactorAuthenticationRequestDto.Email);
         var otp = await _uow.OtpRepo.GetByExpressionAsync(o => o.UserId == user.Id && o.OtpCode == verifyTwoFactorAuthenticationRequestDto.TwoFactorAuthCode && o.Purpose == OtpPurpose.TwoFactorAuthenticationLogin.ToString() && !o.IsUsed);
-        if (otp == null)
-        {
-            await _userManager.AccessFailedAsync(user);
-<<<<<<< Updated upstream
-            return ResponseHelper.BuildResponse<LoginResponseModel>("two factor authentication code is incorrect", StatusCodes.Status500InternalServerError, null, false);
-        }
         if(user == null)
             return ResponseHelper.BuildResponse<LoginResponseModel>("user not found", StatusCodes.Status404NotFound, null, false);
         if (await _userManager.IsLockedOutAsync(user))
         {
             return ResponseHelper.BuildResponse<LoginResponseModel>("Account is locked for 1 hour due to multiple fail verification attempts", StatusCodes.Status400BadRequest, null, false);
         }
-        
-        if ((DateTime.UtcNow - otp.CreatedAt).TotalMinutes > 10)
-            return ResponseHelper.BuildResponse<LoginResponseModel>("two factor authentication code already expire", StatusCodes.Status400BadRequest, null, false);
-=======
-            return ResponseHelper.BuildResponse<VerifyTwoFactorAuthenticationResponseDto>("two factor authentication code is incorrect", StatusCodes.Status500InternalServerError, null, false);
-        }
-        if(user == null)
-            return ResponseHelper.BuildResponse<VerifyTwoFactorAuthenticationResponseDto>("user not found", StatusCodes.Status404NotFound, null, false);
-        if (await _userManager.IsLockedOutAsync(user))
-        {
-            return ResponseHelper.BuildResponse<VerifyTwoFactorAuthenticationResponseDto>("Account is locked for 1 hour due to multiple fail verification attempts", StatusCodes.Status400BadRequest, null, false);
-        }
-        
         if ((DateTime.UtcNow - otp.CreatedAt).TotalMinutes > 5)
-            return ResponseHelper.BuildResponse<VerifyTwoFactorAuthenticationResponseDto>("two factor authentication code already expire", StatusCodes.Status400BadRequest, null, false);
->>>>>>> Stashed changes
+            return ResponseHelper.BuildResponse<LoginResponseModel>("two factor authentication code already expire", StatusCodes.Status400BadRequest, null, false);
         await _userManager.ResetAccessFailedCountAsync(user);
         var roles = await _userManager.GetRolesAsync(user);
         var role = roles.FirstOrDefault();
@@ -607,19 +462,13 @@ public class AuthenticationService : IAuthenticationService
         {
             accountType = "Volunteer";
         }
-<<<<<<< Updated upstream
-        else if(role == "FoundationAdmin")
+        else if (role == "FoundationAdmin")
         {
-           accountType = "Foundation";
+            accountType = "Foundation";
         }
         else
         {
             accountType = "SuperAdmin";
-=======
-        else
-        {
-            accountType = "Organization";
->>>>>>> Stashed changes
         }
         user.LastLogin = DateTime.UtcNow;
         user.DateUpdated = DateTime.UtcNow; 
@@ -634,7 +483,6 @@ public class AuthenticationService : IAuthenticationService
         var accessToken = _jwtTokenService.GenerateAccessTokenAsync(jwtClaims, role);
         var refreshToken = await _jwtTokenService.GenerateRefreshTokenAsync(
             user?.Id!, role);
-<<<<<<< Updated upstream
         var tokenExpirations = AuthenticationConstants.TokenExpirations.ContainsKey(role)
                     ? AuthenticationConstants.TokenExpirations[role]
                     : new TokenExpiration(AccessToken: 15, RefreshToken: 30); // Default values
@@ -692,15 +540,6 @@ public class AuthenticationService : IAuthenticationService
         await _uow.refreshTokenRepo.UpdateAsync(userRefreshToken);  
         return ResponseHelper.BuildResponse<string>("logout successfully", StatusCodes.Status200OK, "logout", true);
     }
-=======
-        user!.LastLogin = DateTime.UtcNow;
-        _uow.userRepo.Update(user);
-        await _uow.CompleteAsync();
-        var response = VerifyTwoFactorAuthenticationResponseDtoBuilder.VerifyTwoFactorResponseBuilder(accessToken, refreshToken, accountType);
-        return ResponseHelper.BuildResponse<VerifyTwoFactorAuthenticationResponseDto>("something went wrong", StatusCodes.Status400BadRequest, response, false);
-    }
-    
->>>>>>> Stashed changes
     private string GenerateOTP()
     {
         try

@@ -13,9 +13,9 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
     public class OtpController : BaseController
     {
         private readonly IOtpService _otpService;
-        private readonly IAuthenticationService _authService;
+        private readonly IAuthService _authService;
         private readonly ICurrentUserService _currentUserService;
-        public OtpController(IOtpService otpService, IAuthenticationService authService, ICurrentUserService currentUserService)
+        public OtpController(IOtpService otpService, IAuthService authService, ICurrentUserService currentUserService)
         {
             _otpService = otpService;
             _authService = authService;

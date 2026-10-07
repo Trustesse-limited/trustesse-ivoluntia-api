@@ -1,6 +1,8 @@
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using MapsterMapper;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -29,12 +31,12 @@ using static System.Net.WebRequestMethods;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service;
 
-public class AuthenticationService : IAuthenticationService
+public class AuthService : IAuthService
 {
     private readonly IUnitOfWork _uow;
     private readonly IMapper _mapper;
     private readonly UserManager<User> _userManager;
-    private readonly ILogger<AuthenticationService> _logger;
+    private readonly ILogger<AuthService> _logger;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly IUserRepository _userRepository;
     private readonly IOtpService _otp;
@@ -45,13 +47,15 @@ public class AuthenticationService : IAuthenticationService
     private readonly ITwoFactorAuthenticationService _twoFactorAuthenticationService;
     private readonly IOtpEmailSenderService _otpEmailSenderService;
     private readonly IUserMapperService _userMapperService;
+    private readonly IDataProtectionProvider _dataProtectionProvider;
     private readonly IConfiguration _configuration;
+    private readonly IHttpContextAccessor _http;
     private readonly byte[] _key;
-    public AuthenticationService(IUnitOfWork uow,
+    public AuthService(IUnitOfWork uow,
         IMapper mapper,
         UserManager<User> userManager,
         IJwtTokenService jwtTokenService,
-        ILogger<AuthenticationService> logger,
+        ILogger<AuthService> logger,
         IOtpService otp,
         INotificationService notify,
         IEmailService email,
@@ -61,7 +65,10 @@ public class AuthenticationService : IAuthenticationService
         ITwoFactorAuthenticationService twoFactorAuthenticationService,
         IOtpEmailSenderService otpEmailSenderService,
         IUserMapperService userMapperService,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IDataProtectionProvider dataProtectionProvider,
+        IHttpContextAccessor http
+        )
     {
         _uow = uow;
         _mapper = mapper;
@@ -77,10 +84,13 @@ public class AuthenticationService : IAuthenticationService
         _twoFactorAuthenticationService = twoFactorAuthenticationService;
         _otpEmailSenderService = otpEmailSenderService;
         _userMapperService = userMapperService;
-        _configuration = configuration; 
+        _configuration = configuration;
         var key = configuration["PasswordResetToken:Key"];
         _key = Convert.FromBase64String(key);
+        _dataProtectionProvider = dataProtectionProvider;
+        _http = http;
     }
+
     public async Task<GlobalRequestReponse<string>> CreateVolunteer(SignUpDto signUpDto)
     {
         var user = await _userManager.FindByEmailAsync(signUpDto.Email);
@@ -114,7 +124,6 @@ public class AuthenticationService : IAuthenticationService
         return ResponseHelper.BuildResponse<string>("something went wrong", StatusCodes.Status400BadRequest, null, false);
     }
     public async Task<GlobalRequestReponse<LoginResponseModel>> LoginAsync(LoginRequestModel request)
-
     {
         var user = await _uow.userRepo.GetByExpressionIncludeAsync(u => u.Email == request.Email, u => u.OnboardingProgress, u => u.UserInterestLinks, u => u.UserSkillLinks, u => u.Location, u => u.Location.Country, u => u.Location.State, u => u.Foundation, u => u.Foundation.Category,u =>  u.Foundation.Location.State, u => u.Foundation.Location.Country, u => u.Foundation.Causes);
         var interest = new List<UserInterestLink>(); 
@@ -147,7 +156,7 @@ public class AuthenticationService : IAuthenticationService
         }
         else
         {
-            accountType = "Admin";
+            accountType = "SuperAdmin";
         }
         if (!user.IsActive)
         {
@@ -161,15 +170,7 @@ public class AuthenticationService : IAuthenticationService
         if (await _userManager.IsLockedOutAsync(user))
         {
             return ResponseHelper.BuildResponse<LoginResponseModel>("account lock due to failed attempt", StatusCodes.Status403Forbidden, null, false);
-        }
-        if(role == "Volunteer")
-        {
-            accountType = "Volunteer";
-        }
-        else
-        {
-            accountType = "Organization";
-        }
+        } 
         if (!user.IsActive)
         {
             return ResponseHelper.BuildResponse<LoginResponseModel>("account not active, please confirm your email", StatusCodes.Status400BadRequest, null, false); 
@@ -283,6 +284,7 @@ public class AuthenticationService : IAuthenticationService
     {
         var principal = _jwtTokenService.GetPrincipalFromExpiredToken(request.AccessToken);
         var email = principal.Identity.Name;
+        var auth = principal.Identity.IsAuthenticated;
         var validation = await _jwtTokenService.ValidateRefreshTokenAsync(request.RefreshToken, email);
         if (!validation.IsValid)
         {
@@ -537,7 +539,8 @@ public class AuthenticationService : IAuthenticationService
             return ResponseHelper.BuildResponse<string>("no refresh token found for user", StatusCodes.Status404NotFound, null, false);
         }
         userRefreshToken.ExpiresAt = DateTime.Now;
-        await _uow.refreshTokenRepo.UpdateAsync(userRefreshToken);  
+        await _uow.refreshTokenRepo.UpdateAsync(userRefreshToken);
+        await _uow.CompleteAsync();
         return ResponseHelper.BuildResponse<string>("logout successfully", StatusCodes.Status200OK, "logout", true);
     }
     private string GenerateOTP()

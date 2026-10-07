@@ -8,7 +8,7 @@ using Trustesse.Ivoluntia.Domain.Enums;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
-public interface IAuthenticationService
+public interface IAuthService
 {
     Task<GlobalRequestReponse<string>> CreateVolunteer(SignUpDto signUpDto);
     Task<GlobalRequestReponse<string>> CreateOrganization(SignUpDto signUpDto);

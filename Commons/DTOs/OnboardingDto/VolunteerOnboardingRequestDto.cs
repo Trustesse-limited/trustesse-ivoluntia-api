@@ -41,7 +41,7 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.OnboardingDto
 
     public class LocationDto
     {
-        public string Address { get; set; }
+        public string? Address { get; set; }
         public string City { get; set; }
         public string ZipCode { get; set; }
         public string Country { get; set; }
@@ -61,6 +61,6 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.OnboardingDto
     public class ProfileImageAndBio
     {
         public string Bio { get; set; }
-        public List<IFormFile> ProfileImage { get; set; }
+        public string ImageUrl { get; set; }
     }
 }

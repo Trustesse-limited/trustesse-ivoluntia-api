@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -41,7 +42,6 @@ public class JwtTokenService : IJwtTokenService
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_jwtOptions.Key);
-
         var expirationMinutes = AuthenticationConstants.TokenExpirations.ContainsKey(role)
             ? AuthenticationConstants.TokenExpirations[role].AccessToken
             : 15;
@@ -66,8 +66,11 @@ public class JwtTokenService : IJwtTokenService
             Audience = _jwtOptions.Audience,
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
+        var handler = tokenHandler.CreateToken(tokenDescriptor);
+        var token = tokenHandler.WriteToken(handler);
+        var protect = _dataProtectionProvider.CreateProtector("JWTProtector");
+        var encryptToken = protect.Protect(token);
+        return encryptToken;
     }
     public async Task<string> GenerateRefreshTokenAsync(string userId, string role)
     {
@@ -78,12 +81,14 @@ public class JwtTokenService : IJwtTokenService
         using var rng = RandomNumberGenerator.Create();
         rng.GetBytes(randomNumber);
         var refreshToken = Convert.ToBase64String(randomNumber);
+        var protect = _dataProtectionProvider.CreateProtector("JWTProtector");
+        var encryptRefreshToken = protect.Protect(refreshToken);
         var expirationDays = AuthenticationConstants.TokenExpirations.ContainsKey(role)
             ? AuthenticationConstants.TokenExpirations[role].RefreshToken
             : 30;
         if(refresh != null)
         {
-            refresh.Token = refreshToken;
+            refresh.Token = encryptRefreshToken;
             refresh.ExpiresAt = DateTime.UtcNow.AddDays(expirationDays);
             refresh.CreatedAt = DateTime.UtcNow;
             _unitOfWork.refreshTokenRepo.Update(refresh);
@@ -93,7 +98,7 @@ public class JwtTokenService : IJwtTokenService
         {
             var userRefreshToken = new UserRefreshToken
             {
-                Token = refreshToken,
+                Token = encryptRefreshToken,
                 UserId = userId,
                 CreatedAt = DateTime.UtcNow,
                 ExpiresAt = DateTime.UtcNow.AddDays(expirationDays),
@@ -104,7 +109,7 @@ public class JwtTokenService : IJwtTokenService
         }
         _logger.LogInformation($"Generated refresh token for user with id {user.Id}",
             userId, expirationDays);
-        return refreshToken;
+        return encryptRefreshToken;
     }
     public async Task<string> UpdateRefreshTokenAsync(string userId, string refreshTokens)
     {
@@ -249,9 +254,8 @@ public class JwtTokenService : IJwtTokenService
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_jwtOptions.Key);
-
             var validationParameters = new TokenValidationParameters
-            {
+            {   
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(key),
                 ValidateIssuer = true,
@@ -280,10 +284,12 @@ public class JwtTokenService : IJwtTokenService
             ValidateIssuer = false,
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(key),
-            ValidateLifetime = false // ignore expiration
+            ValidateLifetime = true 
         };
         var tokenHandler = new JwtSecurityTokenHandler();
-        var principal = tokenHandler.ValidateToken(accessToken, tokenValidationParameters, out SecurityToken securityToken);
+        var protect = _dataProtectionProvider.CreateProtector("JWTProtector");
+        var decrpytToken = protect.Unprotect(accessToken);
+        var principal = tokenHandler.ValidateToken(decrpytToken, tokenValidationParameters, out SecurityToken securityToken);
         return principal;
     }
 }

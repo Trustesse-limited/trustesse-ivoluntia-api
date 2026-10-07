@@ -40,7 +40,7 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.OnboardingDto
     }
     public class FoundationLocationDto
     {
-        public string Address { get; set; }
+        public string? Address { get; set; }
         public string City { get; set; }
         public string Zipcode { get; set; }
         public string FoundationCountry { get; set; }
@@ -52,7 +52,7 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.OnboardingDto
     }
     public class ProfileLogo
     {
-        public List<IFormFile> Logo { get; set; }
+        public string LogoUrl { get; set; }
     }
     public class Disclaimer
     {

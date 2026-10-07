@@ -18,9 +18,9 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
     [ApiController]
     public class AuthController : BaseController
     {
-        private readonly IAuthenticationService _authenticationService;
+        private readonly IAuthService _authenticationService;
 
-        public AuthController(IAuthenticationService authenticationService)
+        public AuthController(IAuthService authenticationService)
         {
             _authenticationService = authenticationService;
         }
@@ -50,14 +50,6 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         public async Task<IActionResult> ResetForgotPassword(string email)
             => BuildHttpResponse<string>(await _authenticationService.ResetForgotPassword(email));
 
-        //[HttpPost("resetpassword")]
-        //public async Task<IActionResult> ResetPassword([FromQuery] string email)
-        //    => BuildHttpResponse<string>(await _authenticationService.ResetPasswordAsync(email));
-        
-        //[HttpPost("changepassword")]
-        //public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
-        //    => BuildHttpResponse<string>(await _authenticationService.ChangePasswordAsync(changePasswordDto.Validate())); 
-       
         [HttpPost("forgotpassword")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordDto forgotPasswordDto)
             => BuildHttpResponse<string>(await _authenticationService.ForgetPasswordAsync(forgotPasswordDto.Validate()));     

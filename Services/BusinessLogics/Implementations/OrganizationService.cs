@@ -32,14 +32,14 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
     {
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IAuthenticationService _authenticationService;
+        private readonly IAuthService _authenticationService;
         private readonly ICurrentUserService _currentUserService;
         private readonly INotificationService _notify;
         private readonly IEmailService _email;
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly string _baseUrl;
-        public OrganizationService(IMapper mapper, IUnitOfWork unitOfWork, IAuthenticationService authenticationService, ICurrentUserService currentUserService, INotificationService notify, IEmailService email, IConfiguration configuration, HttpClient httpClient)
+        public OrganizationService(IMapper mapper, IUnitOfWork unitOfWork, IAuthService authenticationService, ICurrentUserService currentUserService, INotificationService notify, IEmailService email, IConfiguration configuration, HttpClient httpClient)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Trustesse.Ivoluntia.Commons.DTOs.Cause;
 using Trustesse.Ivoluntia.Commons.DTOs.Skill;
@@ -18,7 +19,8 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         [HttpPost("create-cause")]
         public async Task<IActionResult> CreateCause(CreateCauseRequestDto createCauseRequestDto)
           => BuildHttpResponse<string>(await _causeService.CreateCause(createCauseRequestDto));
-        
+
+        [Authorize]
         [HttpGet("get-all-causes")]
         public async Task<IActionResult> GetCause()
            => BuildHttpResponse<List<GetCauseResponseDto>>(await _causeService.GetCause());

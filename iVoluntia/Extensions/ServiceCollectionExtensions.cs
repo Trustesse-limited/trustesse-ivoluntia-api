@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +37,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<IProgramRepository, ProgramRepository>();
             services.AddScoped<IFoundationRepository, FoundationRepository>();
             services.AddScoped<ICountryService, CountryService>();
-            services.AddScoped<IAuthenticationService, AuthenticationService>();
+            services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IOtpService, OtpService>();
             services.AddHttpClient<IEmailService, EmailService>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
@@ -217,6 +219,33 @@ namespace Trustesse.Ivoluntia.API.Extensions
                     ValidIssuer = issuer,
                     ValidAudience = audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+                };
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var protector = context.HttpContext.RequestServices
+                       .GetRequiredService<IDataProtectionProvider>()
+                       .CreateProtector("JWTProtector");
+                        var header = context.Request.Headers.Authorization.ToString(); 
+                        if (!string.IsNullOrWhiteSpace(header) && header.StartsWith("Bearer ",StringComparison.OrdinalIgnoreCase))
+                        {
+                            var encryptedToken = header["Bearer".Length..].Trim();
+                            var token = protector.Unprotect(encryptedToken);
+                            context.Token = token;
+                        }
+                        else if(!string.IsNullOrWhiteSpace(header))
+                        {
+                            var token = protector.Unprotect(header);
+                            context.Token = token;
+                        }
+                        return Task.CompletedTask;
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        Console.WriteLine(context.Exception.Message);
+                        return Task.CompletedTask;
+                    }
                 };
             });
 

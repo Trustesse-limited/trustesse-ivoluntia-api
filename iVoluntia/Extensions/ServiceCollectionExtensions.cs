@@ -86,6 +86,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<ITwoFactorAuthenticationService, TwoFactorAuthenticationService>();
             services.AddScoped<IUserMapperService, UserMapperService>();
             services.AddScoped<IOtpEmailSenderService, OtpEmailSenderService>();
+            services.AddScoped<IUserProfileService, UserProfileService>();
 
             services.AddSwaggerGen(options =>
             {

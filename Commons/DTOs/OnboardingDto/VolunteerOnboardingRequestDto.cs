@@ -36,12 +36,12 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.OnboardingDto
         public string LastName { get; set; }
         public string OtherName { get; set; }
         public string Gender { get; set; }
-        public DateTime DateOfBirth { get; set; }
+        public DateTime? DateOfBirth { get; set; }
     }
 
     public class LocationDto
     {
-        public string? Address { get; set; }
+        public string Address { get; set; }
         public string City { get; set; }
         public string ZipCode { get; set; }
         public string Country { get; set; }
@@ -50,12 +50,12 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.OnboardingDto
 
     public class InterestDto
     {
-        public List<string> Names { get; set; }
+        public List<string>? Names { get; set; }
     }
 
     public class VolunteerSkillDto
     {
-        public List<string> Names { get; set; }
+        public List<string>? Names { get; set; }
     }
 
     public class ProfileImageAndBio

@@ -10,6 +10,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService
 {
     public interface ITwoFactorAuthenticationService
     {
-        Task<GlobalRequestReponse<string>> TwoFactorAuthenticationByEmail(string email);
+        Task<GlobalRequestReponse<string>> TwoFactorAuthenticationByEmail(string email, string accountType);
     }
 }

@@ -73,11 +73,13 @@ namespace Trustesse.Ivoluntia.Data.DataContext
 
                 entity.HasMany(u => u.Skills)
                       .WithMany(s => s.Users)
-                      .UsingEntity(j => j.ToTable("UserSkills"));
+                      //.UsingEntity(j => j.ToTable("UserSkills"))
+                      .UsingEntity<UserSkillLink>();
 
                 entity.HasMany(u => u.Interests)
                       .WithMany(i => i.Users)
-                      .UsingEntity(j => j.ToTable("UserInterests"));
+                      //.UsingEntity(j => j.ToTable("UserInterests"));
+                      .UsingEntity<UserInterestLink>();
 
                 entity.Property(u => u.FirstName)
                       .HasMaxLength(50);
@@ -202,6 +204,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                   .HasOne(us => us.Skill)
                   .WithMany(s => s.UserSkillLinks)
                   .HasForeignKey(us => us.SkillId);
+
             modelBuilder.Entity<UserSkillLink>()
                   .HasQueryFilter(us => !us.IsDeprecated);
 
@@ -217,6 +220,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                   .HasOne(us => us.Interest)
                   .WithMany(s => s.UserInterestLinks)
                   .HasForeignKey(us => us.InterestId);
+
             modelBuilder.Entity<UserInterestLink>()
                   .HasQueryFilter(us => !us.IsDeprecated);
 

@@ -32,7 +32,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             _notificationService = notificationService;
             _emailService = emailService;
         }
-        public async Task<GlobalRequestReponse<string>> TwoFactorAuthenticationByEmail(string email)
+        public async Task<GlobalRequestReponse<string>> TwoFactorAuthenticationByEmail(string email, string accountType)
         {
             var user = await _userManager.FindByEmailAsync(email);   
             var otp = await _otp.GenerateOtpAsync(user.Id, OtpPurpose.TwoFactorAuthenticationLogin.ToString(), false, NotificationChannelEnum.Email.ToString());
@@ -55,7 +55,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                     var emailModel = EmailModelBuilder.EmailModelObjectBuilder(receivers, NotificationTypeEnum.TwoFactorAuthentication.ToString(), Message);
                     var emailResponse = await _emailService.SendEmailASync(emailModel);
                     if(emailResponse.StatusCode == StatusCodes.Status200OK)
-                        return ResponseHelper.BuildResponse("two factor code sent to your email", StatusCodes.Status200OK, "two factor code sent to email", true);
+                        return ResponseHelper.BuildResponse<string>($"two factor code sent to {accountType}", StatusCodes.Status200OK, null, true);
                 }
                 return ResponseHelper.BuildResponse<string>("something went wrong", StatusCodes.Status400BadRequest, null, false);
             }

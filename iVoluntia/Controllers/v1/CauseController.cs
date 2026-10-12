@@ -20,7 +20,6 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         public async Task<IActionResult> CreateCause(CreateCauseRequestDto createCauseRequestDto)
           => BuildHttpResponse<string>(await _causeService.CreateCause(createCauseRequestDto));
 
-        [Authorize]
         [HttpGet("get-all-causes")]
         public async Task<IActionResult> GetCause()
            => BuildHttpResponse<List<GetCauseResponseDto>>(await _causeService.GetCause());

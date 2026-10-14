@@ -95,33 +95,46 @@ public class AuthService : IAuthService
     {
         var user = await _userManager.FindByEmailAsync(signUpDto.Email);
         if (user != null)
-            return ResponseHelper.BuildResponse<string>($"user already exist. please sign in", StatusCodes.Status400BadRequest, null, false);
+            return ResponseHelper.BuildResponse<string>("user already exist. please sign in", StatusCodes.Status400BadRequest, null, false);
+
         var volunteer = await _userMapperService.UserMapper(signUpDto);
         var result = await _userManager.CreateAsync(volunteer, signUpDto.Password.Trim());
-        await _userManager.AddToRoleAsync(volunteer, UserRolesEnum.Volunteer.ToString());
-        if (result.Succeeded)
+
+        if (!result.Succeeded)
+            return ResponseHelper.BuildResponse<string>($"something went wrong: {string.Join("; ", result.Errors.Select(e => e.Description))}", StatusCodes.Status400BadRequest, null, false);
+
+        var roleResult = await _userManager.AddToRoleAsync(volunteer, UserRolesEnum.Volunteer.ToString());
+
+        if (!roleResult.Succeeded)
         {
-            var response = await _otpEmailSenderService.OtpSender(volunteer.Email, volunteer.OTP, NotificationTypeEnum.EmailConfirmationOtp.ToString());
-            return response;
+            await _userManager.DeleteAsync(volunteer);
+            return ResponseHelper.BuildResponse<string>($"something went wrong: {string.Join("; ", roleResult.Errors.Select(e => e.Description))}", StatusCodes.Status400BadRequest, null, false);
         }
-        return ResponseHelper.BuildResponse<string>("something went wrong", StatusCodes.Status400BadRequest, null, false);
+
+        return await _otpEmailSenderService.OtpSender(volunteer.Email, volunteer.OTP, NotificationTypeEnum.EmailConfirmationOtp.ToString());
     }
-   
+
     public async Task<GlobalRequestReponse<string>> CreateOrganization(SignUpDto signUpDto)
     {
         var user = await _userManager.FindByEmailAsync(signUpDto.Email);
         if (user != null)
-            return ResponseHelper.BuildResponse<string>($"user already exist, please log in.", StatusCodes.Status400BadRequest, null, false);
+            return ResponseHelper.BuildResponse<string>("user already exist, please log in.", StatusCodes.Status400BadRequest, null, false);
+
         var foundationAdmin = await _userMapperService.UserMapper(signUpDto);
         var result = await _userManager.CreateAsync(foundationAdmin, signUpDto.Password.Trim());
-        await _userManager.AddToRoleAsync(foundationAdmin, UserRolesEnum.FoundationAdmin.ToString());
-        if (result.Succeeded)
+
+        if (!result.Succeeded)
+            return ResponseHelper.BuildResponse<string>($"something went wrong: {string.Join("; ", result.Errors.Select(e => e.Description))}", StatusCodes.Status400BadRequest, null, false);
+
+        var roleResult = await _userManager.AddToRoleAsync(foundationAdmin, UserRolesEnum.FoundationAdmin.ToString());
+
+        if (!roleResult.Succeeded)
         {
-            // emailService 
-            var response = await _otpEmailSenderService.OtpSender(foundationAdmin.Email, foundationAdmin.OTP, NotificationTypeEnum.EmailConfirmationOtp.ToString());
-            return response; 
+            await _userManager.DeleteAsync(foundationAdmin);
+            return ResponseHelper.BuildResponse<string>($"something went wrong: {string.Join("; ", roleResult.Errors.Select(e => e.Description))}", StatusCodes.Status400BadRequest, null, false);
         }
-        return ResponseHelper.BuildResponse<string>("something went wrong", StatusCodes.Status400BadRequest, null, false);
+
+        return await _otpEmailSenderService.OtpSender(foundationAdmin.Email, foundationAdmin.OTP, NotificationTypeEnum.EmailConfirmationOtp.ToString());
     }
     public async Task<GlobalRequestReponse<LoginResponseModel>> LoginAsync(LoginRequestModel request)
     {
@@ -138,7 +151,7 @@ public class AuthService : IAuthService
             await _userManager.AccessFailedAsync(user);
             return ResponseHelper.BuildResponse<LoginResponseModel>("invalid credentials", StatusCodes.Status400BadRequest, null, false);
         }
-        if (user.OnboardingProgress != null && user.OnboardingProgress.LastCompletedPage > 0 && user.OnboardingProgress.LastCompletedPage < 5 && user.OnboardingProgress.HasCompletedOnboarding == false)
+        if (user.FoundationId == null)
         {
             interest = await _uow.userInterestLinkRepo.GetListByExpressionAsync(i => i.UserId == user.Id, i => i.Interest);
             skill = await _uow.userSkillLinkRepo.GetListByExpressionAsync(i => i.UserId == user.Id, i => i.Skill);
@@ -209,75 +222,47 @@ public class AuthService : IAuthService
         user!.LastLogin = DateTime.UtcNow;
         await _userManager.UpdateAsync(user); 
         var hasSetUpPin = await _uow.transactionPinRepo.GetByExpressionAsync(x => x.UserId == user.Id) != null;
-        //volunteer data
-        if (user.OnboardingProgress != null && user.FoundationId == null && user.OnboardingProgress.LastCompletedPage > 0 && user.OnboardingProgress.LastCompletedPage < 5 && user.OnboardingProgress.HasCompletedOnboarding == false)
+        var loginResponse = _mapper.Map<LoginResponseModel>(user);
+        loginResponse.AccountType = accountType;
+        loginResponse.AccessToken = accessToken;
+        loginResponse.AccessTokenExpireMinutes = DateTime.Now.AddMinutes(30);
+        loginResponse.RefreshToken = refreshToken;
+        loginResponse.RefreshTokenExpireDays = DateTime.Now.AddDays(30);
+        loginResponse.HasCompletedOnboarding = user.OnboardingProgress?.HasCompletedOnboarding ?? false;
+        loginResponse.LastCompletedPage = user.OnboardingProgress?.LastCompletedPage ?? 0;
+        loginResponse.NumberOfPageRemaining = 5 - user.OnboardingProgress?.LastCompletedPage ?? 5;
+        loginResponse.HasSetUpPin = hasSetUpPin;
+        loginResponse.Message = "Login successful";
+        loginResponse.UserProfile = _mapper.Map<UserProfileSummary>(user);
+
+        if (user.FoundationId != null)
         {
-            var loginResponse = _mapper.Map<LoginResponseModel>(user);
-            loginResponse.AccountType = accountType;
-            loginResponse.AccessToken = accessToken;
-            loginResponse.AccessTokenExpireMinutes = DateTime.Now.AddMinutes(30);
-            loginResponse.RefreshToken = refreshToken;
-            loginResponse.RefreshTokenExpireDays = DateTime.Now.AddDays(30);    
-            loginResponse.HasCompletedOnboarding = user.OnboardingProgress?.HasCompletedOnboarding ?? false;
-            loginResponse.LastCompletedPage = user.OnboardingProgress?.LastCompletedPage ?? 0;
-            loginResponse.NumberOfPageRemaining = 5 - user.OnboardingProgress?.LastCompletedPage ?? 5;
-            loginResponse.HasSetUpPin = hasSetUpPin;
-            loginResponse.Message = "Login successful";
-            loginResponse.UserProfile = _mapper.Map<UserProfileSummary>(user);
-            loginResponse.UserProfile.Address = user.Location?.Address ?? null;
-            loginResponse.UserProfile.City = user.Location?.City ?? null;
-            loginResponse.UserProfile.ZipCode = user.Location?.Zipcode ?? null;
-            loginResponse.UserProfile.CountryName = user.Location?.Country.CountryName ?? null;
-            loginResponse.UserProfile.StateName = user.Location?.State.StateName ?? null;
-            loginResponse.UserProfile.InterestNames = interest?.Select(i => i.Interest.Name).ToList() ?? null;
-            loginResponse.UserProfile.SkillNames = skill?.Select(s => s.Skill.Name).ToList() ?? null ;
-            return ResponseHelper.BuildResponse<LoginResponseModel>("login successful", StatusCodes.Status200OK, loginResponse, true);
-        }
-        // foundation data
-        else if(user.OnboardingProgress != null && user.FoundationId != null && user.OnboardingProgress.LastCompletedPage > 0 && user.OnboardingProgress.LastCompletedPage < 5 && user.OnboardingProgress.HasCompletedOnboarding == false)
-        {
-            var loginResponse = _mapper.Map<LoginResponseModel>(user);
-            loginResponse.AccountType = accountType;
-            loginResponse.AccessToken = accessToken;
-            loginResponse.AccessTokenExpireMinutes = DateTime.Now.AddMinutes(30);
-            loginResponse.RefreshToken = refreshToken;
-            loginResponse.RefreshTokenExpireDays = DateTime.Now.AddDays(30);
-            loginResponse.HasCompletedOnboarding = user.OnboardingProgress?.HasCompletedOnboarding ?? false;
-            loginResponse.LastCompletedPage = user.OnboardingProgress?.LastCompletedPage ?? 0;
-            loginResponse.NumberOfPageRemaining = 5 - user.OnboardingProgress?.LastCompletedPage ?? 5;
-            loginResponse.HasSetUpPin = hasSetUpPin;
-            loginResponse.Message = "Login successful";
-            loginResponse.UserProfile = _mapper.Map<UserProfileSummary>(user);
+            // foundation admin data
             loginResponse.UserProfile.Name = user.Foundation?.Name ?? null;
             loginResponse.UserProfile.Category = user.Foundation?.Category?.Name ?? null;
             loginResponse.UserProfile.Website = user.Foundation?.Website ?? null;
             loginResponse.UserProfile.Mission = user.Foundation?.Mission ?? null;
             loginResponse.UserProfile.Address = user.Foundation?.Location?.Address ?? null;
             loginResponse.UserProfile.City = user.Foundation?.Location?.City ?? null;
-            loginResponse.UserProfile.ZipCode = user.Foundation?.Location?.Zipcode?? null;
+            loginResponse.UserProfile.ZipCode = user.Foundation?.Location?.Zipcode ?? null;
             loginResponse.UserProfile.CountryName = user.Foundation?.Location?.Country?.CountryName ?? null;
             loginResponse.UserProfile.StateName = user.Foundation?.Location?.State?.StateName ?? null;
             loginResponse.UserProfile.CauseNames = user.Foundation?.Causes?.Select(fc => fc.Name).ToList() ?? null;
-            loginResponse.UserProfile.FoundationLogoUrl = user.Foundation?.Logo ?? null  ;
-            return ResponseHelper.BuildResponse<LoginResponseModel>("login successful", StatusCodes.Status200OK, loginResponse, true);
+            loginResponse.UserProfile.FoundationLogoUrl = user.Foundation?.Logo ?? null;
         }
-        //completed onboarding or not started onboarding
         else
         {
-            var loginResponse = _mapper.Map<LoginResponseModel>(user);
-            loginResponse.AccessToken = accessToken;
-            loginResponse.AccessTokenExpireMinutes = DateTime.Now.AddMinutes(30);
-            loginResponse.RefreshToken = refreshToken;
-            loginResponse.RefreshTokenExpireDays = DateTime.Now.AddDays(30);
-            loginResponse.HasCompletedOnboarding = user.OnboardingProgress?.HasCompletedOnboarding ?? false;
-            loginResponse.LastCompletedPage = user.OnboardingProgress?.LastCompletedPage ?? 0;
-            loginResponse.NumberOfPageRemaining = 5 - user.OnboardingProgress?.LastCompletedPage ?? 5;
-            loginResponse.HasSetUpPin = hasSetUpPin;
-            loginResponse.Message = "Login successful";
-            loginResponse.AccountType = accountType;
-            loginResponse.UserProfile = _mapper.Map<UserProfileSummary>(user);
-            return ResponseHelper.BuildResponse<LoginResponseModel>("login successful", StatusCodes.Status200OK, loginResponse, true);
-        } 
+            // volunteer data
+            loginResponse.UserProfile.Address = user.Location?.Address ?? null;
+            loginResponse.UserProfile.City = user.Location?.City ?? null;
+            loginResponse.UserProfile.ZipCode = user.Location?.Zipcode ?? null;
+            loginResponse.UserProfile.CountryName = user.Location?.Country?.CountryName ?? null;
+            loginResponse.UserProfile.StateName = user.Location?.State?.StateName ?? null;
+            loginResponse.UserProfile.InterestNames = interest?.Select(i => i.Interest.Name).ToList() ?? null;
+            loginResponse.UserProfile.SkillNames = skill?.Select(s => s.Skill.Name).ToList() ?? null;
+        }
+
+        return ResponseHelper.BuildResponse<LoginResponseModel>("login successful", StatusCodes.Status200OK, loginResponse, true);
     }
 
     public async Task<GlobalRequestReponse<RefreshTokenResponseModel>> RefreshTokenAsync(RefreshTokenRequestModel request)

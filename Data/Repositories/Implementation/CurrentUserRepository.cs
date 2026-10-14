@@ -53,8 +53,8 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
         public string GetUserFoundationId()
         {
             if (IsAuthenticated())
-                return _user.FindFirst("FoundationId").Value;
-            return _foundationId;   
+                return _user.FindFirst("FoundationId")?.Value ?? string.Empty;
+            return _foundationId;
         }
         public bool IsAuthenticated() =>
            _user?.Identity?.IsAuthenticated is true;

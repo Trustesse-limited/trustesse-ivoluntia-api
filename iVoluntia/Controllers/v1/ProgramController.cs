@@ -24,8 +24,12 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             => BuildHttpResponse(await _programService.CreateProgram(request.Validate()));
 
         [HttpGet("get-programs")]
-        public async Task<IActionResult> GetPrograms()
-            => BuildHttpResponse(await _programService.GetPrograms());
+        public async Task<IActionResult> GetPrograms([FromQuery] string? foundationId, [FromQuery] string? status, [FromQuery] string? search)
+            => BuildHttpResponse(await _programService.GetPrograms(foundationId, status, search));
+
+        [HttpGet("get-program-stats")]
+        public async Task<IActionResult> GetProgramStats([FromQuery] string? foundationId)
+            => BuildHttpResponse(await _programService.GetProgramStats(foundationId));
 
         [HttpGet("get-program-by-id")]
         public async Task<IActionResult> GetProgram(string id)
@@ -36,8 +40,13 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             => BuildHttpResponse(await _programService.UpdateProgram(request.Validate()));
 
         [HttpDelete("delete-program-goal")]
-        public async Task<IActionResult> DeleteProgram(string programGoalId)
+        public async Task<IActionResult> DeleteProgramGoal(string programGoalId)
             => BuildHttpResponse(await _programService.DeleteProgramGoals(programGoalId));
+
+        [HttpDelete("delete-program")]
+        [Authorize(Roles = AuthenticationConstants.SuperAdmin + "," + AuthenticationConstants.FoundationAdmin)]
+        public async Task<IActionResult> RemoveProgram(string programId)
+            => BuildHttpResponse(await _programService.RemoveProgram(programId));
 
         [HttpPut("updateprogramstatus")]
         [Authorize(Roles = AuthenticationConstants.SuperAdmin + "," + AuthenticationConstants.FoundationAdmin)]
@@ -45,8 +54,10 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         {
             updateProgramStatusDto = updateProgramStatusDto.Validate();
 
-            if (HttpContext.User.IsInRole(UserRolesEnum.FoundationAdmin.ToString()) && updateProgramStatusDto.Status != ProgramStatus.Pending.ToString())
-                return Unauthorized(ResponseHelper.BuildResponse<string>("A foundation admin can only set a program's status to Pending", StatusCodes.Status401Unauthorized, null, false));
+            if (HttpContext.User.IsInRole(UserRolesEnum.FoundationAdmin.ToString())
+                && updateProgramStatusDto.Status != ProgramStatus.Pending.ToString()
+                && updateProgramStatusDto.Status != ProgramStatus.Forfeited.ToString())
+                return Unauthorized(ResponseHelper.BuildResponse<string>("A foundation admin can only set a program's status to Pending or Forfeited", StatusCodes.Status401Unauthorized, null, false));
 
             return BuildHttpResponse(await _programService.UpdateProgramStatusAsync(updateProgramStatusDto));
         }

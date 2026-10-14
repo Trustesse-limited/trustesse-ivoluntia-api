@@ -59,18 +59,31 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 if (!foundation.IsActive)
                     return ResponseHelper.BuildResponse<ProgramDto>("You cannot create a program for an inactive foundation", StatusCodes.Status403Forbidden, null, false);
 
+                var currentFoundationId = _currentUserService.GetUserFoundationId();
+
+                if (!string.IsNullOrWhiteSpace(currentFoundationId) && !string.Equals(data.FoundationId, currentFoundationId, StringComparison.OrdinalIgnoreCase))
+                    return ResponseHelper.BuildResponse<ProgramDto>("You cannot create a program for a foundation that is not your own", StatusCodes.Status403Forbidden, null, false);
+
                 var programWithSameTitle = await _uow.programRepo.GetByExpressionAsync(p => p.Title.ToLower() == data.Title.ToLower());
 
                 if (programWithSameTitle != null)
                     return ResponseHelper.BuildResponse<ProgramDto>("A program with the same title already exists", StatusCodes.Status409Conflict, null, false);
 
                 var newData = _mapper.Map<Program>(data);
+                newData.ProgramGoals.Clear();
 
                 if (!string.IsNullOrWhiteSpace(data.BannerImage))
                 {
-                    string fileName = Guid.NewGuid().ToString();
-                    var imageUrl = await _fileUploadService.UploadImageFromBase64Async(data.BannerImage, fileName);
-                    newData.BannerImage = imageUrl;
+                    if (data.BannerImage.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                    {
+                        newData.BannerImage = data.BannerImage;
+                    }
+                    else
+                    {
+                        string fileName = Guid.NewGuid().ToString();
+                        var imageUrl = await _fileUploadService.UploadImageFromBase64Async(data.BannerImage, fileName);
+                        newData.BannerImage = imageUrl;
+                    }
                 }
                 if (data.SkillIds != null && data.SkillIds.Any())
                 {
@@ -112,11 +125,32 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 return ResponseHelper.BuildResponse<ProgramDto>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
             }
         }
-        public async Task<GlobalRequestReponse<IEnumerable<ProgramDto>>> GetPrograms()
+        public async Task<GlobalRequestReponse<IEnumerable<ProgramDto>>> GetPrograms(string? foundationId = null, string? status = null, string? search = null)
         {
             try
             {
-                var query = _uow.programRepo.GetQueryable();
+                IQueryable<Program> query = _uow.programRepo.GetQueryable()
+                    .Include(p => p.Location).ThenInclude(l => l.Country)
+                    .Include(p => p.Location).ThenInclude(l => l.State)
+                    .Include(p => p.Cause);
+
+                if (!string.IsNullOrWhiteSpace(foundationId))
+                    query = query.Where(p => p.FoundationId == foundationId);
+
+                if (!string.IsNullOrWhiteSpace(status))
+                {
+                    var parsedStatuses = status.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                        .Select(s => Enum.TryParse<ProgramStatus>(s, true, out var parsed) ? (int?)parsed : null)
+                        .Where(s => s.HasValue)
+                        .Select(s => s!.Value)
+                        .ToList();
+
+                    if (parsedStatuses.Any())
+                        query = query.Where(p => parsedStatuses.Contains(p.Status));
+                }
+
+                if (!string.IsNullOrWhiteSpace(search))
+                    query = query.Where(p => p.Title.Contains(search));
 
                 var response = await query.ToListAsync();
 
@@ -131,6 +165,31 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 return ResponseHelper.BuildResponse<IEnumerable<ProgramDto>>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
             }
         }
+        public async Task<GlobalRequestReponse<ProgramStatsDto>> GetProgramStats(string? foundationId = null)
+        {
+            try
+            {
+                var query = _uow.programRepo.GetQueryable();
+
+                if (!string.IsNullOrWhiteSpace(foundationId))
+                    query = query.Where(p => p.FoundationId == foundationId);
+
+                var stats = new ProgramStatsDto
+                {
+                    TotalPrograms = await query.CountAsync(),
+                    ActivePrograms = await query.CountAsync(p => p.Status == (int)ProgramStatus.Active),
+                    PendingPrograms = await query.CountAsync(p => p.Status == (int)ProgramStatus.Pending)
+                };
+
+                return ResponseHelper.BuildResponse("Program stats retrieved successfully", StatusCodes.Status200OK, stats, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+
+                return ResponseHelper.BuildResponse<ProgramStatsDto>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
+            }
+        }
         public async Task<GlobalRequestReponse<IEnumerable<ProgramDto>>> GetProgram(string id)
         {
             try
@@ -138,7 +197,10 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 var query = _uow.programRepo.GetQueryable().Where(p => p.Id == id)
                      .Include(p => p.ProgramGoals)
                      .Include(p => p.ProgramSkills)
-                        .ThenInclude(ps => ps.Skill);
+                        .ThenInclude(ps => ps.Skill)
+                     .Include(p => p.Location).ThenInclude(l => l.Country)
+                     .Include(p => p.Location).ThenInclude(l => l.State)
+                     .Include(p => p.Cause);
 
                 var response = await query.ToListAsync();
 
@@ -162,6 +224,11 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 if (data == null)
                     return ResponseHelper.BuildResponse("Program not found", StatusCodes.Status404NotFound, false, false);
 
+                var currentFoundationId = _currentUserService.GetUserFoundationId();
+
+                if (!string.IsNullOrWhiteSpace(currentFoundationId) && !string.Equals(data.FoundationId, currentFoundationId, StringComparison.OrdinalIgnoreCase))
+                    return ResponseHelper.BuildResponse("You cannot delete a program that does not belong to your foundation", StatusCodes.Status403Forbidden, false, false);
+
                 await _uow.programRepo.DeleteAsync(data);
 
                 await _uow.CompleteAsync();
@@ -182,6 +249,18 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 
                 if (existingData == null)
                     return ResponseHelper.BuildResponse("Program not found", StatusCodes.Status404NotFound, false, false);
+
+                var currentFoundationId = _currentUserService.GetUserFoundationId();
+
+                if (!string.IsNullOrWhiteSpace(currentFoundationId) && !string.Equals(existingData.FoundationId, currentFoundationId, StringComparison.OrdinalIgnoreCase))
+                    return ResponseHelper.BuildResponse("You cannot update a program that does not belong to your foundation", StatusCodes.Status403Forbidden, false, false);
+
+                var lockedDateStatuses = new[] { (int)ProgramStatus.Active, (int)ProgramStatus.Ended, (int)ProgramStatus.Forfeited };
+
+                if (lockedDateStatuses.Contains(existingData.Status)
+                    && ((data.StartDate.HasValue && data.StartDate.Value != existingData.StartDate)
+                        || (data.EndDate.HasValue && data.EndDate.Value != existingData.EndDate)))
+                    return ResponseHelper.BuildResponse("Dates cannot be changed for Active, Completed or Forfeited programs", StatusCodes.Status403Forbidden, false, false);
 
                 if (data.StartDate < DateTime.Today)
                     return ResponseHelper.BuildResponse("You cannot set Start date to a date in the past", StatusCodes.Status403Forbidden, false, false);
@@ -227,7 +306,10 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 var program = await _uow.programRepo.GetByExpressionAsync(x => x.Id == updateProgramStatusDto.ProgramId);
                 if (program == null)
                     return ResponseHelper.BuildResponse("program not found", StatusCodes.Status404NotFound, "no program found", false);
-                if (program.Status == (int)ProgramStatus.Pending & updateProgramStatusDto.Status == ProgramStatus.Pending.ToString() || program.Status == (int)ProgramStatus.Active & updateProgramStatusDto.Status == ProgramStatus.Active.ToString() || program.Status == (int)ProgramStatus.Queried & updateProgramStatusDto.Status == ProgramStatus.Queried.ToString() || program.Status == (int)ProgramStatus.Ended & updateProgramStatusDto.Status == ProgramStatus.Ended.ToString())
+                var statusUpdateFoundationId = _currentUserService.GetUserFoundationId();
+                if (!string.IsNullOrWhiteSpace(statusUpdateFoundationId) && !string.Equals(program.FoundationId, statusUpdateFoundationId, StringComparison.OrdinalIgnoreCase))
+                    return ResponseHelper.BuildResponse("cannot update status of a program that does not belong to your foundation", StatusCodes.Status403Forbidden, "forbidden", false);
+                if (program.Status == (int)ProgramStatus.Pending & updateProgramStatusDto.Status == ProgramStatus.Pending.ToString() || program.Status == (int)ProgramStatus.Active & updateProgramStatusDto.Status == ProgramStatus.Active.ToString() || program.Status == (int)ProgramStatus.Queried & updateProgramStatusDto.Status == ProgramStatus.Queried.ToString() || program.Status == (int)ProgramStatus.Ended & updateProgramStatusDto.Status == ProgramStatus.Ended.ToString() || program.Status == (int)ProgramStatus.Forfeited & updateProgramStatusDto.Status == ProgramStatus.Forfeited.ToString())
                     return ResponseHelper.BuildResponse("cannot set new status current status", StatusCodes.Status400BadRequest, "cannot set new status to current status", false);
                 if (updateProgramStatusDto.Status == ProgramStatus.Pending.ToString() && program.Status != (int)ProgramStatus.Queried)
                     return ResponseHelper.BuildResponse("cannot change status of program", StatusCodes.Status400BadRequest, "cannot change status of program", false);
@@ -303,9 +385,11 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                     var emailResponse = await _emailService.SendEmailASync(emailModel);
                     return ResponseHelper.BuildResponse("program status updated and email sent to admin", StatusCodes.Status200OK, "program status updated", true);
                 }
-                else
+                else if (updateProgramStatusDto.Status == ProgramStatus.Ended.ToString() || updateProgramStatusDto.Status == ProgramStatus.Forfeited.ToString())
                 {
-                    program.Status = (int)ProgramStatus.Ended;
+                    program.Status = updateProgramStatusDto.Status == ProgramStatus.Forfeited.ToString()
+                        ? (int)ProgramStatus.Forfeited
+                        : (int)ProgramStatus.Ended;
                     _uow.programRepo.Update(program);
                     await _uow.CompleteAsync();
                     var userProgram = await _uow.userProgramRepository.GetAsync(p => p.ProgramId == program.Id);
@@ -328,7 +412,11 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                     };
                     var emailResponse = await _emailService.SendEmailASync(emailModel);
                     return ResponseHelper.BuildResponse("program status updated and email sent to admin", StatusCodes.Status200OK, "program status updated", true);
-                } 
+                }
+                else
+                {
+                    return ResponseHelper.BuildResponse("invalid status", StatusCodes.Status400BadRequest, "invalid status", false);
+                }
         }
         public async Task<GlobalRequestReponse<bool>> DeleteProgramGoals(string programGoalId)
         {
@@ -369,22 +457,36 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
         }
         public async Task<GlobalRequestReponse<string>> JoinProgram(string programId)
         {
-            var userProgram = _uow.userProgramRepository.GetByExpression(up => up.ProgramId == programId && up.UserId == _currentUserService.GetUserId());
-            var programGoal = await _uow.ProgramGoalRepository.GetByExpressionIncludeAsync(pg => pg.ProgramId == programId, pg => pg.Program);
-            if (userProgram != null)
+            var userProgram = await _uow.userProgramRepository.GetByExpressionAsync(up => up.ProgramId == programId && up.UserId == _currentUserService.GetUserId());
+            if (userProgram != null && userProgram.Status != UserProgramStatusEnum.Left.ToString())
                 return ResponseHelper.BuildResponse<string>("user in this program", StatusCodes.Status400BadRequest, null, false);
-            if (programGoal.Program == null)
+            var program = await _uow.programRepo.GetByExpressionAsync(p => p.Id == programId);
+            if (program == null)
                 return ResponseHelper.BuildResponse<string>("program not found", StatusCodes.Status400BadRequest, null, false);
-            if (programGoal.Program.EndDate < DateTime.Now || programGoal.IsAchieved == true)
+            if (program.EndDate < DateTime.Now || program.Status == (int)ProgramStatus.Ended || program.Status == (int)ProgramStatus.Forfeited)
                 return ResponseHelper.BuildResponse<string>("this program has ended", StatusCodes.Status400BadRequest, null, false);
-            var addUserProgram = new UserProgram
+            if (userProgram != null)
             {
-                ProgramId = programId,
-                UserId = _currentUserService.GetUserId(),
-                CreatedBy = _currentUserService.GetUserEmail(),
-                DateCreated = DateTime.Now,
-                Status = UserProgramStatusEnum.Pending.ToString()
-            };
+                // rejoining after having left: reactivate the existing row rather than inserting a
+                // second one, since (ProgramId, UserId) is the composite key for this join entity.
+                userProgram.Status = UserProgramStatusEnum.Pending.ToString();
+                userProgram.DateCreated = DateTime.Now;
+                userProgram.CreatedBy = _currentUserService.GetUserEmail();
+                _uow.userProgramRepository.Update(userProgram);
+            }
+            else
+            {
+                var addUserProgram = new UserProgram
+                {
+                    ProgramId = programId,
+                    UserId = _currentUserService.GetUserId(),
+                    CreatedBy = _currentUserService.GetUserEmail(),
+                    DateCreated = DateTime.Now,
+                    Status = UserProgramStatusEnum.Pending.ToString()
+                };
+                await _uow.userProgramRepository.AddAsync(addUserProgram);
+            }
+            await _uow.CompleteAsync();
             //send email to volunteer
             var userEmail = _currentUserService.GetUserEmail();
             string name = _currentUserService.GetUserFirstName();
@@ -405,7 +507,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             var adminNotificationCompose = await _notificationService.ComposeNotificationAsync(NotificationTypeEnum.RequestToJoinProgram.ToString(), NotificationChannelEnum.Email.ToString(), adminPlaceHolder);
             EmailModel adminEmailModel = new EmailModel
             {
-                Receivers = programGoal.Program.CreatedBy.Trim().Split().ToList(),
+                Receivers = program.CreatedBy.Trim().Split().ToList(),
                 Subject = "request to join program",
                 Message = HttpUtility.HtmlDecode(adminNotificationCompose.Data)
             };

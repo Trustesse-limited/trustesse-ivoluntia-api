@@ -6,7 +6,8 @@ namespace Trustesse.Ivoluntia.Domain.Enums
     {
         Pending = 0,
         Active = 1,
-        Queried = 8,      
-        Ended = 9
+        Queried = 8,
+        Ended = 9,
+        Forfeited = 10
     }
 }

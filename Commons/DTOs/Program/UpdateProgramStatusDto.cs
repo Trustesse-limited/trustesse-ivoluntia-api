@@ -1,4 +1,5 @@
-﻿using Trustesse.Ivoluntia.Domain.Entities;
+﻿using System.Linq;
+using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
 
 namespace Trustesse.Ivoluntia.Commons.DTOs.Program
@@ -17,7 +18,17 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Program
                 throw new Exception("ProgramId should not be null");
             if (string.IsNullOrWhiteSpace(Status))
                 throw new Exception("Status should not be null");
-            if (this.Status != ProgramStatus.Pending.ToString() || this.Status != ProgramStatus.Active.ToString() || this.Status != ProgramStatus.Queried.ToString() || this.Status != ProgramStatus.Ended.ToString())
+
+            var validStatuses = new[]
+            {
+                ProgramStatus.Pending.ToString(),
+                ProgramStatus.Active.ToString(),
+                ProgramStatus.Queried.ToString(),
+                ProgramStatus.Ended.ToString(),
+                ProgramStatus.Forfeited.ToString()
+            };
+
+            if (!validStatuses.Contains(this.Status))
                 throw new Exception("invalid status");
             return this;
         }

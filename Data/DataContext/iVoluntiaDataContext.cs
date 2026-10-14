@@ -256,11 +256,17 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Program>()
+                .HasOne(p => p.Cause)
+                .WithMany()
+                .HasForeignKey(p => p.CauseId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Program>()
                .HasMany(p => p.Users)
                .WithMany(u => u.Programs)
                .UsingEntity<UserProgram>();
             modelBuilder.Entity<Program>()
-               .HasQueryFilter(p => !p.IsDeprecated & p.FoundationId == _currentUserRepository.GetUserFoundationId());
+               .HasQueryFilter(p => !p.IsDeprecated);
 
 
             modelBuilder.Entity<Foundation>()

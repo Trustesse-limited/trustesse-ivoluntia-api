@@ -11,6 +11,8 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public DateTime EndDate { get; set; }
         public string LocationId { get; set; }
         public Location Location { get; set; }
+        public string? CauseId { get; set; }
+        public Cause? Cause { get; set; }
         public long DonationTarget { get; set; }
         public string? BannerImage { get; set; }
         public bool HasDonation { get; set; }

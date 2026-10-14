@@ -10,6 +10,9 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Program
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public string LocationId { get; set; }
+        public LocationSummaryDto? Location { get; set; }
+        public string? CauseId { get; set; }
+        public CauseSummaryDto? Cause { get; set; }
         public long DonationTarget { get; set; }
         public string? BannerImage { get; set; }
         public bool HasDonation { get; set; }
@@ -18,6 +21,29 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Program
         public string FoundationId { get; set; }
         public List<ProgramGoalDTO> ProgramGoals { get; set; } = new();
         public List<ProgramSkillDTO> ProgramSkills { get; set; } = new();
+    }
+
+    public class LocationSummaryDto
+    {
+        public string Id { get; set; }
+        public string? Address { get; set; }
+        public string? City { get; set; }
+        public string? StateName { get; set; }
+        public string? CountryName { get; set; }
+    }
+
+    public class CauseSummaryDto
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string? Description { get; set; }
+    }
+
+    public class ProgramStatsDto
+    {
+        public int TotalPrograms { get; set; }
+        public int ActivePrograms { get; set; }
+        public int PendingPrograms { get; set; }
     }
 
 
@@ -46,6 +72,8 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Program
         public long DonationTarget { get; set; }
 
         public string? BannerImage { get; set; }
+
+        public string? CauseId { get; set; }
 
         public List<string> SkillIds { get; set; } = new();
 
@@ -84,6 +112,7 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Program
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public string? LocationId { get; set; }
+        public string? CauseId { get; set; }
         public long? DonationTarget { get; set; }
         public string? BannerImage { get; set; }
 

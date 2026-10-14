@@ -75,6 +75,8 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Program
 
         public string? CauseId { get; set; }
 
+        public bool SaveAsDraft { get; set; } = false;
+
         public List<string> SkillIds { get; set; } = new();
 
         public List<CreateProgramGoalDTO> ProgramGoals { get; set; } = new();

@@ -8,6 +8,7 @@ namespace Trustesse.Ivoluntia.Domain.Enums
         Active = 1,
         Queried = 8,
         Ended = 9,
-        Forfeited = 10
+        Forfeited = 10,
+        Draft = 11
     }
 }

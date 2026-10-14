@@ -109,7 +109,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 }
                 newData.IsActive = false;
                 newData.CreatedBy = data.CreatorEmail;
-                newData.Status = (int)ProgramStatus.Pending;
+                newData.Status = data.SaveAsDraft ? (int)ProgramStatus.Draft : (int)ProgramStatus.Pending;
 
                 await _uow.programRepo.AddAsync(newData);
 
@@ -311,7 +311,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                     return ResponseHelper.BuildResponse("cannot update status of a program that does not belong to your foundation", StatusCodes.Status403Forbidden, "forbidden", false);
                 if (program.Status == (int)ProgramStatus.Pending & updateProgramStatusDto.Status == ProgramStatus.Pending.ToString() || program.Status == (int)ProgramStatus.Active & updateProgramStatusDto.Status == ProgramStatus.Active.ToString() || program.Status == (int)ProgramStatus.Queried & updateProgramStatusDto.Status == ProgramStatus.Queried.ToString() || program.Status == (int)ProgramStatus.Ended & updateProgramStatusDto.Status == ProgramStatus.Ended.ToString() || program.Status == (int)ProgramStatus.Forfeited & updateProgramStatusDto.Status == ProgramStatus.Forfeited.ToString())
                     return ResponseHelper.BuildResponse("cannot set new status current status", StatusCodes.Status400BadRequest, "cannot set new status to current status", false);
-                if (updateProgramStatusDto.Status == ProgramStatus.Pending.ToString() && program.Status != (int)ProgramStatus.Queried)
+                if (updateProgramStatusDto.Status == ProgramStatus.Pending.ToString() && program.Status != (int)ProgramStatus.Queried && program.Status != (int)ProgramStatus.Draft)
                     return ResponseHelper.BuildResponse("cannot change status of program", StatusCodes.Status400BadRequest, "cannot change status of program", false);
                 if (updateProgramStatusDto.Status == ProgramStatus.Active.ToString())
                 {
@@ -347,7 +347,9 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                     var notification = await _notificationService.ComposeNotificationAsync(NotificationTypeEnum.ProgramStatusUpdate.ToString(), NotificationChannelEnum.Email.ToString(), placeHolder);
                     EmailModel emailModel = new EmailModel
                     {
-                        Receivers = new List<string> { programRejection.CreatedBy },
+                        // programRejection is only set when this came from a Queried state (e.g. after a
+                        // SuperAdmin query); a program published straight from Draft has no rejection record.
+                        Receivers = new List<string> { programRejection?.CreatedBy ?? program.CreatedBy },
                         Subject = "program status update",
                         Message = HttpUtility.HtmlDecode(notification.Data)
                     };

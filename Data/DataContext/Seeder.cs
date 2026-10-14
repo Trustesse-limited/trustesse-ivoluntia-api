@@ -42,7 +42,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
 
         public static async Task SeedSuperAdminUserAsync(UserManager<User> userManager, RoleManager<Role> roleManager)
         {
-            const string superAdminEmail = "admin@ivoluntia.com";
+            const string superAdminEmail = "admin@ivoluntia.com"; 
             const string superAdminPassword = "Admin#123";
             var existingUser = await userManager.FindByEmailAsync(superAdminEmail);
 

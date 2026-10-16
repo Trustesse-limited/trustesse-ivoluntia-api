@@ -9,6 +9,7 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.UserProfile
     public class FoundationProfileDto
     {
         public string Name { get; set; }
+        public string Email { get; set; }
         public string FoundationCategory { get; set; }
         public string Website { get; set; }
         public string Mission { get; set; }

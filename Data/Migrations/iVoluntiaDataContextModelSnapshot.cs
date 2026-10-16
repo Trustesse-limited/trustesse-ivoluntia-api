@@ -1097,6 +1097,9 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Property<string>("BannerImage")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("CauseId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
@@ -1140,6 +1143,8 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CauseId");
 
                     b.HasIndex("FoundationId");
 
@@ -2077,6 +2082,11 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Program", b =>
                 {
+                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Cause", "Cause")
+                        .WithMany()
+                        .HasForeignKey("CauseId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Foundation", "Foundation")
                         .WithMany("Programs")
                         .HasForeignKey("FoundationId")
@@ -2086,6 +2096,8 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .WithMany()
                         .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Cause");
 
                     b.Navigation("Foundation");
 

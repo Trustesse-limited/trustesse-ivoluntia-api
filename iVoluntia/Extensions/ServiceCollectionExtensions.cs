@@ -83,6 +83,7 @@ namespace Trustesse.Ivoluntia.API.Extensions
             services.AddScoped<IUserMapperService, UserMapperService>();
             services.AddScoped<IOtpEmailSenderService, OtpEmailSenderService>();
             services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<ILocationService, LocationService>();
             services.AddScoped<ITwoFactorAuthenticationService, TwoFactorAuthenticationService>();
             services.AddScoped<IUserMapperService, UserMapperService>();
             services.AddScoped<IOtpEmailSenderService, OtpEmailSenderService>();

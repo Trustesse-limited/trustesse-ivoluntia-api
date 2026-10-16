@@ -29,6 +29,12 @@ namespace Trustesse.Ivoluntia.Services
             config.NewConfig<Program, ProgramDto>();
             config.NewConfig<Program, CreateProgramDto>();
             config.NewConfig<Program, UpdateProgramDTO>();
+            config.NewConfig<UpdateProgramDTO, Program>()
+                .IgnoreNullValues(true);
+            config.NewConfig<Location, LocationSummaryDto>()
+                .Map(dest => dest.StateName, src => src.State != null ? src.State.StateName : null)
+                .Map(dest => dest.CountryName, src => src.Country != null ? src.Country.CountryName : null);
+            config.NewConfig<Cause, CauseSummaryDto>();
             config.NewConfig<ProgramSkill, ProgramSkillDTO>();
             config.NewConfig<Skill, SkillDto>();
             config.NewConfig<User, VolunteerDto>();

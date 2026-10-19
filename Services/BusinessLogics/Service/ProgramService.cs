@@ -50,7 +50,12 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
         {
             try
             {
-                var foundation = await _uow.foundationRepo.GetByExpressionAsync(f => f.Id == data.FoundationId);
+                var foundationId = _currentUserService.GetUserFoundationId();
+
+                if (string.IsNullOrWhiteSpace(foundationId))
+                    return ResponseHelper.BuildResponse<ProgramDto>("You must belong to a foundation to create a program", StatusCodes.Status403Forbidden, null, false);
+
+                var foundation = await _uow.foundationRepo.GetByExpressionAsync(f => f.Id == foundationId);
 
                 if (foundation == null)
                     return ResponseHelper.BuildResponse<ProgramDto>("Foundation not found", StatusCodes.Status404NotFound, null, false);
@@ -58,17 +63,13 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 if (!foundation.IsActive)
                     return ResponseHelper.BuildResponse<ProgramDto>("You cannot create a program for an inactive foundation", StatusCodes.Status403Forbidden, null, false);
 
-                var currentFoundationId = _currentUserService.GetUserFoundationId();
-
-                if (!string.IsNullOrWhiteSpace(currentFoundationId) && !string.Equals(data.FoundationId, currentFoundationId, StringComparison.OrdinalIgnoreCase))
-                    return ResponseHelper.BuildResponse<ProgramDto>("You cannot create a program for a foundation that is not your own", StatusCodes.Status403Forbidden, null, false);
-
                 var programWithSameTitle = await _uow.programRepo.GetByExpressionAsync(p => p.Title.ToLower() == data.Title.ToLower());
 
                 if (programWithSameTitle != null)
                     return ResponseHelper.BuildResponse<ProgramDto>("A program with the same title already exists", StatusCodes.Status409Conflict, null, false);
 
                 var newData = _mapper.Map<Program>(data);
+                newData.FoundationId = foundationId;
                 newData.ProgramGoals.Clear();
 
                 if (!string.IsNullOrWhiteSpace(data.BannerImage))

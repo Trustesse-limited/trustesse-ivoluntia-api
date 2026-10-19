@@ -125,7 +125,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 return ResponseHelper.BuildResponse<ProgramDto>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
             }
         }
-        public async Task<GlobalRequestReponse<PagedResponse<ProgramDto>>> GetPrograms(BaseQuery baseQuery, string? foundationId = null, string? status = null, string? search = null)
+        public async Task<GlobalRequestReponse<PagedResponse<ProgramDto>>> GetPrograms(BaseQuery baseQuery, string? foundationId = null, string? status = null, string? search = null, string? dateRange = null)
         {
             try
             {
@@ -151,6 +151,12 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 
                 if (!string.IsNullOrWhiteSpace(search))
                     query = query.Where(p => p.Title.Contains(search));
+
+                if (!string.IsNullOrWhiteSpace(dateRange) && Enum.TryParse<DateRangeFilter>(dateRange, true, out var parsedDateRange))
+                {
+                    var periodStart = GetDateRangeStart(parsedDateRange);
+                    query = query.Where(p => p.DateCreated >= periodStart);
+                }
 
                 // GenericRepository.GetPagedAsync() can't be reused here because it queries the
                 // DbSet directly and has no way to carry the Location/Cause Includes above, so the
@@ -571,6 +577,20 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             };
             var adminEmailResponse = await _emailService.SendEmailASync(adminEmailModel);
             return ResponseHelper.BuildResponse("email sent to volunteer and admin", StatusCodes.Status200OK, "leave program notification", true);
+        }
+
+        private static DateTime GetDateRangeStart(DateRangeFilter dateRange)
+        {
+            var today = DateTime.Now.Date;
+
+            return dateRange switch
+            {
+                DateRangeFilter.Day => today,
+                DateRangeFilter.Week => today.AddDays(-(int)(today.DayOfWeek == DayOfWeek.Sunday ? 6 : today.DayOfWeek - DayOfWeek.Monday)),
+                DateRangeFilter.Month => new DateTime(today.Year, today.Month, 1),
+                DateRangeFilter.Year => new DateTime(today.Year, 1, 1),
+                _ => today
+            };
         }
     }
 }

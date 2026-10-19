@@ -25,8 +25,8 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             => BuildHttpResponse(await _programService.CreateProgram(request.Validate()));
 
         [HttpGet("get-programs")]
-        public async Task<IActionResult> GetPrograms([FromQuery] BaseQuery baseQuery, [FromQuery] string? foundationId, [FromQuery] string? status, [FromQuery] string? search)
-            => BuildHttpResponse(await _programService.GetPrograms(baseQuery, foundationId, status, search));
+        public async Task<IActionResult> GetPrograms([FromQuery] BaseQuery baseQuery, [FromQuery] string? foundationId, [FromQuery] string? status, [FromQuery] string? search, [FromQuery] string? dateRange)
+            => BuildHttpResponse(await _programService.GetPrograms(baseQuery, foundationId, status, search, dateRange));
 
         [HttpGet("get-program-stats")]
         public async Task<IActionResult> GetProgramStats([FromQuery] string? foundationId)

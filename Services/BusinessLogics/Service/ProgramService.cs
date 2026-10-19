@@ -125,7 +125,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 return ResponseHelper.BuildResponse<ProgramDto>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
             }
         }
-        public async Task<GlobalRequestReponse<IEnumerable<ProgramDto>>> GetPrograms(string? foundationId = null, string? status = null, string? search = null)
+        public async Task<GlobalRequestReponse<PagedResponse<ProgramDto>>> GetPrograms(BaseQuery baseQuery, string? foundationId = null, string? status = null, string? search = null)
         {
             try
             {
@@ -152,17 +152,38 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 if (!string.IsNullOrWhiteSpace(search))
                     query = query.Where(p => p.Title.Contains(search));
 
-                var response = await query.ToListAsync();
+                // GenericRepository.GetPagedAsync() can't be reused here because it queries the
+                // DbSet directly and has no way to carry the Location/Cause Includes above, so the
+                // skip/take + count is replicated manually on this already-filtered IQueryable.
+                var pageNumber = baseQuery.PageNumber < 1 ? 1 : baseQuery.PageNumber;
+                var pageSize = baseQuery.PageSize < 1 ? 10 : baseQuery.PageSize;
+
+                var totalCount = await query.CountAsync();
+
+                var response = await query
+                    .OrderByDescending(p => p.DateCreated)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
 
                 var resultDto = _mapper.Map<IEnumerable<ProgramDto>>(response);
 
-                return ResponseHelper.BuildResponse("Programs retrieved successfully", StatusCodes.Status200OK, resultDto, true);
+                var pagedResult = new PagedResponse<ProgramDto>
+                {
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalCount = totalCount,
+                    TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+                    Data = resultDto
+                };
+
+                return ResponseHelper.BuildResponse("Programs retrieved successfully", StatusCodes.Status200OK, pagedResult, true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
 
-                return ResponseHelper.BuildResponse<IEnumerable<ProgramDto>>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
+                return ResponseHelper.BuildResponse<PagedResponse<ProgramDto>>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
             }
         }
         public async Task<GlobalRequestReponse<ProgramStatsDto>> GetProgramStats(string? foundationId = null)

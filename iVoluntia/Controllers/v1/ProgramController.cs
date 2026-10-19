@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Trustesse.Ivoluntia.Commons.Contants;
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
 using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
+using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
 using Trustesse.Ivoluntia.Services.BusinessLogics.IService;
 
@@ -24,8 +25,8 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
             => BuildHttpResponse(await _programService.CreateProgram(request.Validate()));
 
         [HttpGet("get-programs")]
-        public async Task<IActionResult> GetPrograms([FromQuery] string? foundationId, [FromQuery] string? status, [FromQuery] string? search)
-            => BuildHttpResponse(await _programService.GetPrograms(foundationId, status, search));
+        public async Task<IActionResult> GetPrograms([FromQuery] BaseQuery baseQuery, [FromQuery] string? foundationId, [FromQuery] string? status, [FromQuery] string? search)
+            => BuildHttpResponse(await _programService.GetPrograms(baseQuery, foundationId, status, search));
 
         [HttpGet("get-program-stats")]
         public async Task<IActionResult> GetProgramStats([FromQuery] string? foundationId)

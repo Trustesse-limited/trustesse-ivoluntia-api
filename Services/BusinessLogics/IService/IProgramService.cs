@@ -1,5 +1,6 @@
 ﻿using Trustesse.Ivoluntia.Commons.DTOs.Program;
 using Trustesse.Ivoluntia.Commons.Models.Response;
+using Trustesse.Ivoluntia.Domain.Entities;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService
 {
@@ -8,7 +9,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService
         Task<GlobalRequestReponse<ProgramDto>> CreateProgram(CreateProgramDto data);
         Task<GlobalRequestReponse<bool>> RemoveProgram(string dataId);
         Task<GlobalRequestReponse<bool>> UpdateProgram(UpdateProgramDTO data);
-        Task<GlobalRequestReponse<IEnumerable<ProgramDto>>> GetPrograms(string? foundationId = null, string? status = null, string? search = null);
+        Task<GlobalRequestReponse<PagedResponse<ProgramDto>>> GetPrograms(BaseQuery baseQuery, string? foundationId = null, string? status = null, string? search = null);
         Task<GlobalRequestReponse<ProgramStatsDto>> GetProgramStats(string? foundationId = null);
         Task<GlobalRequestReponse<IEnumerable<ProgramDto>>> GetProgram(string id);
         Task<GlobalRequestReponse<string>> UpdateProgramStatusAsync(UpdateProgramStatusDto updateProgramStatusDto);

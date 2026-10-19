@@ -18,6 +18,7 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Program
         public bool HasDonation { get; set; }
         public bool IsActive { get; set; }
         public int Status { get; set; }
+        public string StatusName { get; set; }
         public string FoundationId { get; set; }
         public List<ProgramGoalDTO> ProgramGoals { get; set; } = new();
         public List<ProgramSkillDTO> ProgramSkills { get; set; } = new();

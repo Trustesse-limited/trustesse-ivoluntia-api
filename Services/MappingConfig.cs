@@ -17,6 +17,7 @@ using Trustesse.Ivoluntia.Commons.DTOs.Skill;
 using Trustesse.Ivoluntia.Commons.DTOs.Interest;
 using Trustesse.Ivoluntia.Commons.DTOs.Cause;
 using Trustesse.Ivoluntia.Commons.DTOs.UserQualification;
+using Trustesse.Ivoluntia.Domain.Enums;
 
 namespace Trustesse.Ivoluntia.Services
 {
@@ -26,7 +27,8 @@ namespace Trustesse.Ivoluntia.Services
         {
             var config = TypeAdapterConfig.GlobalSettings;
 
-            config.NewConfig<Program, ProgramDto>();
+            config.NewConfig<Program, ProgramDto>()
+                .Map(dest => dest.StatusName, src => ((ProgramStatus)src.Status).ToString());
             config.NewConfig<Program, CreateProgramDto>();
             config.NewConfig<Program, UpdateProgramDTO>();
             config.NewConfig<UpdateProgramDTO, Program>()

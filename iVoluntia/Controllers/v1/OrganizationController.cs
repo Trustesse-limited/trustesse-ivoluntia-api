@@ -8,7 +8,6 @@ using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Foundation;
 using Trustesse.Ivoluntia.Commons.DTOs.GlobalRequest;
 using Trustesse.Ivoluntia.Commons.Models.Response;
-using Trustesse.Ivoluntia.Commons.Validators;
 using Trustesse.Ivoluntia.Domain.Enums;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
 

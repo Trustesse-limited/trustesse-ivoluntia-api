@@ -30,7 +30,7 @@ public class LoginResponseModel
     public bool HasCompletedOnboarding { get; set; }
     public int LastCompletedPage { get; set; }
     public int NumberOfPageRemaining { get; set; }     
-    public DateTime AccessTokenExpireMinutes { get; set; } 
+    public DateTime AccessTokenExpireDay { get; set; } 
     public DateTime RefreshTokenExpireDays { get; set; }
     public bool HasSetUpPin { get; set; }
     public UserProfileSummary? UserProfile { get; set; }    

@@ -42,9 +42,9 @@ public class JwtTokenService : IJwtTokenService
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_jwtOptions.Key);
-        var expirationMinutes = AuthenticationConstants.TokenExpirations.ContainsKey(role)
+        var expirationDay = AuthenticationConstants.TokenExpirations.ContainsKey(role)
             ? AuthenticationConstants.TokenExpirations[role].AccessToken
-            : 15;
+            : 1;
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new[]
@@ -61,7 +61,7 @@ public class JwtTokenService : IJwtTokenService
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
                 }),
-            Expires = DateTime.UtcNow.AddMinutes(expirationMinutes),
+            Expires = DateTime.UtcNow.AddDays(expirationDay),
             Issuer = _jwtOptions.Issuer,
             Audience = _jwtOptions.Audience,
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -85,7 +85,7 @@ public class JwtTokenService : IJwtTokenService
         var encryptRefreshToken = protect.Protect(refreshToken);
         var expirationDays = AuthenticationConstants.TokenExpirations.ContainsKey(role)
             ? AuthenticationConstants.TokenExpirations[role].RefreshToken
-            : 30;
+            : 15;
         if(refresh != null)
         {
             refresh.Token = encryptRefreshToken;
@@ -121,7 +121,7 @@ public class JwtTokenService : IJwtTokenService
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomNumber);
             var refreshToken = Convert.ToBase64String(randomNumber);
-            var expirationDays = 30;
+            var expirationDays = 15;
 
             var userRefreshToken = new UserRefreshToken
             {
@@ -284,7 +284,7 @@ public class JwtTokenService : IJwtTokenService
             ValidateIssuer = false,
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(key),
-            ValidateLifetime = true 
+            ValidateLifetime = false
         };
         var tokenHandler = new JwtSecurityTokenHandler();
         var protect = _dataProtectionProvider.CreateProtector("JWTProtector");

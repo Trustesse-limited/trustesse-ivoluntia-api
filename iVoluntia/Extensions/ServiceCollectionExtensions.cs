@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading.RateLimiting;
 using Trustesse.Ivoluntia.Commons.Configurations;
 using Trustesse.Ivoluntia.Commons.Models.Response;
-using Trustesse.Ivoluntia.Commons.Validators;
 using Trustesse.Ivoluntia.Data.DataContext;
 using Trustesse.Ivoluntia.Data.IRepositories;
 using Trustesse.Ivoluntia.Data.Repositories;

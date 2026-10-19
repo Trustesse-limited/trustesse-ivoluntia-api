@@ -50,7 +50,12 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
         {
             try
             {
-                var foundation = await _uow.foundationRepo.GetByExpressionAsync(f => f.Id == data.FoundationId);
+                var foundationId = _currentUserService.GetUserFoundationId();
+
+                if (string.IsNullOrWhiteSpace(foundationId))
+                    return ResponseHelper.BuildResponse<ProgramDto>("You must belong to a foundation to create a program", StatusCodes.Status403Forbidden, null, false);
+
+                var foundation = await _uow.foundationRepo.GetByExpressionAsync(f => f.Id == foundationId);
 
                 if (foundation == null)
                     return ResponseHelper.BuildResponse<ProgramDto>("Foundation not found", StatusCodes.Status404NotFound, null, false);
@@ -58,17 +63,13 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 if (!foundation.IsActive)
                     return ResponseHelper.BuildResponse<ProgramDto>("You cannot create a program for an inactive foundation", StatusCodes.Status403Forbidden, null, false);
 
-                var currentFoundationId = _currentUserService.GetUserFoundationId();
-
-                if (!string.IsNullOrWhiteSpace(currentFoundationId) && !string.Equals(data.FoundationId, currentFoundationId, StringComparison.OrdinalIgnoreCase))
-                    return ResponseHelper.BuildResponse<ProgramDto>("You cannot create a program for a foundation that is not your own", StatusCodes.Status403Forbidden, null, false);
-
                 var programWithSameTitle = await _uow.programRepo.GetByExpressionAsync(p => p.Title.ToLower() == data.Title.ToLower());
 
                 if (programWithSameTitle != null)
                     return ResponseHelper.BuildResponse<ProgramDto>("A program with the same title already exists", StatusCodes.Status409Conflict, null, false);
 
                 var newData = _mapper.Map<Program>(data);
+                newData.FoundationId = foundationId;
                 newData.ProgramGoals.Clear();
 
                 if (!string.IsNullOrWhiteSpace(data.BannerImage))
@@ -124,7 +125,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 return ResponseHelper.BuildResponse<ProgramDto>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
             }
         }
-        public async Task<GlobalRequestReponse<IEnumerable<ProgramDto>>> GetPrograms(string? foundationId = null, string? status = null, string? search = null)
+        public async Task<GlobalRequestReponse<PagedResponse<ProgramDto>>> GetPrograms(BaseQuery baseQuery, string? foundationId = null, string? status = null, string? search = null, string? dateRange = null)
         {
             try
             {
@@ -151,17 +152,44 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 if (!string.IsNullOrWhiteSpace(search))
                     query = query.Where(p => p.Title.Contains(search));
 
-                var response = await query.ToListAsync();
+                if (!string.IsNullOrWhiteSpace(dateRange) && Enum.TryParse<DateRangeFilter>(dateRange, true, out var parsedDateRange))
+                {
+                    var periodStart = GetDateRangeStart(parsedDateRange);
+                    query = query.Where(p => p.DateCreated >= periodStart);
+                }
+
+                // GenericRepository.GetPagedAsync() can't be reused here because it queries the
+                // DbSet directly and has no way to carry the Location/Cause Includes above, so the
+                // skip/take + count is replicated manually on this already-filtered IQueryable.
+                var pageNumber = baseQuery.PageNumber < 1 ? 1 : baseQuery.PageNumber;
+                var pageSize = baseQuery.PageSize < 1 ? 10 : baseQuery.PageSize;
+
+                var totalCount = await query.CountAsync();
+
+                var response = await query
+                    .OrderByDescending(p => p.DateCreated)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
 
                 var resultDto = _mapper.Map<IEnumerable<ProgramDto>>(response);
 
-                return ResponseHelper.BuildResponse("Programs retrieved successfully", StatusCodes.Status200OK, resultDto, true);
+                var pagedResult = new PagedResponse<ProgramDto>
+                {
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalCount = totalCount,
+                    TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+                    Data = resultDto
+                };
+
+                return ResponseHelper.BuildResponse("Programs retrieved successfully", StatusCodes.Status200OK, pagedResult, true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
 
-                return ResponseHelper.BuildResponse<IEnumerable<ProgramDto>>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
+                return ResponseHelper.BuildResponse<PagedResponse<ProgramDto>>("An error occurred", StatusCodes.Status500InternalServerError, null, false);
             }
         }
         public async Task<GlobalRequestReponse<ProgramStatsDto>> GetProgramStats(string? foundationId = null)
@@ -549,6 +577,20 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             };
             var adminEmailResponse = await _emailService.SendEmailASync(adminEmailModel);
             return ResponseHelper.BuildResponse("email sent to volunteer and admin", StatusCodes.Status200OK, "leave program notification", true);
+        }
+
+        private static DateTime GetDateRangeStart(DateRangeFilter dateRange)
+        {
+            var today = DateTime.Now.Date;
+
+            return dateRange switch
+            {
+                DateRangeFilter.Day => today,
+                DateRangeFilter.Week => today.AddDays(-(int)(today.DayOfWeek == DayOfWeek.Sunday ? 6 : today.DayOfWeek - DayOfWeek.Monday)),
+                DateRangeFilter.Month => new DateTime(today.Year, today.Month, 1),
+                DateRangeFilter.Year => new DateTime(today.Year, 1, 1),
+                _ => today
+            };
         }
     }
 }

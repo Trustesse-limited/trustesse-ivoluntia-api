@@ -18,6 +18,7 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Program
         public bool HasDonation { get; set; }
         public bool IsActive { get; set; }
         public int Status { get; set; }
+        public string StatusName { get; set; }
         public string FoundationId { get; set; }
         public List<ProgramGoalDTO> ProgramGoals { get; set; } = new();
         public List<ProgramSkillDTO> ProgramSkills { get; set; } = new();
@@ -65,8 +66,6 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Program
         public string LocationId { get; set; }
 
         [Required]
-        public string FoundationId { get; set; }
-        [Required]
         public string CreatorEmail { get; set; }
 
         public long DonationTarget { get; set; }
@@ -97,8 +96,6 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Program
                 throw new Exception("EndDate cannot be earlier than StartDate");
             if (string.IsNullOrWhiteSpace(LocationId))
                 throw new Exception("LocationId should not be null");
-            if (string.IsNullOrWhiteSpace(FoundationId))
-                throw new Exception("FoundationId should not be null");
             if (string.IsNullOrWhiteSpace(CreatorEmail))
                 throw new Exception("CreatorEmail should not be null");
 

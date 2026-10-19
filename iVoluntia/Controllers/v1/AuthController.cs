@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Collections.Generic;
-//using System.Web.Http;
 using Trustesse.Ivoluntia.API.Extensions;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Auth;
@@ -63,7 +62,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         [HttpPost("2fa-verify")]
         public async Task<IActionResult> VerifyTwoFactorAuthentication(VerifyTwoFactorAuthenticationRequestDto verifyTwoFactorAuthenticationRequestDto)
             => BuildHttpResponse<LoginResponseModel>(await _authenticationService.VerifyTwoFactorAuthentication(verifyTwoFactorAuthenticationRequestDto.Validate()));
-        
+
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken(RefreshTokenRequestModel refreshTokenRequestModel)
             => BuildHttpResponse<RefreshTokenResponseModel>(await _authenticationService.RefreshTokenAsync(refreshTokenRequestModel.Validate()));

@@ -216,8 +216,8 @@ public class AuthService : IAuthService
         var accessToken = _jwtTokenService.GenerateAccessTokenAsync(jwtClaims, role);
         var refreshToken = await _jwtTokenService.GenerateRefreshTokenAsync(
             user?.Id!, role);
-        var accessTokenExpire = DateTime.UtcNow.AddMinutes(30);
-        var refreshTokenExpire = DateTime.Now.AddDays(30);
+        var accessTokenExpire = DateTime.UtcNow.AddDays(1);
+        var refreshTokenExpire = DateTime.Now.AddDays(15);
         user!.LastLogin = DateTime.UtcNow;
         await _userManager.UpdateAsync(user); 
         var hasSetUpPin = await _uow.transactionPinRepo.GetByExpressionAsync(x => x.UserId == user.Id) != null;
@@ -227,7 +227,7 @@ public class AuthService : IAuthService
             var loginResponse = _mapper.Map<LoginResponseModel>(user);
             loginResponse.AccountType = accountType;
             loginResponse.AccessToken = accessToken;
-            loginResponse.AccessTokenExpireMinutes = accessTokenExpire;
+            loginResponse.AccessTokenExpireDay = accessTokenExpire;
             loginResponse.RefreshToken = refreshToken;
             loginResponse.RefreshTokenExpireDays = refreshTokenExpire;
             loginResponse.HasCompletedOnboarding = user.OnboardingProgress?.HasCompletedOnboarding ?? false;
@@ -251,7 +251,7 @@ public class AuthService : IAuthService
             var loginResponse = _mapper.Map<LoginResponseModel>(user);
             loginResponse.AccountType = accountType;
             loginResponse.AccessToken = accessToken;
-            loginResponse.AccessTokenExpireMinutes = accessTokenExpire;
+            loginResponse.AccessTokenExpireDay = accessTokenExpire;
             loginResponse.RefreshToken = refreshToken;
             loginResponse.RefreshTokenExpireDays = refreshTokenExpire;
             loginResponse.HasCompletedOnboarding = user.OnboardingProgress?.HasCompletedOnboarding ?? false;
@@ -278,7 +278,7 @@ public class AuthService : IAuthService
         {
             var loginResponse = _mapper.Map<LoginResponseModel>(user);
             loginResponse.AccessToken = accessToken;
-            loginResponse.AccessTokenExpireMinutes = accessTokenExpire;
+            loginResponse.AccessTokenExpireDay = accessTokenExpire;
             loginResponse.RefreshToken = refreshToken;
             loginResponse.RefreshTokenExpireDays = refreshTokenExpire;
             loginResponse.HasCompletedOnboarding = user.OnboardingProgress?.HasCompletedOnboarding ?? false;
@@ -527,8 +527,8 @@ public class AuthService : IAuthService
             user?.Id!, role);
         var tokenExpirations = AuthenticationConstants.TokenExpirations.ContainsKey(role)
                     ? AuthenticationConstants.TokenExpirations[role]
-                    : new TokenExpiration(AccessToken: 15, RefreshToken: 30); // Default values
-        var accessTokenExpiresAt = DateTime.UtcNow.AddMinutes(tokenExpirations.AccessToken);
+                    : new TokenExpiration(AccessToken: 1, RefreshToken: 15); // Default values
+        var accessTokenExpiresAt = DateTime.UtcNow.AddDays(tokenExpirations.AccessToken);
         var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(tokenExpirations.RefreshToken);
         user!.LastLogin = DateTime.UtcNow;
         await _userManager.UpdateAsync(user);
@@ -539,7 +539,7 @@ public class AuthService : IAuthService
             loginResponse.AccountType = accountType;
             loginResponse.AccessToken = accessToken;
             loginResponse.RefreshToken = refreshToken;
-            loginResponse.AccessTokenExpireMinutes = accessTokenExpiresAt;
+            loginResponse.AccessTokenExpireDay = accessTokenExpiresAt;
             loginResponse.RefreshTokenExpireDays = refreshTokenExpiresAt;
             loginResponse.HasCompletedOnboarding = true;
             loginResponse.LastCompletedPage = 5;
@@ -557,7 +557,7 @@ public class AuthService : IAuthService
             loginResponse.AccountType = accountType;
             loginResponse.AccessToken = accessToken;
             loginResponse.RefreshToken = refreshToken;
-            loginResponse.AccessTokenExpireMinutes = accessTokenExpiresAt;
+            loginResponse.AccessTokenExpireDay = accessTokenExpiresAt;
             loginResponse.RefreshTokenExpireDays = refreshTokenExpiresAt;
             loginResponse.HasCompletedOnboarding = user.OnboardingProgress.HasCompletedOnboarding;
             loginResponse.LastCompletedPage = user.OnboardingProgress.LastCompletedPage;

@@ -12,9 +12,9 @@ public static class AuthenticationConstants
 
     public static readonly Dictionary<string, TokenExpiration> TokenExpirations = new()
         {
-            { "SuperAdmin", new TokenExpiration(AccessToken: 15, RefreshToken: 30) },
-            { "FoundationAdmin", new TokenExpiration(AccessToken: 15, RefreshToken: 30) },
-            { "Volunteer", new TokenExpiration(AccessToken: 15, RefreshToken: 30) } // 30 minutes, 30 days
+            { "SuperAdmin", new TokenExpiration(AccessToken: 1, RefreshToken: 15) },
+            { "FoundationAdmin", new TokenExpiration(AccessToken: 1, RefreshToken: 15) },
+            { "Volunteer", new TokenExpiration(AccessToken: 1, RefreshToken: 15) } 
         };
 
     public static readonly List<string> ValidGenders = new() { "Male", "Female", "Other" };

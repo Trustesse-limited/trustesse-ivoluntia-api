@@ -50,7 +50,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
         {
             try
             {
-
                 var foundation = await _uow.foundationRepo.GetByExpressionAsync(f => f.Id == data.FoundationId);
 
                 if (foundation == null)

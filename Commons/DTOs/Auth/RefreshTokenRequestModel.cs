@@ -4,7 +4,6 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Auth;
 
 public record RefreshTokenRequestModel
 {
-    public string Email { get; set; }
     public string AccessToken { get; init; } = string.Empty;
     public string RefreshToken { get; init; } = string.Empty;
 

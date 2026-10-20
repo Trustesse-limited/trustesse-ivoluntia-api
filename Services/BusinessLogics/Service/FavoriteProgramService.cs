@@ -1,5 +1,6 @@
 ﻿using MapsterMapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Trustesse.Ivoluntia.Commons.DTOs.Program;
 using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
 using Trustesse.Ivoluntia.Commons.Models.Response;
@@ -34,7 +35,11 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             if (userId == null)
                 return ResponseHelper.BuildResponse<FavoriteProgramDto>("Invalid user", StatusCodes.Status400BadRequest, null, false);
 
-            var program = await _uow.programRepo.GetByExpressionAsync(x => x.Id == request.ProgramId);
+            var program = await _uow.programRepo.GetQueryable(x => x.Id == request.ProgramId)
+                .Include(p => p.Location).ThenInclude(l => l.Country)
+                .Include(p => p.Location).ThenInclude(l => l.State)
+                .Include(p => p.Cause)
+                .FirstOrDefaultAsync();
 
             if (program == null)
                 return ResponseHelper.BuildResponse<FavoriteProgramDto>("Program not found", StatusCodes.Status404NotFound, null, false);
@@ -55,6 +60,8 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
 
             await _uow.CompleteAsync();
 
+            favorite.Program = program;
+
             var resultDto = _mapper.Map<FavoriteProgramDto>(favorite);
 
             return ResponseHelper.BuildResponse("Favorite Program added successfully", StatusCodes.Status200OK, resultDto, true);
@@ -66,7 +73,10 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             {
                 var userId = _currentUserService.GetUserId();
 
-                var query = _uow.favoriteProgramRepo.GetListByExpressionAsync(x => x.UserId == userId);
+                var query = _uow.favoriteProgramRepo.GetListByExpressionAsync(x => x.UserId == userId,
+                    x => x.Program.Location.Country,
+                    x => x.Program.Location.State,
+                    x => x.Program.Cause);
 
                 var response = await query;
 
@@ -83,7 +93,20 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
         {
             try
             {
-                var (programs, totalCount) = await _uow.favoriteProgramRepo.GetPagedAsync(pageNumber: baseQuery.PageNumber, pageSize: baseQuery.PageSize);
+                // GenericRepository.GetPagedAsync() can't be reused here because it queries the
+                // DbSet directly and has no way to carry the Program/Location/Cause Includes below,
+                // so the skip/take + count is replicated manually on the Include'd IQueryable.
+                var query = _uow.favoriteProgramRepo.GetQueryable()
+                    .Include(f => f.Program).ThenInclude(p => p.Location).ThenInclude(l => l.Country)
+                    .Include(f => f.Program).ThenInclude(p => p.Location).ThenInclude(l => l.State)
+                    .Include(f => f.Program).ThenInclude(p => p.Cause);
+
+                var totalCount = await query.CountAsync();
+
+                var programs = await query
+                    .Skip((baseQuery.PageNumber - 1) * baseQuery.PageSize)
+                    .Take(baseQuery.PageSize)
+                    .ToListAsync();
 
                 var resultDto = _mapper.Map<IEnumerable<FavoriteProgramDto>>(programs);
 

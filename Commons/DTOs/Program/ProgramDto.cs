@@ -174,5 +174,6 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.Program
     {
         public string UserId { get; set; }
         public DateTime DateAdded { get; set; }
+        public ProgramDto? Program { get; set; }
     }
 }

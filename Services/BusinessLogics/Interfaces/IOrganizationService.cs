@@ -19,5 +19,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces
         Task<GlobalRequestReponse<string>> OrganizationStatusUpdate(UpdateOrganizationStatusDto updateOrganizationStatusDto, string foundationId);
         Task<GlobalRequestReponse<string>> CreateOrganizationAccount(CreateOrganizationAccountDetailRequestDto createOrganizationAccountDetailRequestDto);
         Task<GlobalRequestReponse<object>> SetupAvailableRecurringSlots(AvailableRecurringSlotsSetupRequestDto request);
+        Task<GlobalRequestReponse<AvailableRecurringSlotsListDto>> GetAvailableRecurringSlots(string organisationId, GetAvailableRecurringSlotsQueryDto query);
     }
 }

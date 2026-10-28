@@ -288,5 +288,73 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 return ResponseHelper.BuildResponse<object>("something went wrong", StatusCodes.Status500InternalServerError, null, false);
             }
         }
+
+        public async Task<GlobalRequestReponse<AvailableRecurringSlotsListDto>> GetAvailableRecurringSlots(string organisationId, GetAvailableRecurringSlotsQueryDto query)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(organisationId))
+                    return ResponseHelper.BuildResponse<AvailableRecurringSlotsListDto>("organisationId is required", StatusCodes.Status400BadRequest, null, false);
+
+                var foundation = await _unitOfWork.foundationRepo.GetByExpressionAsync(f => f.Id == organisationId);
+                if (foundation == null)
+                    return ResponseHelper.BuildResponse<AvailableRecurringSlotsListDto>("organisation not found", StatusCodes.Status404NotFound, null, false);
+
+                var isSuperAdmin = _currentUserService.IsInRole(AuthenticationConstants.SuperAdmin);
+                var callerFoundationId = _currentUserService.GetUserFoundationId();
+                if (!isSuperAdmin && callerFoundationId != organisationId)
+                    return ResponseHelper.BuildResponse<AvailableRecurringSlotsListDto>("you can only view availability for your own organisation", StatusCodes.Status403Forbidden, null, false);
+
+                var slots = await _unitOfWork.organisationMeetingAvailabilityRepo.GetListByExpressionAsync(s => s.FoundationId == organisationId);
+
+                var dayGroups = slots
+                    .GroupBy(s => s.DayCode)
+                    .Select(g => new
+                    {
+                        DayCode = g.Key,
+                        Order = (int)Enum.Parse<DayCodeEnum>(g.Key, true),
+                        Times = g.OrderBy(s => s.StartTime).ToList()
+                    })
+                    .OrderBy(g => g.Order)
+                    .ToList();
+
+                var totalItems = dayGroups.Count;
+                var totalPages = totalItems == 0 ? 0 : (int)Math.Ceiling(totalItems / (double)query.PerPage);
+
+                var pagedItems = dayGroups
+                    .Skip((query.Page - 1) * query.PerPage)
+                    .Take(query.PerPage)
+                    .Select(g => new RecurringSlotDayGroupDto
+                    {
+                        DayCode = g.DayCode,
+                        Times = g.Times.Select(t => new RecurringSlotTimeDto
+                        {
+                            SlotId = t.Id,
+                            StartTime = t.StartTime.ToString("hh\\:mm"),
+                            EndTime = t.EndTime.ToString("hh\\:mm")
+                        }).ToList()
+                    })
+                    .ToList();
+
+                var result = new AvailableRecurringSlotsListDto
+                {
+                    Items = pagedItems,
+                    Pagination = new RecurringSlotPaginationDto
+                    {
+                        Page = query.Page,
+                        PerPage = query.PerPage,
+                        TotalItems = totalItems,
+                        TotalPages = totalPages
+                    }
+                };
+
+                return ResponseHelper.BuildResponse("Available recurring slots retrieved successfully.", StatusCodes.Status200OK, result, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving available recurring slots for organisation {OrganisationId}", organisationId);
+                return ResponseHelper.BuildResponse<AvailableRecurringSlotsListDto>("something went wrong", StatusCodes.Status500InternalServerError, null, false);
+            }
+        }
     }
 }

@@ -19,11 +19,13 @@ namespace Trustesse.Ivoluntia.Commons.Extensions.Helpers
             foreach (var day in daySlots ?? new List<DaySlotRequestDto>())
             {
                 var rawDayCode = day.DayCode ?? string.Empty;
-                if (!Enum.TryParse<DayCodeEnum>(rawDayCode, true, out var dayCode))
+                var isRecognisedDayCode = Enum.GetNames<DayCodeEnum>().Any(name => string.Equals(name, rawDayCode, StringComparison.OrdinalIgnoreCase));
+                if (!isRecognisedDayCode)
                 {
                     errors.Add(new ErrorItem { Key = rawDayCode, ErrorMessages = new List<string> { $"'{rawDayCode}' is not a recognised day code." } });
                     continue;
                 }
+                var dayCode = Enum.Parse<DayCodeEnum>(rawDayCode, true);
 
                 foreach (var time in day.Times ?? new List<TimeSlotRequestDto>())
                 {

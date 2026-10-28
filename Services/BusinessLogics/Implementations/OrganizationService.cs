@@ -13,6 +13,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using Trustesse.Ivoluntia.Commons.Contants;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Auth;
 using Trustesse.Ivoluntia.Commons.DTOs.Donation;
@@ -237,8 +238,9 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 if (foundation == null)
                     return ResponseHelper.BuildResponse<object>("organisation not found", StatusCodes.Status404NotFound, null, false);
 
+                var isSuperAdmin = _currentUserService.IsInRole(AuthenticationConstants.SuperAdmin);
                 var callerFoundationId = _currentUserService.GetUserFoundationId();
-                if (!string.IsNullOrWhiteSpace(callerFoundationId) && callerFoundationId != request.OrganisationId)
+                if (!isSuperAdmin && callerFoundationId != request.OrganisationId)
                     return ResponseHelper.BuildResponse<object>("you can only configure availability for your own organisation", StatusCodes.Status403Forbidden, null, false);
 
                 var (units, errors) = RecurringSlotValidator.ValidateAndSplit(request.Slots);

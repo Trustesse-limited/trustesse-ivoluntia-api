@@ -9,5 +9,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces
         string GetUserEmail();
         string GetUserFirstName();
         string GetUserFoundationId();
+        bool IsInRole(string role);
     }
 }

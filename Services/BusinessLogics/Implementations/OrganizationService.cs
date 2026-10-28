@@ -356,5 +356,33 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 return ResponseHelper.BuildResponse<AvailableRecurringSlotsListDto>("something went wrong", StatusCodes.Status500InternalServerError, null, false);
             }
         }
+
+        public async Task<GlobalRequestReponse<object>> RemoveAvailableRecurringSlot(string slotId)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(slotId))
+                    return ResponseHelper.BuildResponse<object>("slotId is required", StatusCodes.Status400BadRequest, null, false);
+
+                var slot = await _unitOfWork.organisationMeetingAvailabilityRepo.GetByIdAsync(slotId);
+                if (slot == null)
+                    return ResponseHelper.BuildResponse<object>("recurring slot not found", StatusCodes.Status404NotFound, null, false);
+
+                var isSuperAdmin = _currentUserService.IsInRole(AuthenticationConstants.SuperAdmin);
+                var callerFoundationId = _currentUserService.GetUserFoundationId();
+                if (!isSuperAdmin && callerFoundationId != slot.FoundationId)
+                    return ResponseHelper.BuildResponse<object>("you can only remove availability for your own organisation", StatusCodes.Status403Forbidden, null, false);
+
+                await _unitOfWork.organisationMeetingAvailabilityRepo.DeleteAsync(slot);
+                await _unitOfWork.CompleteAsync();
+
+                return ResponseHelper.BuildResponse<object>("Available recurring slot was successfully deleted", StatusCodes.Status200OK, new { }, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error removing recurring slot {SlotId}", slotId);
+                return ResponseHelper.BuildResponse<object>("something went wrong", StatusCodes.Status500InternalServerError, null, false);
+            }
+        }
     }
 }

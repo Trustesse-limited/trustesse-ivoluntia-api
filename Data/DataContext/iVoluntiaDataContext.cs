@@ -54,6 +54,7 @@ namespace Trustesse.Ivoluntia.Data.DataContext
         public DbSet<FoundationBankAccountDetailUpdateHistory> FoundationAccountDetailUpdateHistories { get; set; }
         public DbSet<Qualification> Qualifications { get; set; }
         public DbSet<UserQualification> UserQualifications { get; set; }
+        public DbSet<OrganisationMeetingAvailability> OrganisationMeetingAvailabilities { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -330,6 +331,16 @@ namespace Trustesse.Ivoluntia.Data.DataContext
                      .HasForeignKey(fbud => fbud.FoundationId)
                      .OnDelete(DeleteBehavior.Cascade);
                 entity.HasQueryFilter(f => !f.IsDeprecated);
+            });
+
+            modelBuilder.Entity<OrganisationMeetingAvailability>(entity =>
+            {
+                entity.HasOne(a => a.Foundation)
+                     .WithMany(f => f.OrganisationMeetingAvailabilities)
+                     .HasForeignKey(a => a.FoundationId)
+                     .OnDelete(DeleteBehavior.Cascade);
+                entity.HasIndex(a => new { a.FoundationId, a.DayCode });
+                entity.HasQueryFilter(a => !a.IsDeprecated);
             });
 
             modelBuilder.Entity<Qualification>(entity =>

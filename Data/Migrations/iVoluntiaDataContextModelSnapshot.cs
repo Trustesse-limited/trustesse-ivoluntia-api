@@ -22,21 +22,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("InterestUser", b =>
-                {
-                    b.Property<string>("InterestsId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("UsersId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("InterestsId", "UsersId");
-
-                    b.HasIndex("UsersId");
-
-                    b.ToTable("UserInterests", (string)null);
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.Property<int>("Id")
@@ -141,21 +126,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("SkillUser", b =>
-                {
-                    b.Property<string>("SkillsId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("UsersId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("SkillsId", "UsersId");
-
-                    b.HasIndex("UsersId");
-
-                    b.ToTable("UserSkills", (string)null);
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.AuditLog", b =>
@@ -966,6 +936,42 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .HasFilter("[UserId] IS NOT NULL");
 
                     b.ToTable("OnboardingProgress");
+                });
+
+            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.OrganisationMeetingAvailability", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DayCode")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<string>("FoundationId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsDeprecated")
+                        .HasColumnType("bit");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FoundationId", "DayCode");
+
+                    b.ToTable("OrganisationMeetingAvailabilities");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.OrganizationDeclineStatus", b =>
@@ -1839,21 +1845,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.ToTable("UserSkillLinks");
                 });
 
-            modelBuilder.Entity("InterestUser", b =>
-                {
-                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Interest", null)
-                        .WithMany()
-                        .HasForeignKey("InterestsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("UsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Role", null)
@@ -1901,21 +1892,6 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("SkillUser", b =>
-                {
-                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Skill", null)
-                        .WithMany()
-                        .HasForeignKey("SkillsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2068,6 +2044,16 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .HasForeignKey("Trustesse.Ivoluntia.Domain.Entities.OnboardingProgress", "UserId");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.OrganisationMeetingAvailability", b =>
+                {
+                    b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Foundation", "Foundation")
+                        .WithMany("OrganisationMeetingAvailabilities")
+                        .HasForeignKey("FoundationId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Foundation");
                 });
 
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.OrganizationDeclineStatus", b =>
@@ -2293,6 +2279,8 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Navigation("FoundationBankAccountDetails");
 
                     b.Navigation("Location");
+
+                    b.Navigation("OrganisationMeetingAvailabilities");
 
                     b.Navigation("OrganizationDeclineStatus");
 

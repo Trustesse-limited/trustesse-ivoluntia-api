@@ -40,4 +40,5 @@ public interface IUnitOfWork
     IQualificationRepository qualificationRepo { get; set; }
     IInterestRepository InterestRepository { get; set; }
     IUserQualificationRepository userQualificationRepo { get; set; }
+    IOrganisationMeetingAvailabilityRepository organisationMeetingAvailabilityRepo { get; set; }
 }

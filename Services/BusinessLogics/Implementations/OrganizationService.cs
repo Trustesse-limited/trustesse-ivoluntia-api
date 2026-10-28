@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,7 @@ using Trustesse.Ivoluntia.Commons.DTOs.Donation;
 using Trustesse.Ivoluntia.Commons.DTOs.Foundation;
 using Trustesse.Ivoluntia.Commons.DTOs.GenericResponse;
 using Trustesse.Ivoluntia.Commons.DTOs.GlobalRequest;
+using Trustesse.Ivoluntia.Commons.DTOs.OrganisationAvailability;
 using Trustesse.Ivoluntia.Commons.Extensions.Helpers;
 using Trustesse.Ivoluntia.Commons.Models.Request;
 using Trustesse.Ivoluntia.Commons.Models.Response;
@@ -39,7 +41,8 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly string _baseUrl;
-        public OrganizationService(IMapper mapper, IUnitOfWork unitOfWork, IAuthService authenticationService, ICurrentUserService currentUserService, INotificationService notify, IEmailService email, IConfiguration configuration, HttpClient httpClient)
+        private readonly ILogger<OrganizationService> _logger;
+        public OrganizationService(IMapper mapper, IUnitOfWork unitOfWork, IAuthService authenticationService, ICurrentUserService currentUserService, INotificationService notify, IEmailService email, IConfiguration configuration, HttpClient httpClient, ILogger<OrganizationService> logger)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
@@ -50,6 +53,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             _configuration = configuration;
             _httpClient = httpClient;
             _baseUrl = _configuration["PaymentGateway:BaseUrl"];
+            _logger = logger;
         }
 
         public async Task<GlobalRequestReponse<List<OrganizationResponseDto>>> GetOrganization(PagedRequestDTO pagedRequestDTO)
@@ -217,6 +221,70 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
                 return ResponseHelper.BuildResponse("success", StatusCodes.Status200OK, "account created", true);
             }  
             return ResponseHelper.BuildResponse("unable to create account", StatusCodes.Status400BadRequest,"unable to verify account", false);
+        }
+
+        public async Task<GlobalRequestReponse<object>> SetupAvailableRecurringSlots(AvailableRecurringSlotsSetupRequestDto request)
+        {
+            try
+            {
+                if (request == null || string.IsNullOrWhiteSpace(request.OrganisationId))
+                    return ResponseHelper.BuildResponse<object>("organisationId is required", StatusCodes.Status400BadRequest, null, false);
+
+                if (request.Slots == null || request.Slots.Count == 0)
+                    return ResponseHelper.BuildResponse<object>("slots must not be empty", StatusCodes.Status400BadRequest, null, false);
+
+                var foundation = await _unitOfWork.foundationRepo.GetByExpressionAsync(f => f.Id == request.OrganisationId);
+                if (foundation == null)
+                    return ResponseHelper.BuildResponse<object>("organisation not found", StatusCodes.Status404NotFound, null, false);
+
+                var callerFoundationId = _currentUserService.GetUserFoundationId();
+                if (!string.IsNullOrWhiteSpace(callerFoundationId) && callerFoundationId != request.OrganisationId)
+                    return ResponseHelper.BuildResponse<object>("you can only configure availability for your own organisation", StatusCodes.Status403Forbidden, null, false);
+
+                var (units, errors) = RecurringSlotValidator.ValidateAndSplit(request.Slots);
+                if (errors.Count > 0)
+                {
+                    var invalidResponse = ResponseHelper.BuildResponse<object>("One or more slots are invalid", StatusCodes.Status400BadRequest, null, false);
+                    invalidResponse.Errors = errors;
+                    return invalidResponse;
+                }
+
+                var dayCodesInRequest = request.Slots
+                    .Select(s => Enum.Parse<DayCodeEnum>(s.DayCode, true).ToString())
+                    .Distinct()
+                    .ToList();
+
+                var existingSlots = await _unitOfWork.organisationMeetingAvailabilityRepo.GetListByExpressionAsync(
+                    s => s.FoundationId == request.OrganisationId && dayCodesInRequest.Contains(s.DayCode));
+
+                foreach (var existing in existingSlots)
+                {
+                    existing.IsDeprecated = true;
+                    existing.DateUpdated = DateTime.Now;
+                    _unitOfWork.organisationMeetingAvailabilityRepo.Update(existing);
+                }
+
+                var newSlots = units.Select(u => new OrganisationMeetingAvailability
+                {
+                    FoundationId = request.OrganisationId,
+                    DayCode = u.DayCode,
+                    StartTime = u.StartTime,
+                    EndTime = u.EndTime,
+                    CreatedBy = _currentUserService.GetUserEmail()
+                }).ToList();
+
+                if (newSlots.Count > 0)
+                    await _unitOfWork.organisationMeetingAvailabilityRepo.AddManyAsync(newSlots);
+
+                await _unitOfWork.CompleteAsync();
+
+                return ResponseHelper.BuildResponse<object>("Available recurring slots were added successfully", StatusCodes.Status200OK, new { }, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error setting up available recurring slots for organisation {OrganisationId}", request?.OrganisationId);
+                return ResponseHelper.BuildResponse<object>("something went wrong", StatusCodes.Status500InternalServerError, null, false);
+            }
         }
     }
 }

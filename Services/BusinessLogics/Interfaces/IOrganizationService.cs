@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Foundation;
 using Trustesse.Ivoluntia.Commons.DTOs.GlobalRequest;
+using Trustesse.Ivoluntia.Commons.DTOs.OrganisationAvailability;
 using Trustesse.Ivoluntia.Commons.Models.Response;
 
 namespace Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces
@@ -17,5 +18,6 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces
         Task<GlobalRequestReponse<OrganizationResponseDto>> GetOrganizationByID(string id);
         Task<GlobalRequestReponse<string>> OrganizationStatusUpdate(UpdateOrganizationStatusDto updateOrganizationStatusDto, string foundationId);
         Task<GlobalRequestReponse<string>> CreateOrganizationAccount(CreateOrganizationAccountDetailRequestDto createOrganizationAccountDetailRequestDto);
+        Task<GlobalRequestReponse<object>> SetupAvailableRecurringSlots(AvailableRecurringSlotsSetupRequestDto request);
     }
 }

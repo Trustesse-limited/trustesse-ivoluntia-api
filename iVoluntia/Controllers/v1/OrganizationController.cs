@@ -51,5 +51,10 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         [HttpGet("/api/{organisationId}/available-recurring-slots")]
         public async Task<IActionResult> GetAvailableRecurringSlots(string organisationId, [FromQuery] GetAvailableRecurringSlotsQueryDto query)
            => BuildHttpResponse<AvailableRecurringSlotsListDto>(await _organizationService.GetAvailableRecurringSlots(organisationId, query));
+
+        [Authorize(Roles = $"{AuthenticationConstants.FoundationAdmin},{AuthenticationConstants.SuperAdmin}")]
+        [HttpDelete("/api/{slotId}/remove-available-recurring-slots")]
+        public async Task<IActionResult> RemoveAvailableRecurringSlot(string slotId)
+           => BuildHttpResponse<object>(await _organizationService.RemoveAvailableRecurringSlot(slotId));
     }
 }

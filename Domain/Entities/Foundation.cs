@@ -24,5 +24,6 @@ namespace Trustesse.Ivoluntia.Domain.Entities
         public ICollection<OrganizationDeclineStatus> OrganizationDeclineStatus { get; set; }
         public ICollection<FoundationBankAccountDetail> FoundationBankAccountDetails { get; set; }
         public ICollection<FoundationBankAccountDetailUpdateHistory> FoundationBankAccountDetailUpdateHistories{ get; set; }
+        public ICollection<OrganisationMeetingAvailability> OrganisationMeetingAvailabilities { get; set; }
     }
 }

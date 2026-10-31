@@ -13,5 +13,6 @@ namespace Trustesse.Ivoluntia.Data.IRepositories
         string GetUserEmail();
         string GetUserFirstName();
         string GetUserFoundationId();
+        bool IsInRole(string role);
     }
 }

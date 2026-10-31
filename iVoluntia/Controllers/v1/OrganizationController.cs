@@ -7,6 +7,7 @@ using Trustesse.Ivoluntia.Commons.Contants;
 using Trustesse.Ivoluntia.Commons.DTOs;
 using Trustesse.Ivoluntia.Commons.DTOs.Foundation;
 using Trustesse.Ivoluntia.Commons.DTOs.GlobalRequest;
+using Trustesse.Ivoluntia.Commons.DTOs.OrganisationAvailability;
 using Trustesse.Ivoluntia.Commons.Models.Response;
 using Trustesse.Ivoluntia.Domain.Enums;
 using Trustesse.Ivoluntia.Services.BusinessLogics.Interfaces;
@@ -40,5 +41,20 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         [HttpPost("/organisations/account-details")]
         public async Task<IActionResult> CreateOrganizationAccount([FromBody] CreateOrganizationAccountDetailRequestDto createOrganizationAccountDetailRequestDto)
            => BuildHttpResponse<string>(await _organizationService.CreateOrganizationAccount(createOrganizationAccountDetailRequestDto.Validate()));
+
+        [Authorize(Roles = $"{AuthenticationConstants.FoundationAdmin},{AuthenticationConstants.SuperAdmin}")]
+        [HttpPost("/api/available-recurring-slots-set-up")]
+        public async Task<IActionResult> SetupAvailableRecurringSlots([FromBody] AvailableRecurringSlotsSetupRequestDto request)
+           => BuildHttpResponse<object>(await _organizationService.SetupAvailableRecurringSlots(request));
+
+        [Authorize(Roles = $"{AuthenticationConstants.FoundationAdmin},{AuthenticationConstants.SuperAdmin}")]
+        [HttpGet("/api/{organisationId}/available-recurring-slots")]
+        public async Task<IActionResult> GetAvailableRecurringSlots(string organisationId, [FromQuery] GetAvailableRecurringSlotsQueryDto query)
+           => BuildHttpResponse<AvailableRecurringSlotsListDto>(await _organizationService.GetAvailableRecurringSlots(organisationId, query));
+
+        [Authorize(Roles = $"{AuthenticationConstants.FoundationAdmin},{AuthenticationConstants.SuperAdmin}")]
+        [HttpDelete("/api/{slotId}/remove-available-recurring-slots")]
+        public async Task<IActionResult> RemoveAvailableRecurringSlot(string slotId)
+           => BuildHttpResponse<object>(await _organizationService.RemoveAvailableRecurringSlot(slotId));
     }
 }

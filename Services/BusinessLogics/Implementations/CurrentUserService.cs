@@ -31,5 +31,8 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Implementations
             var response = _currentUserRepository.GetUserFoundationId();
             return response;
         }
+
+        public bool IsInRole(string role) =>
+         _currentUserRepository.IsInRole(role);
     }
 }

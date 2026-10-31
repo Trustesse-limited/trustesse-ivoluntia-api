@@ -58,5 +58,8 @@ namespace Trustesse.Ivoluntia.Data.Repositories.Implementation
         }
         public bool IsAuthenticated() =>
            _user?.Identity?.IsAuthenticated is true;
+
+        public bool IsInRole(string role) =>
+           IsAuthenticated() && (_user?.IsInRole(role) ?? false);
     }
 }

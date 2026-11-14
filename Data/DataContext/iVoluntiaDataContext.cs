@@ -273,6 +273,11 @@ namespace Trustesse.Ivoluntia.Data.DataContext
             modelBuilder.Entity<Program>()
                .HasQueryFilter(p => !p.IsDeprecated);
 
+            modelBuilder.Entity<User>()
+               .HasMany(u => u.Qualifications)
+               .WithMany(q => q.Users)
+               .UsingEntity<UserQualification>();
+            
 
             modelBuilder.Entity<Foundation>()
                .HasMany(f => f.Programs)
@@ -354,20 +359,20 @@ namespace Trustesse.Ivoluntia.Data.DataContext
             modelBuilder.Entity<UserQualification>(entity =>
             {
                 entity.Property(uq => uq.UserId).IsRequired();
-                entity.Property(uq => uq.QualificationTypeId).IsRequired();
+                entity.Property(uq => uq.QualificationId).IsRequired();
                 entity.Property(uq => uq.ProofOfQualificationURL).IsRequired();
 
                 entity.HasOne(uq => uq.User)
-                      .WithMany()
+                      .WithMany(u => u.UserQualifications)
                       .HasForeignKey(uq => uq.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(uq => uq.Qualification)
-                      .WithMany()
-                      .HasForeignKey(uq => uq.QualificationTypeId)
+                      .WithMany(q => q.UserQualifications)
+                      .HasForeignKey(uq => uq.QualificationId)
                       .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasIndex(uq => new { uq.UserId, uq.QualificationTypeId }).IsUnique();
+                entity.HasIndex(uq => new { uq.UserId, uq.QualificationId }).IsUnique();
             });
         }
     }

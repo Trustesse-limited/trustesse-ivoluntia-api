@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Trustesse.Ivoluntia.Commons.DTOs.Qualification;
 using Trustesse.Ivoluntia.Domain.Entities;
 using Trustesse.Ivoluntia.Domain.Enums;
 
@@ -333,6 +334,20 @@ namespace Trustesse.Ivoluntia.Data.DataContext
 
         public static async Task SeedProgramAsync(iVoluntiaDataContext context)
         {
+            //var qualification = new UserQualification
+            //{
+            //    Id = Guid.NewGuid().ToString(),
+            //    UserId = "98de25e6-20a1-40d9-a7ab-64be85c05288",
+            //    QualificationId = "a32e6ecc-d8de-4e77-8091-feffb25ba938",
+            //    ProofOfQualificationURL = "https://res.cloudinary.com/dn9j96upc/raw/upload/v1791436703/file_uploads/ChatGPT_Image_Sep_28_2026_02_25_32_PM_j65acc.png",
+            //    DateCreated = DateTime.UtcNow,
+            //    DateUpdated = DateTime.UtcNow,
+            //    IsDeprecated = false,
+            //    CreatedBy = "foundationadmin"
+            //};
+            //context.UserQualifications.Add(qualification);
+            //await context.SaveChangesAsync();
+
             if (!context.Programs.Any())
             {
                 var foundation = context.Foundations.First();

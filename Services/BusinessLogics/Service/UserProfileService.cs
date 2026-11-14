@@ -30,7 +30,9 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
         }
         public async Task<GlobalRequestReponse<VolunteerProfileDto>> VolunteerProfile()
         {
-            var user = await _unitOfWork.userRepo.GetByExpressionIncludeAsync(u => u.Email == _currentUserService.GetUserEmail(), u => u.Interests, u => u.Skills, u => u.Location, u => u.Location.Country, u => u.Location.State);
+            var user = await _unitOfWork.userRepo.GetByExpressionIncludeAsync(u => u.Email == _currentUserService.GetUserEmail(), u => u.Interests, u => u.Skills, u => u.Location, u => u.Location.Country, u => u.Location.State, u => u.Qualifications);
+            var userQualification = await _unitOfWork.userQualificationRepo.GetListByExpressionAsync(u => u.UserId == _currentUserService.GetUserId(), u => u.Qualification);
+            var id = _currentUserService.GetUserId();
             if (user == null)
             {
                 return ResponseHelper.BuildResponse<VolunteerProfileDto>("user not found , please sign up", StatusCodes.Status404NotFound, null, false);
@@ -48,6 +50,8 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             profileResponse.State = user.Location?.State.StateName ?? null;
             profileResponse.Interests = user.Interests?.Select(i => i.Name).ToList() ?? null;
             profileResponse.Skills = user.Skills?.Select(s => s.Name).ToList() ?? null;
+            profileResponse.QualificationTitle = user.Qualifications?.Select(q => q.Title).ToList()?? null;
+            profileResponse.QualificationUrl= user.UserQualifications?.Select(uq => uq.ProofOfQualificationURL).ToList() ?? null;
             return ResponseHelper.BuildResponse<VolunteerProfileDto>("successful", StatusCodes.Status200OK, profileResponse, true);
         }
         public async Task<GlobalRequestReponse<FoundationProfileDto>> FoundationProfile()
@@ -72,6 +76,39 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             profileResponse.Causes = user.Foundation?.Causes?.Select(i => i.Name).ToList() ?? null;
             profileResponse.HasAgreedToDisclaimer = user.Foundation.HasAgreedToDisclaimer;
             return ResponseHelper.BuildResponse<FoundationProfileDto>("successful", StatusCodes.Status200OK, profileResponse, true);
+        }
+
+        public async Task<GlobalRequestReponse<string>> UpdateVolunteerProfile(VolunteerProfileUpdateDto volunteerProfileUpdateDto)
+        {
+            var user = await _unitOfWork.userRepo.GetByExpressionIncludeAsync(u => u.Email == _currentUserService.GetUserEmail());
+            if (user == null)
+            {
+                return ResponseHelper.BuildResponse<string>("user not found , please sign up", StatusCodes.Status404NotFound, null, false);
+            }
+            user.FirstName = volunteerProfileUpdateDto.FirstName;
+            user.LastName = volunteerProfileUpdateDto.LastName; 
+            user.Email = volunteerProfileUpdateDto.Email;
+            _unitOfWork.userRepo.Update(user);
+            var save = await _unitOfWork.CompleteAsync(); 
+            if(save > 0)
+                return ResponseHelper.BuildResponse<string>("updated successfully", StatusCodes.Status200OK,null, true);
+            return ResponseHelper.BuildResponse<string>("something went wrong", StatusCodes.Status400BadRequest, null, false);
+        }
+        public async Task<GlobalRequestReponse<string>> UpdateFoundationProfile(FoundationProfileUpdateDto foundationProfileUpdateDto)
+        {
+            var user = await _unitOfWork.userRepo.GetByExpressionIncludeAsync(u => u.Email == _currentUserService.GetUserEmail(), u => u.Foundation);
+            if (user == null)
+            {
+                return ResponseHelper.BuildResponse<string>("foundation not found , please sign up", StatusCodes.Status404NotFound, null, false);
+            }
+            user.Email = foundationProfileUpdateDto.Email;
+            user.Foundation.Name = foundationProfileUpdateDto.Name;
+            user.Foundation.Website = foundationProfileUpdateDto.Website;
+            _unitOfWork.userRepo.Update(user);
+            var save = await _unitOfWork.CompleteAsync();
+            if (save > 0)
+                return ResponseHelper.BuildResponse<string>("updated successfully", StatusCodes.Status200OK, null, true);
+            return ResponseHelper.BuildResponse<string>("something went wrong", StatusCodes.Status400BadRequest, null, false);
         }
     }
 }

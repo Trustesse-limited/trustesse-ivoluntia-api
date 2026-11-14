@@ -206,7 +206,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 if (qualification == null)
                     return ResponseHelper.BuildResponse<string>("Qualification not found", StatusCodes.Status404NotFound, null, false);
 
-                var inUse = await _uow.userQualificationRepo.GetByExpressionAsync(uq => uq.QualificationTypeId == qualificationId);
+                var inUse = await _uow.userQualificationRepo.GetByExpressionAsync(uq => uq.QualificationId == qualificationId);
 
                 if (inUse != null)
                     return ResponseHelper.BuildResponse<string>("This qualification type is in use by one or more users and cannot be deleted", StatusCodes.Status409Conflict, null, false);

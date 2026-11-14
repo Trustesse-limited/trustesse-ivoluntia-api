@@ -13,5 +13,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService
     {
         Task<GlobalRequestReponse<VolunteerProfileDto>> VolunteerProfile();
         Task<GlobalRequestReponse<FoundationProfileDto>> FoundationProfile();
+        Task<GlobalRequestReponse<string>> UpdateVolunteerProfile(VolunteerProfileUpdateDto volunteerProfileUpdateDto);
+        Task<GlobalRequestReponse<string>> UpdateFoundationProfile(FoundationProfileUpdateDto foundationProfileUpdateDto);
     }
 }

@@ -51,7 +51,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                     return ResponseHelper.BuildResponse<UserQualificationDto>("Qualification type not found", StatusCodes.Status404NotFound, null, false);
 
                 var duplicate = await _uow.userQualificationRepo.GetByExpressionAsync(
-                    uq => uq.UserId == userId && uq.QualificationTypeId == request.QualificationTypeId);
+                    uq => uq.UserId == userId && uq.QualificationId == request.QualificationTypeId);
 
                 if (duplicate != null)
                     return ResponseHelper.BuildResponse<UserQualificationDto>("You already have this qualification type on your profile", StatusCodes.Status409Conflict, null, false);
@@ -83,7 +83,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 var userQualification = new UserQualification
                 {
                     UserId = userId,
-                    QualificationTypeId = request.QualificationTypeId,
+                    QualificationId = request.QualificationTypeId,
                     ProofOfQualificationURL = uploadResult.Data.First()
                 };
 

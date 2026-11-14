@@ -25,6 +25,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
         private readonly IMapper _mapper;
         private readonly IFileUploadService _fileUploadService;
         private readonly IUnitOfWork _uow;
+        private readonly IHttpContextAccessor _http;
         public ProgramService(
             ILogger<ProgramService> logger,
             iVoluntiaDataContext context,
@@ -35,7 +36,8 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             IMapper mapper,
             IFileUploadService fileUploadService,
             INotificationService notificationService,
-            IUnitOfWork uow)
+            IUnitOfWork uow,
+            IHttpContextAccessor http)
         {
             _logger = logger;
             _context = context;
@@ -45,6 +47,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             _fileUploadService = fileUploadService;
             _notificationService = notificationService;
             _uow = uow;
+            _http = http;
         }
         public async Task<GlobalRequestReponse<ProgramDto>> CreateProgram(CreateProgramDto data)
         {
@@ -327,8 +330,11 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
         }
         public async Task<GlobalRequestReponse<string>> UpdateProgramStatusAsync(UpdateProgramStatusDto updateProgramStatusDto)
         {
-                // string loginUserEmail = _currentUserService.GetUserEmail();
-                if (_currentUserService.GetUserEmail() == null)
+            if (_http.HttpContext.User.IsInRole(UserRolesEnum.FoundationAdmin.ToString())
+            && updateProgramStatusDto.Status != ProgramStatus.Pending.ToString()
+            && updateProgramStatusDto.Status != ProgramStatus.Forfeited.ToString())
+                return ResponseHelper.BuildResponse<string>("A foundation admin can only set a programs status to Pending or Forfeited", StatusCodes.Status401Unauthorized, null, false);
+            if (_currentUserService.GetUserEmail() == null)
                     return ResponseHelper.BuildResponse("user not log in", StatusCodes.Status400BadRequest, "not log in", false);
                 var program = await _uow.programRepo.GetByExpressionAsync(x => x.Id == updateProgramStatusDto.ProgramId);
                 if (program == null)
@@ -484,20 +490,19 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                 return ResponseHelper.BuildResponse("An error occurred", StatusCodes.Status500InternalServerError, false, false);
             }
         }
-        public async Task<GlobalRequestReponse<string>> JoinProgram(string programId)
-        {
+        public async Task<GlobalRequestReponse<string>> JoinProgram(string programId, bool requireMeetUp, string? volunteeraAvailableTimeSlot)
+        { 
             var userProgram = await _uow.userProgramRepository.GetByExpressionAsync(up => up.ProgramId == programId && up.UserId == _currentUserService.GetUserId());
             if (userProgram != null && userProgram.Status != UserProgramStatusEnum.Left.ToString())
                 return ResponseHelper.BuildResponse<string>("user in this program", StatusCodes.Status400BadRequest, null, false);
-            var program = await _uow.programRepo.GetByExpressionAsync(p => p.Id == programId);
+            var program = await _uow.programRepo.GetByExpressionIncludeAsync(p => p.Id == programId, p => p.Foundation);
             if (program == null)
                 return ResponseHelper.BuildResponse<string>("program not found", StatusCodes.Status400BadRequest, null, false);
             if (program.EndDate < DateTime.Now || program.Status == (int)ProgramStatus.Ended || program.Status == (int)ProgramStatus.Forfeited)
                 return ResponseHelper.BuildResponse<string>("this program has ended", StatusCodes.Status400BadRequest, null, false);
-            if (userProgram != null)
+            if (userProgram != null && userProgram.Status == UserProgramStatusEnum.Left.ToString())
             {
-                // rejoining after having left: reactivate the existing row rather than inserting a
-                // second one, since (ProgramId, UserId) is the composite key for this join entity.
+                //to rejoining after having leaving 
                 userProgram.Status = UserProgramStatusEnum.Pending.ToString();
                 userProgram.DateCreated = DateTime.Now;
                 userProgram.CreatedBy = _currentUserService.GetUserEmail();
@@ -514,6 +519,10 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
                     Status = UserProgramStatusEnum.Pending.ToString()
                 };
                 await _uow.userProgramRepository.AddAsync(addUserProgram);
+                if(requireMeetUp == false)
+                {
+                    volunteeraAvailableTimeSlot = "no meet up require";
+                }
             }
             await _uow.CompleteAsync();
             //send email to volunteer
@@ -521,6 +530,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             string name = _currentUserService.GetUserFirstName();
             Dictionary<string, string> placeHolder = new Dictionary<string, string>();
             placeHolder.Add("Name", name);
+            placeHolder.Add("Time", volunteeraAvailableTimeSlot);
             var notificationCompose = await _notificationService.ComposeNotificationAsync(NotificationTypeEnum.JoinProgram.ToString(), NotificationChannelEnum.Email.ToString(), placeHolder);
             EmailModel volunteerEmailModel = new EmailModel
             {
@@ -533,6 +543,7 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             Dictionary<string, string> adminPlaceHolder = new Dictionary<string, string>();
             adminPlaceHolder.Add("Name", "Admin");
             adminPlaceHolder.Add("VolunteerEmail", userEmail);
+            adminPlaceHolder.Add("Time", volunteeraAvailableTimeSlot);
             var adminNotificationCompose = await _notificationService.ComposeNotificationAsync(NotificationTypeEnum.RequestToJoinProgram.ToString(), NotificationChannelEnum.Email.ToString(), adminPlaceHolder);
             EmailModel adminEmailModel = new EmailModel
             {
@@ -577,6 +588,57 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.Service
             };
             var adminEmailResponse = await _emailService.SendEmailASync(adminEmailModel);
             return ResponseHelper.BuildResponse("email sent to volunteer and admin", StatusCodes.Status200OK, "leave program notification", true);
+        }
+
+        public async Task<GlobalRequestReponse<string>> JoinProgramApprove(string programId, string volunteerEmail)
+        {
+            var volunteer = await _uow.userRepo.GetByExpressionAsync(u => u.Email == volunteerEmail);
+            var userProgram = await _uow.userProgramRepository.GetByExpressionIncludeAsync(up => up.ProgramId == programId && up.UserId == volunteer.Id, up => up.Program);
+            if (userProgram != null && userProgram.Status == UserProgramStatusEnum.Approved.ToString())
+                return ResponseHelper.BuildResponse<string>("user in this program", StatusCodes.Status400BadRequest, null, false);
+            userProgram.Status = UserProgramStatusEnum.Approved.ToString();
+            userProgram.DateCreated = DateTime.Now;
+            userProgram.CreatedBy = _currentUserService.GetUserEmail();
+            _uow.userProgramRepository.Update(userProgram);
+            //send email to volunteer
+            Dictionary<string, string> placeHolder = new Dictionary<string, string>();
+            placeHolder.Add("Name", volunteer.FirstName);
+            placeHolder.Add("program", userProgram.Program.Description);
+            var notificationCompose = await _notificationService.ComposeNotificationAsync(NotificationTypeEnum.RequestToJoinProgramApproved.ToString(), NotificationChannelEnum.Email.ToString(), placeHolder);
+            EmailModel volunteerEmailModel = new EmailModel
+            {
+                Receivers = volunteerEmail.Trim().Split().ToList(),
+                Subject = "join program request approved",
+                Message = HttpUtility.HtmlDecode(notificationCompose.Data)
+            };
+            var volunteerEmailResponse = await _emailService.SendEmailASync(volunteerEmailModel);
+            return ResponseHelper.BuildResponse("email sent to volunteer", StatusCodes.Status200OK, "join program request approved");
+        }
+
+        public async Task<GlobalRequestReponse<string>> JoinProgramDecline(string programId, string volunteerEmail, string declineReason)
+        {
+            var volunteer = await _uow.userRepo.GetByExpressionAsync(u => u.Email == volunteerEmail);
+            var userProgram = await _uow.userProgramRepository.GetByExpressionIncludeAsync(up => up.ProgramId == programId && up.UserId == volunteer.Id, up => up.Program);
+            if (userProgram != null && userProgram.Status == UserProgramStatusEnum.Approved.ToString())
+                return ResponseHelper.BuildResponse<string>("user in this program", StatusCodes.Status400BadRequest, null, false);
+            userProgram.Status = UserProgramStatusEnum.Declined.ToString();
+            userProgram.DateCreated = DateTime.Now;
+            userProgram.CreatedBy = _currentUserService.GetUserEmail();
+            _uow.userProgramRepository.Update(userProgram);
+            //send email to volunteer
+            Dictionary<string, string> placeHolder = new Dictionary<string, string>();
+            placeHolder.Add("Name", volunteer.FirstName);
+            placeHolder.Add("program", userProgram.Program.Description);
+            placeHolder.Add("reason", declineReason);
+            var notificationCompose = await _notificationService.ComposeNotificationAsync(NotificationTypeEnum.RequestToJoinProgramDeclined.ToString(), NotificationChannelEnum.Email.ToString(), placeHolder);
+            EmailModel volunteerEmailModel = new EmailModel
+            {
+                Receivers = volunteerEmail.Trim().Split().ToList(),
+                Subject = "join program request declined",
+                Message = HttpUtility.HtmlDecode(notificationCompose.Data)
+            };
+            var volunteerEmailResponse = await _emailService.SendEmailASync(volunteerEmailModel);
+            return ResponseHelper.BuildResponse("email sent to volunteer", StatusCodes.Status200OK, "join program request declined");
         }
 
         private static DateTime GetDateRangeStart(DateRangeFilter dateRange)

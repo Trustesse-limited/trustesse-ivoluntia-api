@@ -14,7 +14,9 @@ namespace Trustesse.Ivoluntia.Services.BusinessLogics.IService
         Task<GlobalRequestReponse<IEnumerable<ProgramDto>>> GetProgram(string id);
         Task<GlobalRequestReponse<string>> UpdateProgramStatusAsync(UpdateProgramStatusDto updateProgramStatusDto);
         Task<GlobalRequestReponse<bool>> DeleteProgramGoals(string programGoalId);
-        Task<GlobalRequestReponse<string>> JoinProgram(string programId);
+        Task<GlobalRequestReponse<string>> JoinProgram(string programId, bool requireMeetUp, string volunteeraAvailableTimeSlot);
         Task<GlobalRequestReponse<string>> LeaveProgram(string programId);
+        Task<GlobalRequestReponse<string>> JoinProgramApprove(string programId, string volunteerEmail);
+        Task<GlobalRequestReponse<string>> JoinProgramDecline(string programId, string volunteerEmail, string declineReason);
     }
 }

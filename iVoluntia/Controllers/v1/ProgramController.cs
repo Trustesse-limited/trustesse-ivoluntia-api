@@ -52,23 +52,24 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         [HttpPut("updateprogramstatus")]
         [Authorize(Roles = AuthenticationConstants.SuperAdmin + "," + AuthenticationConstants.FoundationAdmin)]
         public async Task<IActionResult> UpdateProgramStatusAsync([FromBody] UpdateProgramStatusDto updateProgramStatusDto)
-        {
-            updateProgramStatusDto = updateProgramStatusDto.Validate();
-
-            if (HttpContext.User.IsInRole(UserRolesEnum.FoundationAdmin.ToString())
-                && updateProgramStatusDto.Status != ProgramStatus.Pending.ToString()
-                && updateProgramStatusDto.Status != ProgramStatus.Forfeited.ToString())
-                return Unauthorized(ResponseHelper.BuildResponse<string>("A foundation admin can only set a program's status to Pending or Forfeited", StatusCodes.Status401Unauthorized, null, false));
-
-            return BuildHttpResponse(await _programService.UpdateProgramStatusAsync(updateProgramStatusDto));
-        }
-
+            => BuildHttpResponse(await _programService.UpdateProgramStatusAsync(updateProgramStatusDto.Validate()));
+        
         [HttpPost("join-program")]
-        public async Task<IActionResult> JoinProgram(string programId)
-            => BuildHttpResponse(await _programService.JoinProgram(programId));
+        public async Task<IActionResult> JoinProgram(string programId, bool requireMeetUp, string? volunteeraAvailableTimeSlot)
+            => BuildHttpResponse(await _programService.JoinProgram(programId, requireMeetUp, volunteeraAvailableTimeSlot));
 
         [HttpPost("leave-program")]
         public async Task<IActionResult> LeaveProgram(string programId)
             => BuildHttpResponse(await _programService.LeaveProgram(programId));
+
+        [HttpPost("join-program-approve")]
+        [Authorize(Roles = AuthenticationConstants.FoundationAdmin)]
+        public async Task<IActionResult> JoinProgramApprove(string programId, string volunteerEmail)
+            => BuildHttpResponse(await _programService.JoinProgramApprove(programId, volunteerEmail));
+
+        [HttpPost("join-program-decline")]
+        [Authorize(Roles = AuthenticationConstants.FoundationAdmin)]
+        public async Task<IActionResult> JoinProgramDecline(string programId, string volunteerEmail, string declineReason)
+            => BuildHttpResponse(await _programService.JoinProgramDecline(programId, volunteerEmail, declineReason));
     }
 }

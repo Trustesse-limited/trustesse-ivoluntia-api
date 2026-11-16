@@ -355,8 +355,8 @@ public class AuthService : IAuthService
         var newAccessToken = _jwtTokenService.GenerateAccessTokenAsync(jwtClaims, userRole);
         var tokenExpirations = AuthenticationConstants.TokenExpirations.ContainsKey(userRole)
                     ? AuthenticationConstants.TokenExpirations[userRole]
-                    : new TokenExpiration(AccessToken: 15, RefreshToken: 30); // Default values
-        var accessTokenExpiresAt = DateTime.UtcNow.AddMinutes(tokenExpirations.AccessToken);
+                    : new TokenExpiration(AccessToken: 1, RefreshToken: 15); // Default values
+        var accessTokenExpiresAt = DateTime.UtcNow.AddDays(tokenExpirations.AccessToken);
         var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(tokenExpirations.RefreshToken);
         _logger.LogInformation($"refresh token generated for user {validation.User.Id}.");
         var refreshResponse = new RefreshTokenResponseModel

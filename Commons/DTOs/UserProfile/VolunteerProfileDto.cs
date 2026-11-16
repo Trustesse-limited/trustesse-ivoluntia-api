@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Trustesse.Ivoluntia.Commons.DTOs.Qualification;
 
 namespace Trustesse.Ivoluntia.Commons.DTOs.UserProfile
 {
@@ -23,5 +24,8 @@ namespace Trustesse.Ivoluntia.Commons.DTOs.UserProfile
         public List<string>? Skills { get; set; }
         public string Bio { get; set; }
         public string ImageUrl { get; set; }
+        public List<string> QualificationTitle { get; set; }
+        public List<string> QualificationUrl { get; set; }
+        //public QualificationType QualificationType { get; set; }    
     }
 }

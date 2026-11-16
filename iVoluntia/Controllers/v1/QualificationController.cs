@@ -19,7 +19,7 @@ namespace Trustesse.Ivoluntia.API.Controllers.v1
         }
 
         [HttpPost("creation")]
-        [Authorize(Roles = AuthenticationConstants.SuperAdmin)]
+        //[Authorize(Roles = AuthenticationConstants.SuperAdmin)]
         public async Task<IActionResult> CreateQualification([FromBody] CreateQualificationDto request)
             => BuildHttpResponse(await _qualificationService.CreateQualification(request));
 

@@ -8,6 +8,8 @@
         DonationMade,
         JoinProgram,
         RequestToJoinProgram,
+        RequestToJoinProgramApproved,
+        RequestToJoinProgramDeclined,
         LeaveProgram,
         RequestToLeaveProgram,
         OtpRequest,

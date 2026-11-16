@@ -1670,7 +1670,7 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("QualificationTypeId")
+                    b.Property<string>("QualificationId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
@@ -1680,9 +1680,9 @@ namespace Trustesse.Ivoluntia.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("QualificationTypeId");
+                    b.HasIndex("QualificationId");
 
-                    b.HasIndex("UserId", "QualificationTypeId")
+                    b.HasIndex("UserId", "QualificationId")
                         .IsUnique();
 
                     b.ToTable("UserQualifications");
@@ -2199,13 +2199,13 @@ namespace Trustesse.Ivoluntia.Data.Migrations
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.UserQualification", b =>
                 {
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.Qualification", "Qualification")
-                        .WithMany()
-                        .HasForeignKey("QualificationTypeId")
+                        .WithMany("UserQualifications")
+                        .HasForeignKey("QualificationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Trustesse.Ivoluntia.Domain.Entities.User", "User")
-                        .WithMany()
+                        .WithMany("UserQualifications")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2315,6 +2315,11 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Navigation("UsersPrograms");
                 });
 
+            modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.Qualification", b =>
+                {
+                    b.Navigation("UserQualifications");
+                });
+
             modelBuilder.Entity("Trustesse.Ivoluntia.Domain.Entities.SecurityQuestion", b =>
                 {
                     b.Navigation("UserSecurityQuestions");
@@ -2340,6 +2345,8 @@ namespace Trustesse.Ivoluntia.Data.Migrations
                     b.Navigation("OnboardingProgress");
 
                     b.Navigation("UserInterestLinks");
+
+                    b.Navigation("UserQualifications");
 
                     b.Navigation("UserSecurityQuestions");
 
